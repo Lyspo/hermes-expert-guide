@@ -87,6 +87,27 @@
     z-index: 0;
     pointer-events: none;
     opacity: 0.85;
+
+    /* The field is masked away from the middle of the screen, and that is what lets
+       it have any presence at all. Content sits on the plane above it with no
+       surface of its own, so an unmasked field has to stay near-invisible to keep
+       prose legible — which is how the medium ends up looking like scattered dust.
+       Cleared out of the reading column, it can carry real depth at the periphery
+       and still leave text on clean ground. */
+    -webkit-mask-image: radial-gradient(
+      ellipse 46% 52% at 50% 42%,
+      transparent 0%,
+      transparent 42%,
+      rgb(0 0 0 / 0.55) 68%,
+      rgb(0 0 0 / 1) 88%
+    );
+    mask-image: radial-gradient(
+      ellipse 46% 52% at 50% 42%,
+      transparent 0%,
+      transparent 42%,
+      rgb(0 0 0 / 0.55) 68%,
+      rgb(0 0 0 / 1) 88%
+    );
     /* Explicit CSS size is essential: a canvas is a replaced element, so without
        it the width/height attributes can influence layout, and any code that
        measures the element in order to set those attributes will feed back on

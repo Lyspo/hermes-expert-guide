@@ -64,10 +64,12 @@ export function Field({ density = 1 }: { density?: number }) {
     const nodes = Array.from({ length: count }, (_, index) => {
       const cluster = index % 5
       const angle = (cluster / 5) * Math.PI * 2 + 0.4
-      const spread = 0.16 + Math.random() * 0.3
+      // Tighter than a uniform cloud: a cluster has to look like a cluster before
+      // it can suggest a region of the agent's interior.
+      const spread = 0.2 + Math.random() * 0.16
       return {
-        x: Math.cos(angle) * spread + (Math.random() - 0.5) * 0.14,
-        y: Math.sin(angle) * spread * 0.72 + (Math.random() - 0.5) * 0.14,
+        x: Math.cos(angle) * spread + (Math.random() - 0.5) * 0.08,
+        y: Math.sin(angle) * spread * 0.72 + (Math.random() - 0.5) * 0.08,
         z: Math.random() * 2 - 1,
         // A few nodes are larger: the skills that get invoked constantly.
         size: Math.random() < 0.08 ? 2.3 : 1,
@@ -102,15 +104,15 @@ export function Field({ density = 1 }: { density?: number }) {
       })
 
       // Edges first so nodes sit on top of them.
-      const reach = scale * 0.085
-      context.lineWidth = 0.7
+      const reach = scale * 0.1
+      context.lineWidth = 0.8
       for (let i = 0; i < points.length; i++) {
         const a = points[i]!
         for (let j = i + 1; j < points.length; j++) {
           const b = points[j]!
           const distance = Math.hypot(a.x - b.x, a.y - b.y)
           if (distance >= reach) continue
-          const alpha = (1 - distance / reach) * 0.17 * Math.min(a.alpha, b.alpha)
+          const alpha = (1 - distance / reach) * 0.34 * Math.min(a.alpha, b.alpha)
           if (alpha <= 0.004) continue
           context.strokeStyle = `rgba(141,163,172,${alpha.toFixed(3)})`
           context.beginPath()
@@ -122,7 +124,7 @@ export function Field({ density = 1 }: { density?: number }) {
 
       for (const point of points) {
         if (point.alpha <= 0.02) continue
-        context.fillStyle = `rgba(228,239,243,${Math.min(0.9, point.alpha).toFixed(3)})`
+        context.fillStyle = `rgba(228,239,243,${Math.min(0.95, point.alpha * 1.25).toFixed(3)})`
         context.beginPath()
         context.arc(point.x, point.y, Math.max(0.4, point.radius), 0, Math.PI * 2)
         context.fill()
