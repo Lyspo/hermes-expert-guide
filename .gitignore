@@ -1,0 +1,43 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# next.js
+.next/
+out/
+next-env.d.ts
+
+# generated content pipeline output
+.content-collections/
+
+# generated assets (built from source at build time)
+public/og/
+public/pagefind/
+
+# test & audit artifacts
+coverage/
+playwright-report/
+test-results/
+.lighthouseci/
+
+# env
+.env
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+# os / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# local scratch — never committed
+scratch/
+*.log
