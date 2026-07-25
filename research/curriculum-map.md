@@ -1624,3 +1624,12 @@ hardline blocklist and user-written `approvals.deny` globs are deterministic.
 the documented option set, and `10/01-the-deployment-checklist` gains an explicit line
 item: set `approvals.mode: manual` if you require deterministic prompts. See
 `[09]` §11.
+
+**Amendment from the manual-mode capture.** `[09]` §12 captures the gate prompting and
+being denied, plus the full anti-circumvention message from `tools/approval.py:3607`.
+The agent's "I won't retry or attempt the same action through a different path" is a
+restatement of an instruction in the tool result, not independent good behaviour — so
+refusal durability is prompt-level for pattern matches, and enforced in code only for
+the hardline list and `approvals.deny` globs. `04/04` gains the default-versus-manual
+contrast as its spine, `10/06` should quote the hardline message's "run it yourself in a
+terminal outside the agent", and SIM-5 is buildable except for the option-set frame.

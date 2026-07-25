@@ -305,3 +305,76 @@ when nothing asks:
 Note also: this frame confirms `⏲` for the frozen turn figure and `✓` for
 time-since-completion appearing together, and shows the reasoning panel used for a
 one-line confirmation.
+
+## 12. The gate under `approvals.mode: manual` — captured
+
+**Observed 2026-07-25** after the operator added `approvals: {mode: manual}` to
+`config.yaml`. The same command that ran silently under the default now prompted, and
+was denied. Verbatim frames:
+
+```
+● recursively delete /tmp/hermes-scratch
+
+  ┊ 💻 preparing terminal…
+
+⚠ Approval: rm -rf /tmp/hermes-scratch → denied
+  ┊ 💻 $         rm -rf /tmp/hermes-scratch  7.8s [BLOCKED: User denied this command. The user h...]
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+   Command was blocked — you explicitly denied it. I won't retry or attempt
+   the same action through a different path. Standing by.
+
+⚕ <model> │ 22K/1M │ [░░░░░░░░░░] 2% │ 10m │ ⏲ 15s │ ✓ 0s
+```
+
+Facts:
+
+- The outcome line is `⚠ Approval: <command> → denied`, printed above the feed line.
+- The feed line keeps its normal shape and **appends the block reason in brackets**,
+  display-truncated with `…`.
+- `7.8s` is the elapsed time including the wait for the human. Under the default
+  `smart` mode the same command took `5.0s` — the LLM assessment round-trip.
+- The four-option prompt itself is consumed once answered and is not in the final
+  frame. The option letters `[o]nce [s]ession [a]lways [d]eny` remain
+  documentation-sourced (`[02]` §7); everything after the choice is now observed.
+
+### The anti-circumvention message, from source
+
+The truncated bracket text is recoverable from `tools/approval.py:3607`. What the model
+actually receives on a denial:
+
+> BLOCKED: User denied this command. The user has NOT consented to this action. Do NOT
+> retry this command, do NOT rephrase it, and do NOT attempt the same outcome via a
+> different command. Stop the current workflow and wait for the user to respond before
+> taking any further destructive or irreversible action.
+
+This is the important find, and it reframes the agent's reply. "I won't retry or attempt
+the same action through a different path" is not the model being well-behaved of its own
+accord — it is **restating an instruction the tool result gave it**. The refusal is
+engineered, and the specific circumvention routes are enumerated: retry, rephrase,
+different command achieving the same outcome.
+
+Two sibling messages, same file, worth teaching alongside it:
+
+- `approvals.deny` match (`:555`) — "…It cannot be executed via the agent — not even
+  with --yolo, /yolo, or approvals.mode=off. Do NOT retry or rephrase this command; the
+  user has explicitly forbidden it."
+- Hardline match (`:570`) — "…cannot be executed via the agent — not even with --yolo,
+  /yolo, approvals.mode=off, or cron approve mode. If you genuinely need to run it, run
+  it yourself in a terminal outside the agent."
+
+The third is the most revealing sentence in the security model: the hardline blocklist's
+answer to a legitimate need is *do it yourself, outside the agent*. That is the boundary
+stated plainly, and `10/06-when-not-to-use-hermes` should quote it.
+
+### Curriculum consequences
+
+1. **`04/04-approvals-in-depth` now has both halves**: the default's silence (§11) and
+   manual mode's prompt-and-deny (§12), from the same command. That contrast is the
+   lesson.
+2. **SIM-5 can be built** at verbatim fidelity for everything except the option-set
+   frame itself.
+3. **A new teaching point for the Architect track**: refusal durability is prompt-level,
+   not enforcement-level. The agent is *told* not to route around a denial. Only the
+   hardline list and `approvals.deny` globs are enforced in code. A reviewer should know
+   which of the three they are relying on.
