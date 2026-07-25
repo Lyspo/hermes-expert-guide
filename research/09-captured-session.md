@@ -557,3 +557,75 @@ An operator who walks away does not come back to an executed command.
    it documented.
 3. **`10/01`'s checklist gains `approvals.timeout`** alongside `approvals.mode`.
 4. The letter-key option set must be struck from every lesson that would have used it.
+
+## 15. `/compress` on a short conversation is a no-op — and the badge never appears
+
+**Captured 2026-07-25.** Verbatim:
+
+```
+⚙ /compress
+⏳ Compressing context...
+🗒 Compacting context — summarizing earlier conversation so I can continue...
+🗒 Compressing 6 messages (~19,704 tokens)...
+  🗒 No changes from compression: 6 messages
+    Approx request size: ~19,704 tokens (unchanged)
+⚕ <model> │ 19.4K/1M │ [░░░░░░░░░░] 2% │ 2m │ ⏲ 3s │ ✓ 4s
+```
+
+**No `🗜️` badge in the status bar afterwards.** Not a rendering quirk — the badge counts
+compressions that *did something*, and this one did not.
+
+### Why, from the operator's own config
+
+```yaml
+compression:
+  protect_first_n: 3
+  protect_last_n: 20
+```
+
+Six messages. All six fall inside the protected last twenty, so **every message was
+exempt and nothing was eligible to summarise.** The output says so plainly: *"No changes
+from compression: 6 messages / Approx request size: ~19,704 tokens (unchanged)."*
+
+Arithmetic worth stating in the lesson: with defaults, a conversation needs more than
+`protect_first_n + protect_last_n` = **23 messages** before `/compress` can touch
+anything at all. Below that it is guaranteed to be a no-op, regardless of token count —
+19,704 tokens across 6 messages is not compressible, while the same tokens across 40
+messages would be.
+
+### Why this matters more than the badge would have
+
+This is a real trap with a silent failure mode. An operator watching the context bar
+climb types `/compress`, sees four lines of activity, and gets nothing — no error, no
+explanation, no badge. Without knowing about `protect_last_n` there is no way to tell
+whether compression is broken, ineffective, or simply declining to act.
+
+The remedy is legible once you know the mechanism: fewer, longer messages compress worse
+than many short ones, and the setting to change is `protect_last_n`, not `threshold`.
+
+### Also in this frame
+
+- **The allow outcome line**: `⚠ Approval: rm -rf /tmp/hermes-scratch → allowed once`,
+  completing the pair with `→ denied` from §12. The tool line then shows `51.5s` —
+  elapsed including the human's deliberation.
+- **A one-time contextual tip**, verbatim and undocumented: *"(tip) That tool ran for a
+  while. Use /verbose to cycle tool-progress display modes (all -> new -> off ->
+  verbose). This tip only shows once."* So tips are triggered by observed conditions, not
+  only rotated at startup, and they self-suppress.
+- **Glyph vocabulary for slash commands**: `⚙` echoes the command, `⏳` marks the
+  operation starting, `🗒` prefixes each compaction step with progressive indentation for
+  sub-steps.
+- Note `progress_notices: false` in the config, yet these progress lines still printed —
+  so that key governs something narrower than "show compression progress." Untested.
+
+### Curriculum consequences
+
+1. **`03/01` must be corrected again.** It implies `/compress` always acts. The observed
+   behaviour is that it is a no-op below 23 messages, and the badge only appears on a
+   real compression.
+2. **SIM-2's compression frames stay reconstructed**, and now for a stated reason: two
+   attempts to capture a real compression produced a no-op, because the sessions were
+   short.
+3. **`10/05-keeping-it-running` gains a diagnostic**: if `/compress` reports "no changes",
+   the conversation is shorter than the protected window — look at `protect_last_n`
+   before suspecting the threshold.

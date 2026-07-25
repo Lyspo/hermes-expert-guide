@@ -102,8 +102,44 @@ at all — and, because the summary re-establishes a stable prefix, cheaper turn
 that point on.
 
 So a compression is not free, and if your install shows a cost field you should expect
-it to rise across one. The captured session never compressed, which is why the replay's
-compression frames are marked as the reconstructed part.
+it to rise across one.
+
+But there is a trap here, and it has a silent failure mode. Run `/compress` on a short
+conversation and it does nothing at all:
+
+<Transcript label="/compress on a six-message conversation" fidelity="verbatim" source="Captured session, 2026-07-25">
+{`⚙ /compress
+⏳ Compressing context...
+🗒 Compacting context — summarizing earlier conversation so I can continue...
+🗒 Compressing 6 messages (~19,704 tokens)...
+  🗒 No changes from compression: 6 messages
+    Approx request size: ~19,704 tokens (unchanged)`}
+</Transcript>
+
+Four lines of activity, no error, and no `🗜️` badge afterwards — because nothing was
+compressed. The reason is two settings you have not met yet:
+
+```yaml
+compression:
+  protect_first_n: 3
+  protect_last_n: 20
+```
+
+The first three messages and the last twenty are exempt. Six messages all sit inside the
+protected tail, so nothing was eligible. With the defaults, a conversation needs **more
+than twenty-three messages** before `/compress` can touch anything, whatever the token
+count. Nineteen thousand tokens across six messages is not compressible; the same tokens
+across forty messages would be.
+
+<MarginNote>
+If `/compress` reports "no changes", the conversation is shorter than the protected
+window. Look at `protect_last_n` before suspecting `threshold` — they fail in ways that
+look identical from the outside.
+</MarginNote>
+
+That also means the badge is a record of work done, not of commands issued. Typing
+`/compress` twice on a short session leaves you with no badge and no explanation, which
+is worth knowing before you conclude something is broken.
 
 <Depth min="operator">
 
