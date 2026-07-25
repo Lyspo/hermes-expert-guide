@@ -28,7 +28,7 @@ export function SkillLoopPlate() {
       height={580}
     >
       {/* Your turn, along the top. It is complete before anything below exists. */}
-      <text x={0} y={10} fill="var(--color-ice-faint)" fontSize={9}>
+      <text x={0} y={10} fill="var(--color-ice-faint)" fontSize={9} data-beat="1">
         YOUR TURN — AND IT FINISHES FIRST
       </text>
 
@@ -40,10 +40,12 @@ export function SkillLoopPlate() {
         label="the tool-calling loop"
         sublabel="one message, many API-call iterations"
         tone="near"
+        beat={1}
       />
       {ticks.map((x, index) => (
         <line
           key={x}
+          data-beat="1"
           x1={x}
           y1={76}
           x2={x}
@@ -52,7 +54,7 @@ export function SkillLoopPlate() {
           strokeWidth={1}
         />
       ))}
-      <text x={14} y={106} fill="var(--color-ice-faint)" fontSize={9}>
+      <text x={14} y={106} fill="var(--color-ice-faint)" fontSize={9} data-beat="1">
         the counter · +1 per iteration, never per message
       </text>
 
@@ -64,25 +66,26 @@ export function SkillLoopPlate() {
         label="your answer"
         sublabel="complete, and already on your screen"
         tone="near"
+        beat={2}
       />
-      <text x={394} y={106} fill="var(--color-ice-faint)" fontSize={9}>
+      <text x={394} y={106} fill="var(--color-ice-faint)" fontSize={9} data-beat="2">
         none of what follows has happened yet
       </text>
 
-      <VizEdge from={[336, 68]} to={[384, 68]} arrow />
+      <VizEdge from={[336, 68]} to={[384, 68]} arrow beat={2} />
 
-      <VizNote x={384} y={142} width={216}>
+      <VizNote x={384} y={142} width={216} beat={3}>
         Only then, and only if the counter has reached ten and the turn ran to the
         end, does the fork spawn.
       </VizNote>
 
       {/* The spawn comes in from the side: it is the parent creating the fork, not
           something crossing the isolation walls. */}
-      <VizEdge from={[620, 116]} to={[620, 318]} kind="ondemand" />
-      <VizEdge from={[620, 318]} to={[326, 318]} kind="ondemand" arrow />
+      <VizEdge from={[620, 116]} to={[620, 318]} kind="ondemand" beat={3} />
+      <VizEdge from={[620, 318]} to={[326, 318]} kind="ondemand" arrow beat={3} />
 
       {/* The two walls that face your session, and the line they stop. */}
-      <VizNote x={0} y={150} width={180}>
+      <VizNote x={0} y={150} width={180} beat={5}>
         The arrow that does not exist: nothing the fork writes or says re-enters the
         running conversation.
       </VizNote>
@@ -92,17 +95,18 @@ export function SkillLoopPlate() {
         kind="absent"
         arrow
         breakAt={[200, 267]}
+        beat={5}
       />
 
-      <VizBarrier x={0} y={240} w={320} />
-      <VizBarrier x={0} y={258} w={320} />
-      <text x={332} y={226} fill="var(--color-ice-faint)" fontSize={9}>
+      <VizBarrier x={0} y={240} w={320} beat={4} />
+      <VizBarrier x={0} y={258} w={320} beat={4} />
+      <text x={332} y={226} fill="var(--color-ice-faint)" fontSize={9} data-beat="4">
         WHAT KEEPS IT OUT OF YOUR SESSION
       </text>
-      <text x={332} y={245} fill="var(--color-ice-dim)" fontSize={10}>
+      <text x={332} y={245} fill="var(--color-ice-dim)" fontSize={10} data-beat="4">
         _persist_disabled = True
       </text>
-      <text x={332} y={263} fill="var(--color-ice-dim)" fontSize={10}>
+      <text x={332} y={263} fill="var(--color-ice-dim)" fontSize={10} data-beat="4">
         _session_db = None
       </text>
 
@@ -114,32 +118,33 @@ export function SkillLoopPlate() {
         label="the background review fork"
         sublabel="a daemon thread replaying a snapshot"
         tone="near"
+        beat={3}
       />
-      <text x={10} y={334} fill="var(--color-ice-dim)" fontSize={10}>
+      <text x={10} y={334} fill="var(--color-ice-dim)" fontSize={10} data-beat="3">
         “should any skill or memory be
       </text>
-      <text x={10} y={348} fill="var(--color-ice-dim)" fontSize={10}>
+      <text x={10} y={348} fill="var(--color-ice-dim)" fontSize={10} data-beat="3">
         saved or updated?”
       </text>
-      <text x={10} y={366} fill="var(--color-ice-faint)" fontSize={9}>
+      <text x={10} y={366} fill="var(--color-ice-faint)" fontSize={9} data-beat="3">
         on the parent’s own model, by default
       </text>
 
       {/* The whitelist is a wall with exactly one opening, so the write leaves
           through it rather than around it. */}
-      <VizBarrier x={0} y={392} w={320} door={[140, 180]} />
-      <VizBarrier x={0} y={410} w={320} door={[140, 180]} />
-      <text x={332} y={378} fill="var(--color-ice-faint)" fontSize={9}>
+      <VizBarrier x={0} y={392} w={320} door={[140, 180]} beat={4} />
+      <VizBarrier x={0} y={410} w={320} door={[140, 180]} beat={4} />
+      <text x={332} y={378} fill="var(--color-ice-faint)" fontSize={9} data-beat="4">
         AND WHAT IT MAY TOUCH AT ALL
       </text>
-      <text x={332} y={397} fill="var(--color-ice-dim)" fontSize={10}>
+      <text x={332} y={397} fill="var(--color-ice-dim)" fontSize={10} data-beat="4">
         tool whitelist: skills + memory
       </text>
-      <text x={332} y={415} fill="var(--color-ice-dim)" fontSize={10}>
+      <text x={332} y={415} fill="var(--color-ice-dim)" fontSize={10} data-beat="4">
         approval prompts: auto-denied
       </text>
 
-      <VizEdge from={[160, 378]} to={[160, 432]} kind="change" arrow />
+      <VizEdge from={[160, 378]} to={[160, 432]} kind="change" arrow beat={6} />
 
       <VizBox
         x={0}
@@ -148,6 +153,7 @@ export function SkillLoopPlate() {
         h={58}
         label="~/.hermes/skills/<namespace>/<skill>/"
         sublabel="SKILL.md · mode 0600 · owner-only"
+        beat={6}
       />
 
       <VizBox
@@ -157,8 +163,9 @@ export function SkillLoopPlate() {
         h={58}
         label="the curator"
         sublabel="the same store, on a slower clock"
+        beat={7}
       />
-      <VizEdge from={[400, 465]} to={[326, 465]} kind="ondemand" arrow />
+      <VizEdge from={[400, 465]} to={[326, 465]} kind="ondemand" arrow beat={7} />
 
       <line x1={0} y1={508} x2={720} y2={508} stroke="var(--color-ice-faint)" strokeWidth={1} />
 

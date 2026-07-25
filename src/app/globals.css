@@ -116,6 +116,14 @@
     height: 100%;
   }
 
+  /* The curriculum map draws the same structure, interactively and in the foreground.
+     Two views of one graph on screen at once reads as noise, so the ambient field
+     yields to it. `:has()` rather than a route check because the field lives in the
+     root layout and knows nothing about which page it is behind. */
+  body:has([data-curriculum-map]) .field {
+    opacity: 0;
+  }
+
   /* The plane content sits on, above the field. */
   .plane {
     position: relative;

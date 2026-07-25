@@ -15,6 +15,17 @@ import type { ReactNode } from 'react'
  * and larger. The signal colour appears only where something changes.
  */
 
+/**
+ * Which step of a mechanism an element belongs to.
+ *
+ * Plates that depict a sequence tag their parts with a beat, and a scroll scene can
+ * then advance through them at the reader's own pace. Purely an annotation: it changes
+ * nothing about how the plate renders, so a plate with beats is complete and correct
+ * as static SVG whether or not anything ever reads them.
+ */
+type Beat = { beat?: number | undefined }
+const beatOf = ({ beat }: Beat) => (beat === undefined ? {} : { 'data-beat': beat })
+
 export function VizStage({
   title,
   description,
@@ -59,7 +70,8 @@ export function VizBox({
   label,
   sublabel,
   tone = 'plain',
-}: {
+  beat,
+}: Beat & {
   x: number
   y: number
   w: number
@@ -85,7 +97,7 @@ export function VizBox({
   const text = tone === 'ghost' ? 'var(--color-ice-faint)' : 'var(--color-ice)'
 
   return (
-    <g opacity={tone === 'ghost' ? 0.45 : 1}>
+    <g opacity={tone === 'ghost' ? 0.45 : 1} {...beatOf({ beat })}>
       <rect
         x={x}
         y={y}
@@ -121,7 +133,8 @@ export function VizMeter({
   used,
   total,
   label,
-}: {
+  beat,
+}: Beat & {
   x: number
   y: number
   w: number
@@ -131,7 +144,7 @@ export function VizMeter({
 }) {
   const ratio = Math.max(0, Math.min(1, used / total))
   return (
-    <g>
+    <g {...beatOf({ beat })}>
       <rect x={x} y={y} width={w} height={6} fill="none" stroke="var(--color-ice-faint)" strokeWidth={1} />
       <rect x={x} y={y} width={w * ratio} height={6} fill="var(--color-ice-dim)" />
       <text x={x} y={y + 20} fill="var(--color-ice-dim)" fontSize={10}>
@@ -157,7 +170,8 @@ export function VizEdge({
   kind = 'solid',
   arrow = false,
   breakAt,
-}: {
+  beat,
+}: Beat & {
   from: [number, number]
   to: [number, number]
   label?: string | undefined
@@ -235,7 +249,7 @@ export function VizEdge({
   }
 
   return (
-    <g>
+    <g {...beatOf({ beat })}>
       <line
         x1={x1}
         y1={y1}
@@ -273,7 +287,8 @@ export function VizBarrier({
   y,
   w,
   door,
-}: {
+  beat,
+}: Beat & {
   x: number
   y: number
   w: number
@@ -287,7 +302,7 @@ export function VizBarrier({
     : [[x, x + w]]
 
   return (
-    <g>
+    <g {...beatOf({ beat })}>
       {spans
         .filter(([start, end]) => end > start)
         .map(([start, end]) => (
@@ -310,7 +325,8 @@ export function VizNote({
   y,
   children,
   width = 200,
-}: {
+  beat,
+}: Beat & {
   x: number
   y: number
   children: string
@@ -334,7 +350,7 @@ export function VizNote({
   if (line) lines.push(line)
 
   return (
-    <text x={x} y={y} fill="var(--color-ice-dim)" fontSize={10}>
+    <text x={x} y={y} fill="var(--color-ice-dim)" fontSize={10} {...beatOf({ beat })}>
       {lines.map((text, index) => (
         <tspan key={index} x={x} dy={index === 0 ? 0 : 13}>
           {text}

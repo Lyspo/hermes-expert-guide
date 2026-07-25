@@ -78,6 +78,31 @@ exists to resolve, at `/glossary/`. **Cheatsheets** — 9 sheets at `/cheatsheet
 are load-bearing rather than supplementary: the lessons are short *because* the
 reference lives there.
 
+**The curriculum is a real graph, and `/hermes/` is a view of it.** `src/lib/graph.ts`
+lays the 51 lessons out as a DAG from their own frontmatter — 79 prerequisite edges,
+depth 11, one root — with depth taken as the *longest* prerequisite chain, because a
+lesson is as deep as the most demanding thing it asks you to already know. Pure,
+structurally typed, and with no import of the content collection, so a client component
+can use it without dragging 51 compiled MDX bodies into the browser; the computed
+instance is next door in `curriculum-graph.ts`. `CurriculumMap` draws it: point at any
+lesson and `ancestorsOf` lights its whole transitive chain while the rest recedes to
+context. The canvas is `aria-hidden` and carries nothing of its own — every lesson is
+also a real link in the index below, and hovering *or focusing* that link drives the
+same reveal, so the keyboard path is the same teaching rather than a lesser one. The
+route deliberately does not use `Page`: that is the reading layout, and a prerequisite
+graph needs the full width. It passes the axe sweep.
+
+**VIZ-3 is scroll-scrubbed.** `viz/scroll/scrubbed-plate.tsx` advances the plate through
+the seven named beats in `BEATS` (in `viz/index.tsx`), tagged on the plate's own elements
+with `data-beat`. Timeline positions are absolute, one unit per beat, so the named step
+underneath stays in exact lockstep with the drawing — sequencing with overlaps drifts,
+and a label describing the wrong frame is worse than no label. The stagger inside beat 1
+is load-bearing: its ten elements are the ten counter ticks, so revealing them in order
+*is* the counter climbing, with nothing special-casing it. Only this plate has beats; the
+others describe arrangements rather than sequences. Cost to a lesson page is **+0.7 kB**,
+not GSAP's ~45 kB, because the import is dynamic — the split in "Architecture rules" is
+what makes that true, so do not let it decay.
+
 **Not built.** The simulations beyond SIM-1's engine — the map specifies eight and one
 flagship replay exists. A colophon. The landing page's GSAP scroll narrative. Lighthouse
 CI.
