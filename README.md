@@ -1,10 +1,14 @@
-# The Hermes Guide
+# Protocol
+
+**Deep, sourced, adaptive courses in the agents worth learning properly.**
+
+**[hermes-expert-guide.vercel.app](https://hermes-expert-guide.vercel.app)**
+
+First course: **The Hermes Guide** — [Hermes Agent](https://github.com/NousResearch/hermes-agent), the open-source self-improving AI agent from Nous Research. From first install to running scheduled, self-revising, multi-agent systems, adapting what it shows you to what you already know.
 
 > **Unofficial community project.** Not affiliated with, endorsed by, or connected to Nous Research. "Hermes Agent" is their work; this is an independent guide to using it.
 
-An interactive learning platform for [Hermes Agent](https://github.com/NousResearch/hermes-agent) — the open-source, self-improving AI agent. It teaches the full surface of the tool, from first install to running self-improving multi-agent systems, and adapts what it shows you to what you already know.
-
-**Status:** in active development. This README is a skeleton and will carry the live URL, a recorded walkthrough, and the architecture diagram before launch.
+**Status:** in active development. The curriculum is being written; the design world is specified in `design.md` and partially built. This README will carry a recorded walkthrough and an architecture diagram before launch.
 
 ---
 
@@ -20,7 +24,7 @@ The [official documentation](https://hermes-agent.nousresearch.com/docs) is refe
 
 | Path | What's in it |
 |---|---|
-| `content/` | The curriculum — MDX lessons, glossary, cheatsheets, and simulation scripts |
+| `content/guides/` | One directory per guide — MDX lessons with per-track relevance, plus glossary, cheatsheets, and simulation scripts |
 | `research/` | Sourced research corpus every factual claim traces back to |
 | `src/` | The Next.js application |
 | `design.md` | The design system: tokens, type, motion language, and the anti-slop rules |
@@ -47,4 +51,6 @@ Code is MIT. Written content is CC BY 4.0 — take it, teach with it, credit it.
 
 ## Author
 
-Built by Théo Gandolphe. The [about page](#) documents how it was made, including the multi-agent process behind it.
+Built by Théo Gandolphe — [GitHub](https://github.com/Lyspo) · [LinkedIn](https://www.linkedin.com/in/theogandolphe/) · [theogandolphe.com](https://theogandolphe.com/en/).
+
+The [about page](https://hermes-expert-guide.vercel.app/about/) documents how it was made, including the multi-agent process behind it.
