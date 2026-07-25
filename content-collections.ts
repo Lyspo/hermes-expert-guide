@@ -34,9 +34,22 @@ const moduleMetaSchema = z.object({
   arc: z.string().optional(),
 })
 
+/**
+ * Guides are the platform's top level: one per agent being taught. Hermes is the
+ * first; the structure exists so a second guide is a directory rather than a
+ * refactor.
+ */
+const guideMetaSchema = z.object({
+  title: z.string(),
+  subject: z.string(),
+  summary: z.string(),
+  /** The upstream release the whole guide is currently verified against. */
+  verifiedAgainst: z.string(),
+})
+
 const lessons = defineCollection({
   name: 'lessons',
-  directory: 'content/curriculum',
+  directory: 'content/guides',
   include: '**/*.mdx',
   schema: z.object({
     title: z.string(),
@@ -62,19 +75,28 @@ const lessons = defineCollection({
     content: z.string(),
   }),
   transform: async (doc, ctx) => {
-    const path = doc._meta.path // "01-first-contact/02-install"
-    const [moduleSlug, lessonSlug] = path.split('/')
+    const path = doc._meta.path // "hermes/01-first-contact/02-install"
+    const [guideSlug, moduleSlug, lessonSlug] = path.split('/')
 
-    if (!moduleSlug || !lessonSlug) {
+    if (!guideSlug || !moduleSlug || !lessonSlug) {
       throw new Error(
-        `Lesson "${path}" must live in a module directory, e.g. content/curriculum/01-first-contact/01-intro.mdx`,
+        `Lesson "${path}" must sit at content/guides/<guide>/<NN-module>/<NN-lesson>.mdx`,
       )
     }
 
-    // Module metadata is shared by every lesson in the directory, so it is
-    // cached per module rather than re-read per lesson.
-    const meta = await ctx.cache(moduleSlug, async (slug) => {
-      const file = join('content/curriculum', slug, '_module.yaml')
+    // Guide and module metadata are shared by many lessons, so each is read once
+    // and cached rather than re-read per lesson.
+    const guide = await ctx.cache(`guide:${guideSlug}`, async () => {
+      const file = join('content/guides', guideSlug, '_guide.yaml')
+      try {
+        return guideMetaSchema.parse(parseYaml(await readFile(file, 'utf8')))
+      } catch (error) {
+        throw new Error(`Could not read guide metadata at ${file}`, { cause: error })
+      }
+    })
+
+    const meta = await ctx.cache(`module:${guideSlug}/${moduleSlug}`, async () => {
+      const file = join('content/guides', guideSlug, moduleSlug, '_module.yaml')
       try {
         return moduleMetaSchema.parse(parseYaml(await readFile(file, 'utf8')))
       } catch (error) {
@@ -89,11 +111,13 @@ const lessons = defineCollection({
       mdx,
       id: path,
       slug: lessonSlug,
+      guideSlug,
+      guide,
       moduleSlug,
       module: meta,
       /** Strip the "NN-" ordering prefix for display. */
       moduleNumber: Number.parseInt(moduleSlug.slice(0, 2), 10),
-      url: `/learn/${moduleSlug}/${lessonSlug}/` as const,
+      url: `/${guideSlug}/${moduleSlug}/${lessonSlug}/` as const,
     }
   },
 
@@ -121,11 +145,11 @@ const lessons = defineCollection({
 
     const positions = new Map<string, string>()
     for (const lesson of lessons) {
-      const key = `${lesson.moduleSlug}#${lesson.order}`
+      const key = `${lesson.guideSlug}/${lesson.moduleSlug}#${lesson.order}`
       const taken = positions.get(key)
       if (taken) {
         problems.push(
-          `${lesson.moduleSlug}: order ${lesson.order} used by both "${taken}" and "${lesson.slug}"`,
+          `${lesson.guideSlug}/${lesson.moduleSlug}: order ${lesson.order} used by both "${taken}" and "${lesson.slug}"`,
         )
       } else {
         positions.set(key, lesson.slug)

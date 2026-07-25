@@ -14,6 +14,7 @@ function byOrder(a: Lesson, b: Lesson) {
 export const lessons: Lesson[] = [...published].sort(byOrder)
 
 export interface CurriculumModule {
+  guideSlug: string
   slug: string
   number: number
   title: string
@@ -26,37 +27,52 @@ export interface CurriculumModule {
 export const modules: CurriculumModule[] = (() => {
   const grouped = new Map<string, Lesson[]>()
   for (const lesson of lessons) {
-    const existing = grouped.get(lesson.moduleSlug)
+    // Keyed by guide too: two guides may legitimately both have "01-first-contact".
+    const key = `${lesson.guideSlug}/${lesson.moduleSlug}`
+    const existing = grouped.get(key)
     if (existing) existing.push(lesson)
-    else grouped.set(lesson.moduleSlug, [lesson])
+    else grouped.set(key, [lesson])
   }
 
   return [...grouped.entries()]
-    .map(([slug, moduleLessons]) => {
+    .map(([, moduleLessons]) => {
       // Safe: a map entry only exists because at least one lesson created it.
       const first = moduleLessons[0]!
       return {
-        slug,
+        guideSlug: first.guideSlug,
+        slug: first.moduleSlug,
         number: first.moduleNumber,
         title: first.module.title,
         summary: first.module.summary,
         arc: first.module.arc,
         lessons: moduleLessons,
-        url: `/learn/${slug}/`,
+        url: `/${first.guideSlug}/${first.moduleSlug}/`,
       }
     })
     .sort((a, b) => a.number - b.number)
 })()
 
-export function getModule(slug: string): CurriculumModule | undefined {
-  return modules.find((mod) => mod.slug === slug)
+export function getModule(guideSlug: string, moduleSlug: string) {
+  return modules.find((mod) => mod.guideSlug === guideSlug && mod.slug === moduleSlug)
 }
 
-export function getLesson(moduleSlug: string, lessonSlug: string): Lesson | undefined {
+export function getLesson(
+  guideSlug: string,
+  moduleSlug: string,
+  lessonSlug: string,
+): Lesson | undefined {
   return lessons.find(
-    (lesson) => lesson.moduleSlug === moduleSlug && lesson.slug === lessonSlug,
+    (lesson) =>
+      lesson.guideSlug === guideSlug &&
+      lesson.moduleSlug === moduleSlug &&
+      lesson.slug === lessonSlug,
   )
 }
+
+/** The guides the platform currently publishes, in the order lessons declare. */
+export const guides = [...new Map(lessons.map((l) => [l.guideSlug, l.guide])).entries()].map(
+  ([slug, meta]) => ({ slug, ...meta, url: `/${slug}/` }),
+)
 
 export function relevanceFor(lesson: Lesson, track: Track): Relevance {
   return lesson.tracks[track]

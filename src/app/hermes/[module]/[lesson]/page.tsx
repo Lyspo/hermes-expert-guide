@@ -7,17 +7,23 @@ import { mdxComponents } from '@/components/mdx'
 
 // Every lesson URL is known at build time; anything else is a 404 at build
 // rather than a surprise at runtime.
+// This route tree serves one guide. A second guide gets its own directory, which
+// keeps its URLs short and its static params independent.
+const GUIDE = 'hermes'
+
 export const dynamicParams = false
 
 export function generateStaticParams() {
-  return lessons.map((lesson) => ({ module: lesson.moduleSlug, lesson: lesson.slug }))
+  return lessons
+    .filter((lesson) => lesson.guideSlug === GUIDE)
+    .map((lesson) => ({ module: lesson.moduleSlug, lesson: lesson.slug }))
 }
 
 type Params = Promise<{ module: string; lesson: string }>
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { module: moduleSlug, lesson: lessonSlug } = await params
-  const lesson = getLesson(moduleSlug, lessonSlug)
+  const lesson = getLesson(GUIDE, moduleSlug, lessonSlug)
   if (!lesson) return {}
 
   return {
@@ -29,7 +35,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default async function LessonPage({ params }: { params: Params }) {
   const { module: moduleSlug, lesson: lessonSlug } = await params
-  const lesson = getLesson(moduleSlug, lessonSlug)
+  const lesson = getLesson(GUIDE, moduleSlug, lessonSlug)
   if (!lesson) notFound()
 
   const { previous, next } = neighbours(lesson)
@@ -39,7 +45,7 @@ export default async function LessonPage({ params }: { params: Params }) {
     <article className="mx-auto max-w-3xl px-6 py-16" data-pagefind-body>
       <header className="border-rule border-b pb-8">
         <p className="font-mono text-ink-soft text-xs">
-          <Link href={`/learn/${lesson.moduleSlug}/`}>
+          <Link href={`/${lesson.guideSlug}/${lesson.moduleSlug}/`}>
             {String(lesson.moduleNumber).padStart(2, '0')} · {lesson.module.title}
           </Link>
         </p>

@@ -3,24 +3,30 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getModule, modules } from '@/lib/content'
 
+// This route tree serves one guide. A second guide gets its own directory, which
+// keeps its URLs short and its static params independent.
+const GUIDE = 'hermes'
+
 export const dynamicParams = false
 
 export function generateStaticParams() {
-  return modules.map((mod) => ({ module: mod.slug }))
+  return modules
+    .filter((mod) => mod.guideSlug === GUIDE)
+    .map((mod) => ({ module: mod.slug }))
 }
 
 type Params = Promise<{ module: string }>
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { module: slug } = await params
-  const mod = getModule(slug)
+  const mod = getModule(GUIDE, slug)
   if (!mod) return {}
   return { title: mod.title, description: mod.summary }
 }
 
 export default async function ModulePage({ params }: { params: Params }) {
   const { module: slug } = await params
-  const mod = getModule(slug)
+  const mod = getModule(GUIDE, slug)
   if (!mod) notFound()
 
   return (
