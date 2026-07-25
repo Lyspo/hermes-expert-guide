@@ -1,0 +1,40 @@
+---
+title: What Hermes actually is
+description: >-
+  An agent that writes its own procedures, keeps a record across sessions, and
+  hands work to copies of itself. What that means mechanically, and what it does
+  not mean.
+order: 1
+duration: 8
+tracks:
+  newcomer: core
+  operator: core
+  architect: core
+prerequisites: []
+hermesVersion: v0.19.0
+updated: '2026-07-25'
+---
+
+Scaffold placeholder — written properly in the content phase from the sourced
+corpus in `research/`. What follows exercises the track-variant mechanism.
+
+<TrackCallout
+  newcomer="A skill is a recipe Hermes writes down for itself so it never has to work the same thing out twice."
+  operator="Skills are SKILL.md files under ~/.hermes/skills/, one directory each, following the agentskills.io spec."
+  architect="Agent-authored skills are content-scanned before acceptance; skills.write_approval gates writes behind review."
+/>
+
+<Depth min="operator">
+
+The background review that writes skills is triggered by an iteration counter,
+not a timer: `_skill_nudge_interval` defaults to 10 tool-loop iterations.
+
+</Depth>
+
+<ForTrack track="architect">
+
+The revision policy is a hardcoded editorial prompt that prefers patching an
+already-loaded skill over minting a new one — which is what makes the loop
+converge instead of proliferating files.
+
+</ForTrack>

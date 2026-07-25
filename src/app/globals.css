@@ -1,0 +1,112 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   Tokens. Values are provisional until the first build settles them; roles are
+   not. See design.md — each of the three functional colours may only appear
+   when it is carrying its meaning.
+   --------------------------------------------------------------------------- */
+
+@theme {
+  --color-paper: #e8e6de;
+  --color-paper-deep: #dcd9cf;
+  --color-rule: #b9bdc0;
+  --color-ink: #1e2a32;
+  --color-ink-soft: #4a5a63;
+  --color-annotation: #a8321e;
+  --color-stamp: #4b3a78;
+  --color-brass: #8a7a4e;
+  --color-plate: #14181b;
+  --color-plate-ink: #d8d4c8;
+
+  --font-display: 'Faculty Glyphic', 'Albertus MT', 'Optima', serif;
+  --font-body: ui-serif, Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+
+  /* The quadrille module. Every measurement is a multiple of this, which is
+     what makes the visible ruling proof of alignment rather than decoration. */
+  --spacing-quad: 0.75rem;
+
+  --ease-annotate: cubic-bezier(0, 0.55, 0.45, 1);
+  --ease-settle: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-arrive: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-scrub: cubic-bezier(0.87, 0, 0.13, 1);
+}
+
+/* The archival negative. Not a filtered inversion of the day palette — its own
+   committed values. The terminal plate deliberately does not flip: it is the one
+   element that was always dark. */
+:root[data-mode='negative'] {
+  --color-paper: #15191c;
+  --color-paper-deep: #101315;
+  --color-rule: #2f3a40;
+  --color-ink: #e2ded1;
+  --color-ink-soft: #9aa5ab;
+  --color-annotation: #d4614a;
+  --color-stamp: #9c8bcf;
+  --color-brass: #b09a63;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: var(--font-body);
+    text-underline-offset: 0.2em;
+  }
+
+  /* Focus is deliberate and always visible. */
+  :focus-visible {
+    outline: 2px solid var(--color-annotation);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--color-stamp);
+    color: var(--color-paper);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Track adaptivity.
+
+   Lessons render every track's variant into the static HTML. An inline script
+   sets data-track on <html> before first paint and CSS hides what does not
+   apply. With no track set — a crawler, a no-JS reader, a first visit — every
+   variant shows, each wearing its label. That default is the whole reason this
+   is CSS and not conditional rendering.
+   --------------------------------------------------------------------------- */
+
+:root[data-track='newcomer'] :is(.tk-operator, .tk-architect),
+:root[data-track='operator'] :is(.tk-newcomer, .tk-architect),
+:root[data-track='architect'] :is(.tk-newcomer, .tk-operator) {
+  display: none;
+}
+
+/* The "For architects" label only earns its place when variants sit side by
+   side. Once a track is chosen, the reader knows which track they are on. */
+:root[data-track] .tk-label {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:root[data-motion='reduced'] *,
+:root[data-motion='reduced'] *::before,
+:root[data-motion='reduced'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
