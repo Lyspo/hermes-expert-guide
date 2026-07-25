@@ -10,9 +10,8 @@ export const site = {
   author: {
     name: 'Théo Gandolphe',
     github: 'https://github.com/Lyspo',
-    // Filled in at the launch-polish pass.
-    linkedin: '',
-    website: '',
+    linkedin: 'https://www.linkedin.com/in/theogandolphe/',
+    website: 'https://theogandolphe.com/en/',
   },
   upstream: {
     repo: 'https://github.com/NousResearch/hermes-agent',
