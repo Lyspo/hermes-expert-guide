@@ -15,10 +15,139 @@ prerequisites:
   - hermes/04-tools-and-isolation/01-tools-and-toolsets
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Before you type anything, the model has already read something like fourteen thousand
+tokens.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+This lesson is what they are, in the order they arrive, and the horizontal line that
+runs through them. That line explains more of Hermes's design than any other single
+fact in this guide, and most of the module after this one is a consequence of it.
+
+<Viz
+  id="prompt"
+  caption="Five layers and a boundary. Everything above the line is read; only the block below it is rewritten. Almost every rule in this module falls out of that asymmetry."
+/>
+
+## The five layers
+
+**SOUL.md** occupies slot one — identity, tone, who the agent is everywhere. It is
+loaded only from the Hermes home directory and never from the working directory, which
+is a deliberate separation: identity travels with the agent, not with the repository
+you happen to be standing in.
+
+**One project context file.** Hermes checks for `.hermes.md`, then `AGENTS.md`, then
+`CLAUDE.md`, then `.cursorrules` — and **the first match wins**. Not merged, not
+concatenated. One file, assembled under a `# Project Context` header, capped at 20,000
+characters.
+
+**Memory**, as a frozen snapshot of two capped files. The injection carries its own
+budget in the header:
+
+<Transcript label="system prompt, memory block" fidelity="verbatim" source="Memory documentation, v0.19.0">
+{`MEMORY (your personal notes) [67% — 1,474/2,200 chars]`}
+</Transcript>
+
+Entries below it are separated by a section sign. The percentage is really there — the
+agent can see how full its own memory is.
+
+**The skill index**, at metadata only: every installed skill's name and description and
+nothing else, for roughly three thousand tokens however many you have. That is the
+entire standing cost of progressive disclosure.
+
+**Every tool schema.** Around seventy tools across twenty-eight toolsets, and a tool's
+definition ships whether or not it is used.
+
+## Three tiers, and why the order is fixed
+
+The prompt builder assembles in tiers: **stable**, then **context**, then **volatile**.
+
+The ordering is not organisational tidiness. Everything genuinely fixed goes first so
+it can be cached; anything that varies goes last, so that when it changes it
+invalidates as little as possible behind it.
+
+Prompt stability is published as a stated design principle rather than an
+implementation detail: the system prompt is unchanged mid-conversation except by
+explicit action.
+
+## The line
+
+Providers cache the stable prefix of a request. Send the same opening bytes again and
+you are billed a fraction for them.
+
+The ratio is the thing to remember: **a cached prefix is roughly ten times cheaper to
+read than to write.** Change one character near the top and the cache misses, the whole
+prefix is rewritten at full price, and it stays that way until something
+re-establishes it.
+
+<MarginNote>
+Caching is auto-enabled for Claude models on native Anthropic, OpenRouter and Nous
+Portal, and for xAI Grok via conversation id. The TTL is configurable at five minutes
+or one hour, with breakpoints on the system prompt and the skill blocks.
+</MarginNote>
+
+The project's own contributor notes call prompt caching **sacred**. That is unusually
+strong language for a performance concern, and it is warranted: this is not an
+optimisation the system prefers, it is a constraint the architecture is built around.
+
+## What follows from it
+
+Almost every surprising behaviour in this module is the line doing its job.
+
+**Memory is a snapshot, not a live view.** It is read once at session start. Something
+written to memory at turn forty is not visible to the agent until the next session,
+because re-injecting it would rewrite the prefix.
+
+**A skill installed mid-session does not appear.** Same reason — the index was
+assembled once.
+
+**The self-improvement review runs in a fork.** It replays a copy of the conversation
+rather than editing the running one, and it deliberately shares the parent's session id
+so that it lands on the same warm prefix.
+
+**Only one project file loads.** Merging four sources would produce a prompt whose
+content depends on directory contents that can change underneath you.
+
+<TrackCallout
+  newcomer="If a change you made does not seem to take effect, start a new session. Nothing is broken — the prompt was sealed when the session began."
+  operator="Treat mid-session mutation of the prompt as a bug rather than a missing feature. And when costing a deployment, the per-call floor is this diagram, not your message."
+  architect="Prompt stability is an auditable property: what the model was told at turn forty is what it was told at turn one, plus the conversation. That makes a session reconstructable from its start state, which is the precondition for any meaningful replay or incident review."
+/>
+
+## Measuring your own
+
+You do not have to estimate this. There is a command:
+
+<Command verified="v0.19.0" note="listed in the CLI reference">hermes prompt-size</Command>
+
+It takes `--platform` and `--json`, which makes it usable in a check rather than only at
+a prompt. Run it after installing a batch of skills, or after adding a large
+`AGENTS.md`, and you get a real number instead of a feeling.
+
+## The complaint, stated fairly
+
+A long-running issue on the project's tracker reports that 73% of each API call is
+fixed overhead — roughly 13.9 thousand tokens. It is among the most discussed issues in
+the repository, and it is a fair measurement of the diagram above.
+
+<Depth min="operator">
+
+The proposed remedy is on the tracker too: lazy, two-pass tool-schema loading, so that
+tool definitions would be disclosed on demand the way skills already are. It has not
+shipped.
+
+So the honest position is uncomfortable. The skills half of the problem is solved
+elegantly; the tools half is not solved at all; and the gap between them is most of
+your fixed cost. If that cost matters, the lever you have today is trimming toolsets —
+not skills, which are already nearly free.
+
+</Depth>
+
+## What to take from this
+
+Five layers, one line. Above it: identity, one project file, a memory snapshot, a skill
+index and every tool schema — read cheaply, and unchangeable for the life of the
+session. Below it: the conversation.
+
+When Hermes surprises you in the next four lessons, check the line first. It is usually
+the answer, and it is usually not a bug.

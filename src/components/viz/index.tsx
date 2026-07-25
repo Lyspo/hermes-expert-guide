@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { MemoryPlate } from './memory-plate'
 import { OrchestrationPlate } from './orchestration-plate'
+import { PromptPlate } from './prompt-plate'
 import { SkillLoopPlate } from './skill-loop-plate'
 
 /**
@@ -12,6 +13,7 @@ import { SkillLoopPlate } from './skill-loop-plate'
  * print and under reduced motion.
  */
 export const PLATES: Record<string, () => ReactNode> = {
+  prompt: PromptPlate,
   memory: MemoryPlate,
   'skill-loop': SkillLoopPlate,
   orchestration: OrchestrationPlate,
