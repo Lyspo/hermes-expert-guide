@@ -1613,3 +1613,14 @@ only.
 (`[o]nce [s]ession [a]lways [d]eny`), the `🗜️` compression badge in situ, and any
 SKILL.md diff. A second capture that triggers a dangerous command and fills a context
 window would close all three.
+
+**Amendment from the approval observation.** On a default install with no `approvals`
+section, a recursive delete on a host path executed with no prompt — documented
+behaviour under `approvals.mode: smart`, where an LLM risk-assesses and may
+auto-approve. The docs' "dangerous-pattern categories triggering approval" list is
+therefore misleading: those patterns trigger *assessment*, not a prompt. Only the
+hardline blocklist and user-written `approvals.deny` globs are deterministic.
+`04/04-approvals-in-depth` must lead with the observed no-prompt transcript rather than
+the documented option set, and `10/01-the-deployment-checklist` gains an explicit line
+item: set `approvals.mode: manual` if you require deterministic prompts. See
+`[09]` §11.

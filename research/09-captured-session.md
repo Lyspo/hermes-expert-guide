@@ -222,3 +222,86 @@ second `journey` run would now have exactly one node. Worth re-capturing.
 - No compression occurred; the context bar peaked at 7% of a 1M window. The `🗜️`
   badge remains uncaptured, so SIM-2's compression frames stay reconstructed.
 - The Braille emblem was captured at one terminal width; it may reflow.
+
+---
+
+## 11. The approval gate did not fire — and that is documented behaviour
+
+**Observed 2026-07-25**, default configuration, no `⚠ YOLO` badge in the status bar,
+no `approvals` section in `config.yaml` at all. Asked to "recursively delete
+/tmp/hermes-scratch", Hermes ran `rm -rf /tmp/hermes-scratch` and reported
+`Done. /tmp/hermes-scratch has been deleted.` No prompt appeared.
+
+This is **not a defect**, and it is **not a vulnerability**. It is the default mode
+working as specified. But it contradicts what a careful reader of the documentation
+would predict, and that gap is worth a lesson of its own.
+
+### Why it happened
+
+`[02]` §7 records `approvals.mode` with three values, default **`smart`**:
+
+> **smart** (default, LLM risk-assesses; low-risk auto-approved, clearly dangerous
+> auto-denied, uncertain escalates to user), **manual** (always prompts), **off**
+> (disables checks).
+
+So under the default, a model decides. `rm -rf` on a freshly created temp directory
+that the operator had just asked to delete was assessed low-risk and auto-approved. The
+terminal call took **5.0s** for an `rm` of one small file, which is consistent with an
+extra model round-trip for the assessment.
+
+### The misleading part, and it is the docs' fault not the software's
+
+`[02]` §7 also publishes a list headed *"Dangerous-pattern categories triggering
+approval"*, whose **first entry is "recursive delete"**. Read plainly, that says
+`rm -rf` triggers approval. What actually happens under the default is that recursive
+delete triggers *assessment*, and assessment may auto-approve silently.
+
+The distinction the documentation does not draw:
+
+| | Deterministic? | Under default `smart` |
+|---|---|---|
+| Hardline blocklist | Yes — no override, not even `--yolo` | Always refuses |
+| `approvals.deny` globs | Yes, if you write them | Applied before mode checks |
+| "Dangerous-pattern categories" | **No** | Fed to an LLM, which may auto-approve |
+
+Only the first two are guarantees. The pattern list is an input to a judgement.
+
+### Consequences for the curriculum
+
+1. **`04/04-approvals-in-depth` must lead with this.** The lesson was scoped to teach
+   the gate's option set. The more important fact is that on a default install the gate
+   often does not appear, and the reader should be shown the observed transcript rather
+   than the documented promise.
+2. **`10/01-the-deployment-checklist` gains a line item:** set `approvals.mode: manual`
+   explicitly if you require deterministic prompts. Relying on the default means
+   delegating the decision to a model.
+3. **The Architect spine gains its sharpest concrete answer.** "What can it do that I
+   have not authorised, and how would I know?" — under defaults, it can delete a
+   directory tree on your host after a model judged that acceptable, and the only
+   record is the tool-feed line. That is the honest answer, and it is more useful than
+   any amount of prose about approval flows.
+4. **SIM-5 (the approval gate) cannot be captured on this install without a config
+   change.** `approvals.mode: manual` would produce it. That is a deliberate,
+   reversible change to a security setting, so it is the operator's call.
+
+### The frame that *was* captured
+
+Worth keeping for `04/04` as the counter-example — what a dangerous command looks like
+when nothing asks:
+
+```
+● Recursively delete /tmp/hermes-scratch
+  Initializing agent...
+
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         rm -rf /tmp/hermes-scratch  5.0s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+   Done. /tmp/hermes-scratch has been deleted.
+
+⚕ <model> │ 21.2K/1M │ [░░░░░░░░░░] 2% │ 32s │ ⏲ 14s │ ✓ 0s
+```
+
+Note also: this frame confirms `⏲` for the frozen turn figure and `✓` for
+time-since-completion appearing together, and shows the reasoning panel used for a
+one-line confirmation.
