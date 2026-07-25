@@ -13,10 +13,133 @@ prerequisites:
   - hermes/05-what-it-knows/01-what-is-in-the-system-prompt
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+The first two layers of the system prompt are the two you write yourself, and the whole
+lesson is one distinction between them. The documentation states it as a rule of thumb,
+and it is a good one:
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+> `SOUL.md` if it should follow you everywhere. `AGENTS.md` if it belongs to a project.
+
+Get that boundary right and both files stay small and useful. Get it wrong and you end
+up with a personality file full of repository paths, applied to every project you own.
+
+## SOUL.md is identity, and it travels
+
+It lives at `~/.hermes/SOUL.md`, or under a custom `HERMES_HOME`. Hermes creates a
+starter file if none exists, and the documentation is explicit that **existing SOUL.md
+files are never overwritten** — so you can edit it freely without worrying about an
+update reverting you.
+
+It occupies slot one in the system prompt, and it is loaded **only from the Hermes home
+directory, never from the working directory**. That restriction is the mechanism behind
+"it follows you everywhere": no repository can supply an identity by dropping a file in
+its root.
+
+What belongs in it: tone, directness, how to handle uncertainty or disagreement,
+stylistic dos and don'ts. What does not: one-off project instructions, file paths, repo
+conventions, temporary workflow details.
+
+<MarginNote>
+If SOUL.md is empty, whitespace-only or unreadable, Hermes falls back to a built-in
+default identity rather than failing. So an accidentally truncated file degrades
+quietly — worth checking if your agent's manner changes for no obvious reason.
+</MarginNote>
+
+For a session-level change of manner without touching the file, there is an overlay:
+
+```text
+/personality concise
+/personality technical
+```
+
+Twelve are built in — including `teacher`, `noir`, `philosopher` and `pirate` — and you
+can define your own in `config.yaml` under `agent.personalities`.
+
+## The project file, and the race it wins
+
+Hermes checks four project context types, in priority order, and **the first match
+wins**:
+
+1. `.hermes.md` or `HERMES.md` — project instructions
+2. `AGENTS.md` — project conventions and architecture
+3. `CLAUDE.md` — Claude Code context files
+4. `.cursorrules` and `.cursor/rules/*.mdc` — Cursor conventions
+
+One of those loads. Not all four, not merged. If you have both an `AGENTS.md` and a
+`CLAUDE.md` in the same repository — which is common, since both are conventional —
+**only `AGENTS.md` is read**, and the other is silently not.
+
+<TrackCallout
+  newcomer="If you keep a CLAUDE.md and wonder why Hermes seems not to have read it, check whether an AGENTS.md exists alongside it. Only the first match loads."
+  operator="Worth an explicit decision per repository rather than an accident. Pick one file as the source of truth and delete or merge the others, because whichever loses the race is invisible rather than warned about."
+  architect="First-match-wins is a determinism property, not a limitation: the assembled prompt depends on one named file rather than on the union of whatever context files happen to be present. That is what makes the prefix reproducible."
+/>
+
+Each type also walks directories differently. `.hermes.md` walks up to the git root.
+`AGENTS.md` and `CLAUDE.md` are checked in the startup directory and then progressively
+in subdirectories as the agent navigates — up to five parent directories, each checked
+at most once per session. `.cursorrules` is current-directory only.
+
+## Truncation is visible
+
+A project file is capped at **20,000 characters** — roughly seven thousand tokens —
+configurable via `context_file_max_chars`. Beyond that it is truncated at a 70% head,
+20% tail, 10% marker ratio, and the marker says so in the prompt:
+
+<Transcript fidelity="verbatim" source="Context files documentation, v0.19.0">
+{`[...truncated AGENTS.md: kept 14000+4000 of 25000 chars. Use file tools to read the full file.]`}
+</Transcript>
+
+That is well designed: the agent is told what it is missing and how to go and get it,
+rather than being handed a silently shortened file. Files discovered in subdirectories
+get a tighter cap of 8,000 characters.
+
+<Depth min="operator">
+
+`context_file_max_chars` limits *injection*, not access. It has no effect on
+`read_file`, so a 60,000-character `AGENTS.md` is still fully readable on demand — it
+simply is not all in the prefix. That is usually the right trade, and it is another
+reason to keep the injected file short and point at the rest.
+
+Related, and useful: context references let you pull things in inline with an
+`@`-mention — files, folders, git diffs and URLs — which is the right way to handle
+"look at this specific thing" without putting it in a context file forever.
+
+</Depth>
+
+## The scan that can refuse either file
+
+Both SOUL.md and the project file are scanned for prompt injection before inclusion.
+Six categories are detected: instruction overrides ("ignore previous instructions"),
+deception ("do not tell the user"), system-prompt overrides, hidden HTML comments,
+invisible or zero-width Unicode, and credential-exfiltration attempts.
+
+A file that trips the scan is **not loaded**, and the prompt says so:
+
+<Transcript fidelity="verbatim" source="Context files documentation, v0.19.0">
+{`[BLOCKED: AGENTS.md contained potential prompt injection (prompt_injection). Content not loaded.]`}
+</Transcript>
+
+<ForTrack track="architect">
+
+This is the control that matters when a repository is not entirely yours. `AGENTS.md`
+is a file any contributor can edit, and it is injected into the system prompt of
+whoever runs an agent in that checkout — which is precisely the shape of an indirect
+prompt-injection vector.
+
+The scan is pattern-based, so treat it as a filter rather than a boundary. The
+durable control is reviewing changes to context files with the same seriousness as
+changes to CI configuration, because they have a comparable blast radius.
+
+</ForTrack>
+
+## What to take from this
+
+Two files, one boundary. Identity lives in `SOUL.md`, loaded from your home directory
+only, following you into every repository. Project knowledge lives in one project file
+per repository, chosen by a race you should decide deliberately rather than discover.
+
+Both are injected into the cached prefix, which means both are also sealed for the life
+of the session — and both can be refused by a scanner that will tell you, in the
+prompt, that it refused.

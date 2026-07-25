@@ -67,10 +67,12 @@ export, content pipeline. Full 51-lesson skeleton generated from the map by
 switcher, progress marks. Simulation engine with a pure timeline core and one flagship
 replay.
 
-**Written lessons: 15 of 51.** All of module 1; **all of module 6**; `03/01`; `05/03`;
-`08/01`. This line has been stale before, so count the files rather than trusting it.
+**Written lessons: 19 of 51.** Modules **1, 5 and 6 are complete**; plus `03/01` and
+`08/01`. Per module: 01 `4/4` · 02 `0/4` · 03 `1/4` · 04 `0/4` · 05 `5/5` · 06 `8/8` ·
+07 `0/6` · 08 `1/5` · 09 `0/5` · 10 `0/6`. This line has been stale before — the loop
+that regenerates it is in "Picking up" below.
 
-**Not built.** Remaining 36 lessons. SIM-4. Search, OG images, JSON-LD, sitemap. The
+**Not built.** Remaining 32 lessons. SIM-4. Search, OG images, JSON-LD, sitemap. The
 landing page — currently a labelled placeholder. Glossary and cheatsheets. Colophon.
 
 **Verification is thinner than it looks.** `pnpm verify` runs typecheck, lint, unit tests,
@@ -141,9 +143,23 @@ specifies six; VIZ-1, VIZ-5 and VIZ-6 were never in P7's scope and remain unbuil
 
 Next is **the remaining lessons, module by module**, against `research/curriculum-map.md`,
 which carries per-lesson sources and four amendment sections at the end recording what the
-captures changed. **Module 5 is the natural next one** — `05/01`
-(`what-is-in-the-system-prompt`) is the prerequisite two written module-6 lessons point
-at, and it also hosts VIZ-1, so writing it earns a plate.
+captures changed. To regenerate the counts above rather than trusting them:
+
+```bash
+for d in content/guides/hermes/*/; do n=$(ls $d*.mdx | wc -l); \
+  s=$(grep -l "^draft: true" $d*.mdx 2>/dev/null | wc -l); \
+  echo "$(basename $d): $((n-s))/$n"; done
+```
+
+**Module 4 is the natural next one.** `04/01-tools-and-toolsets` is the last unwritten
+prerequisite pointed at by a written lesson (`05/01`), and module 4 also carries the
+approval material the captures changed most — see the amendments in map §22, which say
+`04/04` must lead with the observed no-prompt transcript rather than the documented
+option set.
+
+Four of the map's six plates are built — VIZ-1 to VIZ-4. The two remaining are VIZ-5
+(`10/02`, secrets and egress) and VIZ-6 (`07/03`, the authorization chain); both sit in
+modules that are entirely unwritten, so they arrive with their hosts.
 
 Two things about module 6 worth not rediscovering:
 

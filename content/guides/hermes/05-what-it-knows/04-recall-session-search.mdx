@@ -13,10 +13,89 @@ prerequisites:
   - hermes/05-what-it-knows/03-memory-the-two-files
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Memory is 1,300 tokens. Everything else you have ever said to Hermes is in a database,
+and the agent can search it.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+This is the half of recall that gets least attention and answers the most questions.
+"How does it remember something from a month ago?" is not answered by a large memory —
+it is answered by a small memory plus a search tool.
+
+## What it is
+
+`~/.hermes/state.db`, a SQLite database holding every session, with an FTS5 full-text
+index over it. The agent queries it with a tool when it decides it needs something.
+
+Two properties matter more than the implementation:
+
+**It returns raw messages.** No summarisation. What comes back is what was actually
+said, which means it can be quoted rather than paraphrased, and there is no
+intermediate model to have gotten it wrong.
+
+**It is not in the prompt.** The index costs nothing per turn. It is consulted on
+demand, which is why recall can reach back indefinitely without the token bill growing.
+
+## The trade, stated plainly
+
+The documentation publishes the comparison, and it is worth internalising because the
+two mechanisms answer genuinely different questions:
+
+| | Persistent memory | Session search |
+|---|---|---|
+| Capacity | ~1,300 tokens | Unlimited |
+| Speed | Instant — already in the prompt | ~20 ms per query |
+| Good for | Always-available facts | Recalling a past conversation |
+| Curation | Manual, and capped | Automatic, and complete |
+
+Memory is what the agent *always knows*. Search is what it *can go and find out*.
+
+So: your name, your stack and your preferences belong in memory, because they are
+needed in every conversation and are small. The details of the migration you debugged
+in April belong nowhere — they are already in the database, and asking for them is a
+twenty-millisecond query.
+
+<TrackCallout
+  newcomer="You do not have to do anything for this. Every session is stored automatically, and the agent searches when it needs to. If it says it does not remember something, try asking it to search."
+  operator="This is the answer to memory pressure. If you find yourself wanting to write session detail into MEMORY.md to preserve it, you are duplicating something already indexed — and spending prompt budget to do it."
+  architect="An append-only local store of every conversation with full-text search is a meaningful data-retention fact in its own right. It is a single SQLite file, which makes both audit and deletion straightforward, and both worth having a policy about."
+/>
+
+## It used to be too slow to matter
+
+Worth knowing if you read anything about this from before mid-2026: `session_search`
+was made **4,500 times faster** in v0.15.0.
+
+That is the release-note figure, and it explains why older accounts treat session
+search as a curiosity while current ones treat it as the primary recall path. A
+twenty-millisecond query is something an agent can do speculatively; the thing it
+replaced was not.
+
+<Depth min="operator">
+
+Session storage also tracks lineage across compressions — a compressed session records
+its parent, so a long conversation that has been compressed several times remains
+traceable rather than becoming a set of unrelated rows. Sessions are isolated per
+platform, with atomic writes.
+
+The CLI surface is `hermes sessions list`, and `hermes insights` sits alongside it.
+
+</Depth>
+
+## The one thing to actually change
+
+If you have been curating memory carefully, stop curating so hard.
+
+The instinct to write a good summary of an important session into `MEMORY.md` is
+reasonable and mostly wrong: it spends a scarce, always-loaded resource on something a
+free, on-demand one already holds in full and unsummarised. Memory should hold the
+facts that must be true in *every* conversation. Everything else is a query away.
+
+## What to take from this
+
+Two recall mechanisms, and they are not tiers of the same thing. One is a small,
+curated, always-present set of facts. The other is a complete, unsummarised, searchable
+record that costs nothing until it is used.
+
+Knowing which question goes to which is most of what it takes to stop being surprised
+by what your agent does and does not remember.

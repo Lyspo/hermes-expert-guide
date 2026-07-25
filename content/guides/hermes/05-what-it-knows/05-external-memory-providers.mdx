@@ -13,10 +13,124 @@ prerequisites:
   - hermes/05-what-it-knows/03-memory-the-two-files
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+This lesson is marked skim on every track, and that is the recommendation rather than
+an accident of scheduling. External memory providers exist, they are pluggable, none is
+enabled by default, and most readers should finish this module without installing one.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+Here is what they are and how to decide.
+
+## They stand alongside, not instead
+
+An external provider **runs alongside** built-in memory rather than replacing it.
+`MEMORY.md` and `USER.md` keep working exactly as before; the provider adds tools the
+agent can call.
+
+Only one can be active at a time. The switch is a single config key:
+
+```yaml
+memory:
+  provider: honcho
+```
+
+or interactively, with `hermes memory setup`, `hermes memory status` and `hermes memory
+off`.
+
+<MarginNote>
+This is also the correction to the "three-layer memory" story from earlier in the
+module. The Honcho-style user modelling that phrase alludes to is one optional plugin —
+not a built-in layer, and not on unless you turn it on.
+</MarginNote>
+
+## How many there are, which is itself a question
+
+<Revised
+  was="Hermes ships eight external memory providers."
+  now="The memory page's comparison table lists eight; the providers page documents nine, with Memori described separately at the end."
+  why="The two documentation pages disagree, and neither is obviously more recent"
+  when="2026-07-25"
+/>
+
+The guide reports the conflict rather than picking, because a reader deciding whether
+to depend on one of these needs to know that the documentation is inconsistent about
+what exists. If you are choosing, check the providers page rather than the memory page,
+since it is the more detailed of the two.
+
+## What they actually differ on
+
+The full table is in the documentation. The distinguishing features are the part worth
+reading, because they are genuinely different ideas rather than nine implementations of
+one:
+
+| Provider | Storage | Cost | The idea |
+|---|---|---|---|
+| Honcho | Cloud | Paid | Dialectic user modelling, session-scoped context |
+| OpenViking | Self-hosted | Free | Tiered loading — ~100 tokens, then ~2k, then full |
+| Mem0 | Cloud or self-hosted | Free/paid | Server-side LLM extraction |
+| Hindsight | Cloud or local | Free/paid | Knowledge graph with cross-memory synthesis |
+| Holographic | Local SQLite | Free | Vector algebra with trust scoring |
+| RetainDB | Cloud | $20/mo | Delta compression |
+| ByteRover | Local or cloud | Free/paid | Extracts insights *before* compression discards them |
+| Supermemory | Cloud or self-hosted | Free/paid | Context fencing, full-session graph ingest |
+| Memori | Cloud | Paid | Tool-aware memory and structured recall |
+
+Two are worth singling out for the shape of their ideas rather than as
+recommendations. **OpenViking**'s tiered loading is progressive disclosure applied to
+memory, which is the same good idea the skill index uses. And **ByteRover** targets a
+real gap: insights are extracted before context compression throws the conversation
+away, which is a problem the built-in system genuinely has.
+
+## The measured experience
+
+One published account is worth more than the feature table, because it is the only
+number anyone reports.
+
+A reader who set up Honcho measured **a ten-second registration delay and a
+twelve-second session-retrieval delay**, with limited perceived benefit — and reported
+that Honcho remained active in the logs after attempts to disable it via the CLI.
+
+<Depth min="operator">
+
+That is one person's install on one machine, and it is not a benchmark. But it is the
+only latency figure in the public record, and the direction it points is worth taking
+seriously: these are network round-trips inserted into a path that previously had none.
+Measure before you commit, and check `hermes memory status` after disabling one rather
+than assuming.
+
+</Depth>
+
+## The contested advice
+
+A widely read community write-up recommends installing a memory provider immediately,
+as one of the first things you do.
+
+That is presented here as an opinion in circulation rather than as guidance, because it
+does not follow from anything in the documentation and it conflicts with the measured
+account above. The built-in system — two capped files plus a complete full-text index
+over every session — is what every reader will actually run, and it is enough for most
+work.
+
+<ForTrack track="architect">
+
+There is a further reason for caution that has nothing to do with quality. Most of
+these providers are cloud services, and enabling one moves the substance of your
+conversations to a third party on a schedule you do not control. The built-in system is
+two markdown files and a SQLite database on your own disk.
+
+If you have a data-residency position, that is the decision, and it is settled before
+any of the feature differences matter. Around seventeen further community-built
+providers exist beyond the documented nine, which is a fair signal of how unsettled
+this layer still is.
+
+</ForTrack>
+
+## What to take from this
+
+Nine documented providers — or eight, depending which page you read — one active at a
+time, none by default, all running alongside the built-in system rather than replacing
+it.
+
+The honest default is to not install one. Revisit if you hit a specific wall the
+built-in system cannot clear: cross-session synthesis, a knowledge graph, or capturing
+insight before compression. Those are real capabilities. They are not a starting point.
