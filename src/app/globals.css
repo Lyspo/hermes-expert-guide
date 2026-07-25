@@ -103,6 +103,47 @@
 }
 
 /* ---------------------------------------------------------------------------
+   View transitions.
+
+   Two lessons are two views of one document, so the chrome that is genuinely the
+   same across them is named and carried rather than torn down and rebuilt. Only
+   three things qualify: the header, the footer, and the margin rail. The article
+   itself is deliberately not named — it is the thing that changed, and crossfading
+   one lesson's prose into another's reads as a smear rather than as continuity.
+
+   Entirely optional. A browser without the API navigates as it always did, and the
+   reduced-motion rule below collapses the transition to an instant swap.
+   --------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 220ms;
+    animation-timing-function: var(--ease-arrive);
+  }
+
+  .vt-header {
+    view-transition-name: site-header;
+  }
+
+  .vt-rail {
+    view-transition-name: lesson-rail;
+  }
+
+  .vt-footer {
+    view-transition-name: site-footer;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
    Track adaptivity.
 
    Lessons render every track's variant into the static HTML. An inline script

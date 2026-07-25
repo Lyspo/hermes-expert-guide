@@ -11,7 +11,7 @@ import { site } from '@/lib/site'
  */
 export function SiteHeader() {
   return (
-    <header className="plane border-b border-ice-faint">
+    <header className="vt-header plane border-b border-ice-faint">
       <nav
         aria-label="Site"
         className="mx-auto flex h-16 max-w-[84rem] items-center justify-between gap-6 px-6 lg:px-[calc(var(--step)*3)]"

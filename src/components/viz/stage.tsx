@@ -209,7 +209,10 @@ export function VizEdge({
     // past the stop it is only where the arrow *would* have gone, so it drops to a
     // ghost. Without that fall-off the line reads as a path that got through.
     return (
-      <g>
+      // The beat belongs on both return paths. It was on the second one only, so a
+      // broken edge — which is exactly the kind a sequence wants to reveal late —
+      // ignored its beat and was drawn from the first frame.
+      <g {...beatOf({ beat })}>
         <line
           x1={x1}
           y1={y1}

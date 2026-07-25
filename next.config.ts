@@ -20,6 +20,21 @@ const nextConfig: NextConfig = {
   // evidence than a generated type and cannot go stale.
   //
   // Next 16 no longer runs ESLint during `next build`; linting is its own step.
+
+  experimental: {
+    /**
+     * View Transitions, as the progressive enhancement the plan specified.
+     *
+     * Moving between two lessons is moving between two views of one document, and
+     * a hard swap makes it two unrelated pages. Where the browser supports it, the
+     * shared chrome persists across the navigation and the title carries over.
+     *
+     * Safe to have on: browsers without the API navigate exactly as before, and
+     * `prefers-reduced-motion` collapses the transition to an instant swap through
+     * the rule in globals.css. Nothing depends on it having run.
+     */
+    viewTransition: true,
+  },
 }
 
 export default nextConfig

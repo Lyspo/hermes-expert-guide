@@ -77,6 +77,8 @@ The named vocabulary. Nothing outside this list ships without being added here. 
 | `rewrite` | A line strikes itself through; the replacement resolves character by character above it | `cubic-bezier(.16, 1, .3, 1)` | 300ms strike, then ~1.2s resolve |
 | `parallax` | Pointer and scroll displace planes at different rates | damped follow, ~0.045 | continuous |
 | `resolve` | Content arrives from depth: scale and opacity only, never position | `cubic-bezier(.16, 1, .3, 1)` | 480ms |
+| `draw` | A plate's rules and arrows ink along their own length, in the direction of the claim. Strokes only — never text | `power2.out` | 700ms per beat |
+| `strike` | A 2px signal bar scales across a superseded line from its left edge. The drawn half of `rewrite`, for where `text-decoration` cannot animate | `power2.inOut` | 320ms |
 | `settle` | Micro-interaction feedback, with a small tactile press on `:active` | `cubic-bezier(.25, 1, .5, 1)` | 240ms |
 
 **Rules.** Transform and opacity only — never `top`, `left`, `width`, or `height`. No `window.addEventListener('scroll')`; scroll comes from `useScroll`, `ScrollTrigger`, `IntersectionObserver`, or a CSS scroll timeline. No `requestAnimationFrame` loop touches React state. Text resolves by line or word except for short display moments, where character-by-character is the point. The division of labour is lint-enforced: Motion animates components, GSAP animates scroll scenes and cannot be imported elsewhere.

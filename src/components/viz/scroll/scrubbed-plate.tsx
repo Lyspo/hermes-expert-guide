@@ -55,18 +55,37 @@ export function ScrubbedPlate({
     let cancelled = false
 
     void (async () => {
-      const [{ gsap }, { ScrollTrigger }] = await Promise.all([
+      const [{ gsap }, { ScrollTrigger }, { DrawSVGPlugin }] = await Promise.all([
         import('gsap'),
         import('gsap/ScrollTrigger'),
+        import('gsap/DrawSVGPlugin'),
       ])
       if (cancelled) return
-      gsap.registerPlugin(ScrollTrigger)
+      gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin)
 
       const groups = beats.map((_, index) =>
         [...stageElement.querySelectorAll(`[data-beat="${index + 1}"]`)].filter(
           (node): node is SVGElement => node instanceof SVGElement,
         ),
       )
+      /**
+       * The strokes of each beat, so the plate inks itself rather than fading in.
+       *
+       * A diagram that fades up arrives as an image of a mechanism. A diagram whose
+       * rules and arrows draw along their own length arrives as the mechanism being
+       * described — the pen is following the same path the reader's eye does, and
+       * the direction of the stroke is the direction of the claim. `02-type-motion-
+       * motifs.md` specified this and nothing had used it.
+       *
+       * Text is deliberately excluded: a label that writes itself is a stunt, and it
+       * makes a plate unreadable exactly while a reader is trying to read it.
+       */
+      const strokesFor = (group: SVGElement[]) =>
+        group.flatMap((node) => [
+          ...(node.matches('line, polyline, path, rect, circle') ? [node] : []),
+          ...node.querySelectorAll<SVGElement>('line, polyline, path, rect, circle'),
+        ])
+
       // Only now, once the scene is certain to run, is anything hidden.
       setActive(true)
       for (const group of groups) gsap.set(group, { opacity: 0 })
@@ -90,6 +109,17 @@ export function ScrubbedPlate({
       // worse than no label.
       groups.forEach((group, index) => {
         if (group.length === 0) return
+
+        const strokes = strokesFor(group)
+        if (strokes.length > 0) {
+          gsap.set(strokes, { drawSVG: '0%' })
+          timeline.to(
+            strokes,
+            { drawSVG: '100%', duration: 0.7, ease: 'power2.out', stagger: 0.05 },
+            index,
+          )
+        }
+
         timeline.to(
           group,
           // The stagger is load-bearing on the first beat: its ten elements are the
@@ -107,7 +137,10 @@ export function ScrubbedPlate({
         timeline.scrollTrigger?.kill()
         timeline.kill()
         // Leave the plate complete, whatever the scroll position was at unmount.
-        for (const group of groups) gsap.set(group, { clearProps: 'opacity' })
+        for (const group of groups) {
+          gsap.set(group, { clearProps: 'opacity' })
+          gsap.set(strokesFor(group), { clearProps: 'strokeDasharray,strokeDashoffset' })
+        }
       }
     })()
 

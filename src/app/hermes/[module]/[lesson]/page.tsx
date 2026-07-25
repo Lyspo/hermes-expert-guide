@@ -83,7 +83,7 @@ export default async function LessonPage({ params }: { params: Params }) {
          * inside this lesson, where this lesson sits in the course, and what it was
          * checked against. Sticky, so all of that stays with them.
          */
-        <div className="lg:sticky lg:top-[calc(var(--step)*3)] lg:max-h-[calc(100dvh-var(--step)*5)] lg:overflow-y-auto">
+        <div className="vt-rail lg:sticky lg:top-[calc(var(--step)*3)] lg:max-h-[calc(100dvh-var(--step)*5)] lg:overflow-y-auto">
           <SectionIndex headings={lesson.headings} />
 
           <div className="mt-[var(--step)] border-t border-ice-faint pt-[calc(var(--step)*0.6)]">

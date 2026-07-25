@@ -16,7 +16,7 @@ export function SiteFooter() {
   ].filter((link) => link.href.length > 0)
 
   return (
-    <footer className="border-ice-faint mt-24 border-t">
+    <footer className="vt-footer border-ice-faint mt-24 border-t">
       <div className="text-ice-dim mx-auto max-w-3xl px-6 py-10 text-sm">
         <p className="max-w-[60ch]">
           {site.disclaimer} Hermes Agent is{' '}

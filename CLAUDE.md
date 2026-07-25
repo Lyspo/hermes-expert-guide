@@ -78,6 +78,29 @@ exists to resolve, at `/glossary/`. **Cheatsheets** — 9 sheets at `/cheatsheet
 are load-bearing rather than supplementary: the lessons are short *because* the
 reference lives there.
 
+**The experience layer, built 2026-07-26.** The plan's P2 required a scroll narrative
+and a screenshot-critique-fix loop on every UI phase; neither had happened, and the site
+was well-set typography with no motion at all. Four things now exist, and each narrates
+real content rather than decorating:
+
+- **The lesson margin does work.** It held four facts and several hundred pixels of
+  nothing. It now carries a section index — server-rendered from headings extracted in
+  `content-collections.ts`, so it is a real second route through the document without
+  JavaScript, with the current section marked as you read — plus the lesson's place taken
+  from the prerequisite graph rather than a counter ("comes after 8 lessons · built on by
+  40 later lessons"). Sections open with a hairline and real scale, so a lesson has a
+  visible shape. Below `lg` the load-bearing parts fall into the flow.
+- **The landing scroll narrative** (`landing/corrections-scene.tsx`). The four claims the
+  research contradicts are struck and corrected one at a time as the reader descends.
+  Desktop and motion only; otherwise it is the plain list it already was.
+- **Plates ink themselves** via `DrawSVGPlugin` on the beat groups. Strokes only — a label
+  that writes itself is unreadable exactly while someone is trying to read it.
+- **View Transitions** behind `experimental.viewTransition`, naming only the header,
+  footer and rail. The article is deliberately unnamed: crossfading one lesson's prose
+  into another's is a smear, not continuity.
+
+Cost: +0.4 kB to a lesson, +0.6 kB to the landing. GSAP stays lazy.
+
 **There is no ambient background canvas, deliberately.** One existed behind every page
 and was removed on 2026-07-26 by the author's decision, with `decisions.md` 009 and
 `design.md` amended rather than left contradicting the build. It drew clustered noise
