@@ -56,13 +56,15 @@ Both modes are full commitments with their own token values, not one palette wit
 
 ## Type
 
-Provisional pending the final pass of type research; the display and code faces are settled.
+Every face is openly licensed, and every one is here because of what it sets rather than what it evokes. The full evaluation, including the faces rejected and why, is in `research/design/02-type-motion-motifs.md`.
 
 | Role | Face | Why this one |
 |---|---|---|
-| Display | **Faculty Glyphic** (OFL) | A 2024 tribute to Wolpe's Albertus — glyphic, incised, flared terminals, upright only. It reads as an engraved instrument plate or a stamped institutional header, which are objects this world actually contains. Single weight, which is honest: real cut letterforms have no bold |
-| Code, data, measurement | **JetBrains Mono** (OFL) | Chosen for character disambiguation (`0`/`O`, `1`/`l`/`I`), because a misread character in a lesson is a comprehension failure and not merely an aesthetic one |
-| Body, small technical text | *pending* | Must sit in an institutional-record register. A warm literary serif on this paper would land the whole page in the cream-plus-serif convergence look |
+| Display | **Faculty Glyphic** (OFL) | A 2024 tribute to Wolpe's Albertus — glyphic, incised, flared terminals, upright only. Albertus lived on engraved bronze plates, Faber jackets, and City of London signage, which is close to a literal match for this world's brass tabs and stamped headers. Single weight, which is honest: cut letterforms have no bold |
+| Lesson body | **Bitter** (OFL, Huerta Tipográfica) | A Clarendon-genre slab — the one serif classification with a direct nineteenth-century lineage to legal and official documents. It replaces the literary humanist serif that was the obvious first reach, because that warmth on pale paper is precisely the cream-plus-serif convergence risk |
+| Dense technical text | **Public Sans** (OFL, USWDS) | Commissioned for United States government documents. In a world made of official records that is earned rather than borrowed — it is the register, not a reference to it |
+| Tightest labels | **Archivo Narrow** (OFL) | Index tabs and table headers, where Public Sans runs too wide |
+| Code, data, measurement | **JetBrains Mono** (OFL) | Chosen for character disambiguation (`0`/`O`, `1`/`l`/`I`): a misread character in a lesson is a comprehension failure, not an aesthetic one. Its home is the dark terminal plate, which is the most literal possible case of content that genuinely *is* code |
 
 **The monospace rule.** Mono sets real code, real terminal output, real timestamps, versions, durations, and measurements. It is never a costume for "technical" applied to arbitrary labels, chips, or eyebrows. This constraint is not decorative modesty — it is what keeps the mono meaningful when it does appear.
 
@@ -101,9 +103,11 @@ The division of labour is enforced by lint: Motion animates components, GSAP ani
 
 ## Texture
 
-Provisional, pending research — with a standing bias toward restraint.
+**The default is no surface texture at all.** The world is carried by structure and palette — the grid, the page furniture, the ink relationships. That is the decision, not a placeholder for a texture pass later.
 
-`feTurbulence` grain is explicitly out: it reads as amateur, and it is the reflex reach for "this needs texture." The working assumption is that this world is carried by **structure and palette** — the grid, the furniture, the ink relationships — and that substrate texture, if any, is a real scanned paper tile used at low opacity on a pseudo-element, never touching content or the accessibility tree. Press impression and stamp irregularity are worth one careful implementation each; nothing else gets texture.
+Two narrow exceptions, each requiring a reason at the point of use: a real photographed paper tile at very low opacity where paper-on-paper is literally the point (behind a tipped-in specimen), applied to a pseudo-element so it never touches content or the accessibility tree; and one careful stamp-impression treatment, since uneven ink coverage is what makes a stamp read as an impression rather than a sticker.
+
+`feTurbulence` is out. It reads as amateur, and it is the reflex reach whenever something "needs texture." Note also that the common rough- and torn-edge techniques are themselves turbulence-based, so the honest way to get an irregular edge here is a **hand-authored `clip-path` with deliberately chosen vertices** — designed imperfection rather than simulated noise. Randomness is not craft.
 
 ## The refusals
 

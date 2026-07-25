@@ -18,9 +18,12 @@
   --color-plate: #14181b;
   --color-plate-ink: #d8d4c8;
 
-  --font-display: 'Faculty Glyphic', 'Albertus MT', 'Optima', serif;
-  --font-body: ui-serif, Georgia, serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+  /* Loaded via next/font in the root layout; see design.md for why each face
+     is here. Fallbacks are chosen for metric proximity, not resemblance. */
+  --font-display: var(--font-faculty), 'Albertus MT', Optima, serif;
+  --font-body: var(--font-bitter), 'Bookman Old Style', Georgia, serif;
+  --font-ui: var(--font-public-sans), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, 'SF Mono', monospace;
 
   /* The quadrille module. Every measurement is a multiple of this, which is
      what makes the visible ruling proof of alignment rather than decoration. */

@@ -57,7 +57,12 @@ export function TrackCallout(props: Partial<Record<Track, string>>) {
         return (
           <aside
             key={track}
-            className={`border-annotation my-6 border-l pl-4 ${hidden
+            // No coloured side stripe: three stacked red-ruled asides are the
+            // banned side-stripe pattern, and the annotation colour may only
+            // appear where it means correction or attention. The label carries
+            // the distinction instead. This becomes a true margin note once the
+            // lesson layout has a margin to put it in.
+            className={`border-rule my-6 border-l pl-4 ${hidden
               .map((candidate) => `tk-${candidate}`)
               .join(' ')}`}
           >
