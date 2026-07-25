@@ -1,5 +1,5 @@
 ---
-title: 'Six places the agent''s commands can run'
+title: "Six places the agent's commands can run"
 description: >-
   Local, Docker, SSH, Singularity, Modal, Daytona — what each isolates, what
   it costs, and the check that four of them skip.
@@ -14,10 +14,152 @@ prerequisites:
   - hermes/02-standing-it-up/04-blast-radius-before-you-continue
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+One config key decides where every command the agent runs actually lands:
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+```yaml
+terminal:
+  backend: local   # or docker, ssh, singularity, modal, daytona
+```
+
+Six choices. They differ in what they isolate, which is expected — and in one thing
+that is not expected at all, and is the most consequential asymmetry in Hermes's
+security model.
+
+## The table, including the column people miss
+
+| Backend | Isolation | Dangerous-command check | Best for |
+|---|---|---|---|
+| `local` | None | **Yes** | Development, trusted users |
+| `ssh` | Remote machine | **Yes** | A separate server |
+| `docker` | Container | **Skipped** | Production gateway |
+| `singularity` | Container | **Skipped** | HPC environments |
+| `modal` | Cloud sandbox | **Skipped** | Scalable cloud isolation |
+| `daytona` | Cloud sandbox | **Skipped** | Persistent cloud workspaces |
+
+Read the third column again.
+
+**On four of the six backends, the dangerous-command check does not run.** Not
+"relaxed" — skipped. The isolated backends skip the guard stack entirely, and your own
+`approvals.deny` rules are only enforced on host-reaching backends: local, SSH, and
+Docker with a host mount.
+
+## Why that is defensible, and where it stops being so
+
+The reasoning is coherent. The approval gate exists to protect the host; inside a
+container with no host mount there is no host to protect, so prompting you about
+`rm -rf` in a disposable sandbox is noise that trains you to approve without reading.
+
+It stops being defensible the moment the container is not actually disposable. Mount
+your working directory into it, or set it persistent, and you have a backend that
+reaches real files with no approval gate in front of it — the strictest-looking
+configuration in the table producing the weakest guarantee.
+
+<TrackCallout
+  newcomer="If you are running locally and you see approval prompts, that is the system working. Switching to Docker for safety would remove them, which is the opposite of what most people expect."
+  operator="Decide this per deployment and write it down. docker + docker_mount_cwd_to_workspace is the combination to be careful with: it looks isolated and it reaches your files, with no dangerous-command check in the path."
+  architect="This is the single asymmetry to raise in a review. Isolation and approval are alternative controls here, not layered ones, and choosing the container backend silently trades one for the other. If a deployment needs both, it needs an unmounted container plus an explicitly configured deny list, and the deny list will not be enforced."
+/>
+
+## What Docker actually gives you
+
+The flags are applied to every container, and they are a genuinely strong default:
+
+```text
+--cap-drop ALL
+--cap-add DAC_OVERRIDE,CHOWN,FOWNER
+--security-opt no-new-privileges
+--pids-limit 256
+--tmpfs /tmp:rw,nosuid,size=512m
+--tmpfs /var/tmp:rw,noexec,nosuid,size=256m
+```
+
+Capabilities dropped to almost nothing, no privilege escalation, a process cap, and
+`noexec` on the secondary temp mount. Plus a read-only root filesystem and full
+namespace isolation.
+
+```yaml
+terminal:
+  backend: docker
+  docker_image: python:3.11-slim
+  container_cpu: 1
+  container_memory: 5120
+  container_disk: 51200
+  container_persistent: true
+```
+
+<Depth min="operator">
+
+Several behaviours worth knowing before you rely on this.
+
+**It is one container, not one per call.** Docker starts a single long-lived container
+shared across the whole process, so package installs persist between calls — convenient,
+and it means state accumulates. Parallel subagents share that one container too.
+
+**`container_persistent: true`** keeps changes across restarts, which converts the
+sandbox into something closer to a machine.
+
+**`docker_network: false`** is a genuine air-gap, and toggling it rebuilds the
+container.
+
+**`docker_forward_env` is empty by default**, which is the right default: no host
+environment variables reach the container unless you name them.
+
+**`docker_run_as_host_user`** and **`docker_mount_cwd_to_workspace`** are the two
+convenience switches that erode the boundary. Each is reasonable alone and both together
+give you a container that runs as you, in your files.
+
+</Depth>
+
+## The other four, briefly
+
+**SSH** moves execution to a separate machine and keeps the dangerous-command check,
+which makes it the option that adds isolation without removing a control. Credentials
+belong in the environment file rather than `config.yaml`:
+
+```text
+TERMINAL_SSH_HOST=my-server.example.com
+TERMINAL_SSH_USER=myuser
+TERMINAL_SSH_KEY=~/.ssh/id_rsa
+```
+
+**Singularity** is the same idea as Docker for HPC environments where Docker is not
+available.
+
+**Modal** and **Daytona** are cloud sandboxes — serverless and persistent respectively,
+both with hibernate-on-idle. They also introduce a consideration none of the others do:
+the agent's working files exist on a third party's infrastructure. Remote backends sync
+files back to the host on defined triggers, including session close and reset.
+
+## Choosing
+
+The decision reduces to two questions, in order.
+
+**Does the agent need to touch real files on this machine?** If yes, you want `local`
+or `ssh`, and you keep the approval gate. If no, a container is genuinely better and the
+missing gate costs you nothing.
+
+**Is the container reaching real files anyway?** If you have mounted the working
+directory, the answer to the first question was actually yes, and you have chosen the
+configuration with neither property. That is the case to avoid.
+
+<ForTrack track="architect">
+
+For a production gateway serving untrusted or semi-trusted users, the documented
+recommendation is the container backend, and it is right — but it should be an
+*unmounted* container with `docker_network` considered, `docker_forward_env` left
+empty, and the acceptance recorded that command-level approval is not part of that
+configuration. Isolation is the control; do not also claim the gate.
+
+</ForTrack>
+
+## What to take from this
+
+Six backends, one line of config, and a column in the table that changes what the rest
+of this module means. Two backends check dangerous commands and four do not, so the
+choice of backend is not only about isolation — it silently selects which of Hermes's
+two safety mechanisms you are relying on.
+
+The next lesson is that gate in detail, including what a real install did when nobody
+was asked.

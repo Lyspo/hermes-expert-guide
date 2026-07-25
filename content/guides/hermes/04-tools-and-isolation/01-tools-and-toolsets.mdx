@@ -14,10 +14,137 @@ prerequisites:
   - hermes/03-running-a-session/04-configuration-you-will-actually-touch
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+The tool catalogue is small on purpose, and knowing why is more useful than memorising
+it. Every core tool's schema is sent on every API call, for the life of the session,
+whether it is used or not — so a tool is not free because it went unused, and the core
+is a narrow waist by design.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+This lesson is what is in that waist, and how to make it narrower.
+
+## The catalogue
+
+Around seventy registered tools across roughly twenty-eight toolsets. By category:
+
+| Category | Tools |
+|---|---|
+| Web | `web_search`, `web_extract` |
+| X search | `x_search` — off by default, needs xAI credentials |
+| Terminal and files | `terminal`, `process`, `read_file`, `patch` |
+| Browser | `browser_navigate`, `browser_snapshot`, `browser_vision` |
+| Media | `vision_analyze`, `image_generate`, `text_to_speech` |
+| Orchestration | `todo`, `clarify`, `execute_code`, `delegate_task` |
+| Memory and recall | `memory`, `session_search` |
+| Automation | `cronjob` |
+| Integrations | Home Assistant tools, plus any MCP server tools |
+
+That is a short list for a product this capable, and the shortness is the architecture
+rather than an omission.
+
+<Command verified="v0.19.0" note="listed in the tools documentation">hermes tools</Command>
+
+Run without arguments it lists what is available and lets you configure per platform
+interactively — which is the honest way to answer "what can this thing actually do on
+my machine right now."
+
+## Toolsets are the unit you actually control
+
+You do not enable and disable tools one at a time. You do it by toolset, and there are
+twenty-three named ones:
+
+`web` · `search` · `terminal` · `file` · `browser` · `vision` · `image_gen` · `skills` ·
+`tts` · `todo` · `memory` · `session_search` · `cronjob` · `code_execution` ·
+`delegation` · `clarify` · `homeassistant` · `messaging` · `spotify` · `discord` ·
+`discord_admin` · `debugging` · `safe`
+
+For a single session, restrict at launch:
+
+<Command verified="v0.19.0" note="listed in the tools documentation">hermes chat --toolsets "web,terminal"</Command>
+
+For a standing restriction, `agent.disabled_toolsets` in `config.yaml`:
+
+```yaml
+agent:
+  disabled_toolsets: [memory, web]
+```
+
+<MarginNote>
+There are also platform presets — `hermes-cli` and `hermes-telegram` — which is the
+right granularity for "the terminal can do more than the chat bot."
+</MarginNote>
+
+<Depth min="operator">
+
+The ordering rule matters and is easy to get wrong: `agent.disabled_toolsets` is
+applied **after** per-platform configuration. So it is a floor rather than a default —
+a toolset disabled globally cannot be re-enabled by a platform preset, but the reverse
+is not true.
+
+Resolution itself is straightforward: if an enabled list is given, only those resolve;
+if a disabled list is given, everything resolves and those are subtracted; if neither,
+everything is included. Composite toolsets expand during that resolution.
+
+</Depth>
+
+## The detail that prevents a whole class of confusion
+
+After toolsets are resolved, the schemas for `execute_code` and `browser_navigate` are
+**dynamically patched** so that they only reference tools that survived the filter.
+
+The stated reason is worth quoting because it names a failure mode people otherwise
+spend an afternoon debugging: it "prevents model hallucination of unavailable tools."
+
+Without that patch, an agent whose `web` toolset was disabled would still see
+`execute_code` describing web helpers, and would confidently try to call them. With it,
+the model's picture of its own capability matches reality.
+
+## Why there are so few
+
+The project publishes an explicit preference order for adding capability, and new core
+tools sit at the bottom:
+
+1. Extend code that already exists
+2. A CLI command plus a skill
+3. A service-gated tool
+4. A plugin
+5. An MCP server
+6. A new core tool
+
+Six rungs, and the one most people reach for first is last. The reason is the one from
+the top of this lesson: a core tool taxes every call in every session forever, while a
+skill costs a line in an index until something loads it.
+
+<TrackCallout
+  newcomer="You do not need to configure any of this to start. It becomes useful the first time you want an agent that cannot touch the web, or cannot touch your files."
+  operator="Toolsets are your cheapest lever on both cost and blast radius, and they are the same lever. Disabling a toolset removes its schemas from every call and removes the capability at once."
+  architect="This is the enumeration surface. Because everything model-visible passes through one registry, 'what can this agent do' is a bounded question with a checkable answer — and because the ladder pushes capability outward, most of it arrives as inspectable skills and separately governable MCP processes rather than inside the binary."
+/>
+
+## Where it comes from, briefly
+
+Tools self-register at import time into a single registry. Discovery scans the tools
+directory by parsing the source for top-level registration calls, then imports what it
+finds; MCP server tools and plugin tools are registered afterwards.
+
+One consequence worth knowing: a name collision across toolsets logs a warning and
+**the later registration wins**. If you have installed something that shadows a
+built-in tool name, that is where the behaviour goes.
+
+<ForTrack track="architect">
+
+Each tool can declare a check function that decides availability, run once when the
+model schema is built. An exception inside that check is treated as *unavailable* —
+fail-safe rather than fail-open, which is the correct direction and worth confirming
+when you review a third-party tool.
+
+</ForTrack>
+
+## What to take from this
+
+Seventy tools, twenty-three toolsets, one lever. Shrink by toolset, not by tool.
+Restrict per session with `--toolsets`, per deployment with `agent.disabled_toolsets`,
+and remember that the global list wins over platform presets.
+
+The next lesson narrows this further, to the one tool that actually reaches your
+machine.

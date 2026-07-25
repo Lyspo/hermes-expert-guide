@@ -67,13 +67,13 @@ export, content pipeline. Full 51-lesson skeleton generated from the map by
 switcher, progress marks. Simulation engine with a pure timeline core and one flagship
 replay.
 
-**Written lessons: 19 of 51.** Modules **1, 5 and 6 are complete**; plus `03/01` and
-`08/01`. Per module: 01 `4/4` · 02 `0/4` · 03 `1/4` · 04 `0/4` · 05 `5/5` · 06 `8/8` ·
+**Written lessons: 23 of 51.** Modules **1, 4, 5 and 6 are complete**; plus `03/01` and
+`08/01`. Per module: 01 `4/4` · 02 `0/4` · 03 `1/4` · 04 `4/4` · 05 `5/5` · 06 `8/8` ·
 07 `0/6` · 08 `1/5` · 09 `0/5` · 10 `0/6`. This line has been stale before — the loop
 that regenerates it is in "Picking up" below.
 
-**Not built.** Remaining 32 lessons. SIM-4. Search, OG images, JSON-LD, sitemap. The
-landing page — currently a labelled placeholder. Glossary and cheatsheets. Colophon.
+**Not built.** Remaining 28 lessons. SIM-4, SIM-8. Search, OG images, JSON-LD, sitemap.
+The landing page — currently a labelled placeholder. Glossary and cheatsheets. Colophon.
 
 **Verification is thinner than it looks.** `pnpm verify` runs typecheck, lint, unit tests,
 the static export and a link check. There is **no** Playwright, no axe sweep and no
@@ -151,11 +151,10 @@ for d in content/guides/hermes/*/; do n=$(ls $d*.mdx | wc -l); \
   echo "$(basename $d): $((n-s))/$n"; done
 ```
 
-**Module 4 is the natural next one.** `04/01-tools-and-toolsets` is the last unwritten
-prerequisite pointed at by a written lesson (`05/01`), and module 4 also carries the
-approval material the captures changed most — see the amendments in map §22, which say
-`04/04` must lead with the observed no-prompt transcript rather than the documented
-option set.
+**Module 2 or 3 is the natural next one.** Between them they hold every remaining
+prerequisite that a written lesson points at: `02/04-blast-radius-before-you-continue`
+(pointed at by `04/03` and `04/04`) and `03/04-configuration-you-will-actually-touch`
+(pointed at by `04/01`). After those two, no written lesson has a "planned" prerequisite.
 
 Four of the map's six plates are built — VIZ-1 to VIZ-4. The two remaining are VIZ-5
 (`10/02`, secrets and egress) and VIZ-6 (`07/03`, the authorization chain); both sit in

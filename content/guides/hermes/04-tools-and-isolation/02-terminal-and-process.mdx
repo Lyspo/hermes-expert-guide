@@ -13,10 +13,137 @@ prerequisites:
   - hermes/04-tools-and-isolation/01-tools-and-toolsets
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Of the seventy tools, one reaches your machine. Almost everything interesting Hermes
+does eventually goes through `terminal`, which makes it the tool worth understanding in
+detail — including the parts that decide what the agent *sees* of what it ran.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+## Running something, and then leaving it running
+
+A normal call runs a command and returns its output. The variation that matters is
+backgrounding:
+
+```python
+terminal(command="npm run build", background=true)
+```
+
+That returns immediately with a session id, and a second tool takes over. `process` has
+seven actions, and between them they are a small job-control system:
+
+| Action | What it does |
+|---|---|
+| `list` | Show running processes |
+| `poll` | Check status without blocking |
+| `wait` | Block until it finishes |
+| `log` | View the full output |
+| `kill` | Terminate it |
+| `write` | Send input — `data="y"` |
+
+`write` is the one people miss, and it is what lets the agent answer an interactive
+prompt rather than hanging on one. For genuinely interactive tools there is also
+`pty=true`, which allocates a pseudo-terminal so that programs expecting a TTY behave.
+
+<MarginNote>
+`terminal.timeout` defaults to 180 seconds. A build that legitimately takes longer
+should be backgrounded rather than have the timeout raised — that is what backgrounding
+is for.
+</MarginNote>
+
+## What the agent actually sees
+
+This is the part that explains otherwise baffling behaviour, and it is pure
+configuration:
+
+```yaml
+tool_output:
+  max_bytes: 50000        # terminal output cap
+  max_lines: 2000         # read_file pagination cap
+  max_line_length: 2000   # per-line cap
+```
+
+When terminal output exceeds `max_bytes`, it is truncated at **40% head and 60% tail**
+with an `[OUTPUT TRUNCATED]` marker between them.
+
+That ratio is a deliberate and good choice: the beginning of a command's output tells
+you what it was doing, and the end tells you how it failed. It is the middle — usually
+the repetitive part — that gets dropped.
+
+<Depth min="operator">
+
+Two related limits. `file_read_max_chars` defaults to 100,000, roughly 25–35K tokens; a
+read over the limit is rejected with an error suggesting `offset` and `limit` rather
+than being silently shortened. And repeated reads of an unchanged region return a
+lightweight stub instead of the content again — a small thing that quietly saves a lot
+of context in a long debugging session.
+
+If an agent seems to have missed something in the middle of a long log, this is why.
+The fix is to have it grep rather than raising the cap.
+
+</Depth>
+
+## Files it will not write, whatever you ask
+
+The terminal is not the only path to the filesystem — `patch` and file writes have their
+own guard, and it is a hard list rather than a heuristic.
+
+Always blocked: `~/.ssh/`, `~/.aws/`, `~/.kube/`, `/etc/sudoers`, `~/.netrc`; Hermes's
+own credential stores including `auth.json`, `.env` and the MCP token directory; and
+project secret files — `.env`, `.env.local`, `.env.production`, `.envrc` — anywhere at
+all.
+
+<Transcript fidelity="verbatim" source="Security documentation, v0.19.0">
+{`Write denied: '…' is a protected system/credential file.`}
+</Transcript>
+
+There is also an opt-in tightening. `HERMES_WRITE_SAFE_ROOT` restricts writes to listed
+directory prefixes, and the official Docker image sets it to `/opt/data`. The
+documentation attaches a warning worth repeating: do not add it to your environment file
+casually, because a too-narrow root breaks writes in ways that are tedious to diagnose.
+
+One special case: direct `patch` edits to the cron job store are blocked outright. Jobs
+must go through the `cronjob` tool or the slash command, so that a scheduled job cannot
+be created by editing a file.
+
+<TrackCallout
+  newcomer="You do not need to configure any of this. It is worth knowing the blocked list exists — your SSH keys and .env files are off limits by default, not by luck."
+  operator="The 40/60 truncation and the 180-second timeout are the two settings that will actually bite you. Background long jobs rather than raising the timeout, and grep rather than raising max_bytes."
+  architect="The write blocklist is enumerable and hard-coded, which makes it reviewable. Note what it does not cover: it protects credential locations, not arbitrary paths. HERMES_WRITE_SAFE_ROOT is the allowlist counterpart, and it is off unless you or the Docker image set it."
+/>
+
+## Sudo, and the caveat
+
+Sudo is supported. The agent prompts for a password and caches it for the session, and
+you can set `SUDO_PASSWORD` in the environment file to skip the prompt.
+
+That second option deserves a moment's thought rather than a shrug. It converts "the
+agent can run commands as you" into "the agent can run commands as root, unattended,"
+and the documentation notes that on messaging platforms a failed sudo will helpfully
+suggest exactly that. Convenience and blast radius point in opposite directions here.
+
+## The gotcha everyone hits
+
+If the agent reports `node: command not found` for a Node you definitely have
+installed, this is a version-manager problem rather than a Hermes one. Terminal tools
+take a login-shell snapshot, and `nvm` and `asdf` install their shims in files that
+snapshot does not read.
+
+The fix is a config key:
+
+```yaml
+terminal:
+  shell_init_files:
+    - ~/.nvm/nvm.sh
+```
+
+Same story for `asdf`, `rbenv` and anything else that works by shimming your `PATH` at
+shell startup.
+
+## What to take from this
+
+One tool reaches your machine, and a second manages what it left running. Output is
+capped and truncated head-and-tail, files holding credentials are refused outright, and
+your version manager probably needs a line of config.
+
+The next lesson is about where those commands actually land — which turns out to change
+the security model more than anything in this one.

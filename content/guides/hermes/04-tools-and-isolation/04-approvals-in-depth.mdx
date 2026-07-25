@@ -14,10 +14,210 @@ prerequisites:
   - hermes/02-standing-it-up/04-blast-radius-before-you-continue
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Start with what actually happened, on a default install, with no `approvals` section in
+the config at all.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+<Transcript label="v0.19.0, default configuration" fidelity="verbatim" source="Captured session, 2026-07-25">
+{`● Recursively delete /tmp/hermes-scratch
+  Initializing agent...
+
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         rm -rf /tmp/hermes-scratch  5.0s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+   Done. /tmp/hermes-scratch has been deleted.`}
+</Transcript>
+
+No prompt. A recursive delete on a host path, executed and reported, with the entire
+record being one line in the tool feed.
+
+This is not a defect and not a vulnerability. It is the default mode working exactly as
+specified — and it contradicts what a careful reader of the documentation would predict.
+That gap is the most useful thing in this lesson.
+
+## Why nothing asked
+
+`approvals.mode` has three values and defaults to **`smart`**:
+
+- **`smart`** — a model risk-assesses the command. Low risk is auto-approved, clearly
+  dangerous is auto-denied, and only the uncertain middle is escalated to you.
+- **`manual`** — always prompts.
+- **`off`** — no checks.
+
+Under the default, a model decided that deleting a temp directory the operator had just
+asked to delete was low risk, and approved it on your behalf. The five-second elapsed
+time on an `rm` of one small file is the assessment round-trip.
+
+## The distinction the documentation does not draw
+
+The security page publishes a list headed *dangerous-pattern categories triggering
+approval*, and its first entry is **recursive delete**. Read plainly, that says `rm -rf`
+triggers a prompt.
+
+<Revised
+  was="The listed dangerous-pattern categories trigger an approval prompt."
+  now="They trigger an assessment. Under the default smart mode a model then decides, and it may auto-approve with no prompt at all."
+  why="Observed on a default v0.19.0 install: rm -rf on a host path ran with no prompt, which is documented smart-mode behaviour"
+  when="2026-07-25"
+/>
+
+So it is worth being precise about which controls are guarantees and which are inputs
+to a judgement:
+
+| Control | Deterministic? | Under default `smart` |
+|---|---|---|
+| Hardline blocklist | Yes — no override exists | Always refuses |
+| `approvals.deny` globs | Yes, if you wrote them | Applied before mode checks |
+| Dangerous-pattern categories | **No** | Fed to a model, which may auto-approve |
+
+Only the first two are promises. The pattern list is an input.
+
+<TrackCallout
+  newcomer="If you want to be asked before anything destructive runs, you have to say so. The default asks a model instead of asking you."
+  operator="Set approvals.mode: manual explicitly if you require deterministic prompts. Leaving the default is a decision to delegate the decision, and it is reversible in one line."
+  architect="This is the sharpest concrete answer to “what can it do that I have not authorised, and how would I know?” Under defaults: it can delete a directory tree on your host after a model judged that acceptable, and the only record is a line in the tool feed."
+/>
+
+## What the gate looks like when it does fire
+
+With `approvals.mode: manual` set, the same command prompts:
+
+<Transcript label="v0.19.0, approvals.mode manual" fidelity="verbatim" source="Captured session, 2026-07-25">
+{`┌──────────────────────────────────────────┐
+│ ⚠ Dangerous Command                      │
+│                                          │
+│ rm -rf /tmp/hermes-scratch               │
+│                                          │
+│ ❯ 1. Allow once                          │
+│   2. Allow for this session              │
+│   3. Add to permanent allowlist          │
+│   4. Deny                                │
+│                                          │
+│ delete in root path                      │
+└──────────────────────────────────────────┘
+  💻 rm -rf /tmp/hermes-scratch  ( 17.4s)
+  ↑/↓ to select, Enter to confirm  (282s)`}
+</Transcript>
+
+Two corrections to the published description are visible in that frame.
+
+**It is a numbered arrow-key menu**, not the single-letter set `[o]nce [s]ession
+[a]lways [d]eny` that appears in the documentation. Digits work as a shortcut; the
+letters appear nowhere in the interface.
+
+**That `(282s)` is a countdown, not elapsed time.** The prompt times out after 300
+seconds by default — `approvals.timeout` — and **it fails closed**: no answer means
+denied. This is documented nowhere in the user-facing pages, and it is the behaviour
+that matters most for unattended operation, where nobody is present to answer.
+
+Option three, "add to permanent allowlist", persists to `config.yaml` under
+`command_allowlist`. Worth knowing that a choice made in a hurry at a prompt writes a
+standing rule to a file.
+
+## Denial is engineered, not polite
+
+When you deny, the outcome is printed above the feed line and the block reason is
+appended to it:
+
+<Transcript label="after denial" fidelity="verbatim" source="Captured session, 2026-07-25">
+{`⚠ Approval: rm -rf /tmp/hermes-scratch → denied
+  ┊ 💻 $         rm -rf /tmp/hermes-scratch  7.8s [BLOCKED: User denied this command. The user h...]`}
+</Transcript>
+
+The agent then said it would not retry or route around the refusal. That is easy to
+read as good manners; it is not. The full text the model receives is:
+
+> BLOCKED: User denied this command. The user has NOT consented to this action. Do NOT
+> retry this command, do NOT rephrase it, and do NOT attempt the same outcome via a
+> different command. Stop the current workflow and wait for the user to respond before
+> taking any further destructive or irreversible action.
+
+<ForTrack track="architect">
+
+The refusal is engineered, and the circumvention routes are enumerated by name: retry,
+rephrase, achieve the same outcome differently. That is a considered piece of design.
+
+It is also worth seeing clearly for what it is — an *instruction*, delivered in a tool
+result, to a model that may or may not follow it. For pattern-matched commands, refusal
+durability is prompt-level. Only the hardline blocklist and your own `approvals.deny`
+globs are enforced in code.
+
+</ForTrack>
+
+## The four ways past, and the one that has no way past
+
+**`approvals.mode: off`** disables the checks.
+
+**YOLO mode** — `hermes --yolo`, `/yolo`, or the environment variable — shows a red
+banner and a `⚠ YOLO` status indicator.
+
+**An isolated backend.** As the previous lesson covered, four of the six backends skip
+the check entirely, and your deny rules are only enforced on host-reaching ones.
+
+**Your own allowlist**, grown one hurried keystroke at a time via option three.
+
+And then the one that none of those move. The **hardline blocklist** is always on:
+`rm -rf /`, fork bombs, `mkfs` on mounted devices, `dd` to block devices, piping
+untrusted URLs to a shell. The documentation states the limit plainly — "hardline
+blocklist still applies regardless of YOLO status" — and the message the model receives
+on a hardline match ends with the clearest sentence in the whole security model:
+
+> …cannot be executed via the agent — not even with `--yolo`, `/yolo`,
+> `approvals.mode=off`, or cron approve mode. If you genuinely need to run it, run it
+> yourself in a terminal outside the agent.
+
+That is the boundary stated honestly. There are things this software will not do for
+you, and its answer is to hand the problem back.
+
+## Your own rules
+
+`approvals.deny` takes case-insensitive glob patterns and is applied **before** the
+mode check and before YOLO:
+
+```yaml
+approvals:
+  mode: manual
+  timeout: 300
+  cron_mode: deny
+  deny:
+    - "git push --force*"
+```
+
+This is the deterministic control you actually own. It is worth a short list per
+deployment — the handful of commands that are never acceptable in your environment
+regardless of what any model concludes.
+
+<Depth min="operator">
+
+`cron_mode: deny` is the setting for unattended work, and combined with the fail-closed
+timeout it means a scheduled job cannot approve its own dangerous command by waiting
+for nobody to answer.
+
+On messaging platforms the flow is a message rather than a menu — the bot posts the
+command and you reply `yes` or `no`:
+
+`⚠️ This command is potentially dangerous (recursive delete). Reply "yes" to approve.`
+
+</Depth>
+
+## It is bypassed in practice
+
+One community data point is worth ending on. A practitioner audited 129 of their own
+sessions across 23 days with an external analysis script, and found **112 of them
+contained approval-gate violations**.
+
+That is one person's usage, not a study. But it points at the failure mode this whole
+module is arranged around: the gate is not usually defeated, it is *disabled* — by YOLO
+for convenience, by a container backend chosen for safety, or by an allowlist grown a
+keystroke at a time.
+
+## What to take from this
+
+The default does not ask you; it asks a model. If you want to be asked, set
+`approvals.mode: manual`. If there are commands that must never run, write them into
+`approvals.deny`, because that is the only control you own that is enforced in code.
+
+And remember the shape of the whole module: isolation and approval are alternatives
+here, not layers. Choosing one usually means giving up the other, so choose knowingly.
