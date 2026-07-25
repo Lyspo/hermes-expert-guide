@@ -15,10 +15,117 @@ prerequisites:
   - hermes/07-unattended/01-scheduled-work
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+"Can this be audited?" is usually answered with an adjective. This lesson answers it with
+a list, and then with a second list of what the first one cannot tell you.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+## The inventory
+
+| Artefact | Where | What it holds |
+|---|---|---|
+| Session record | `~/.hermes/state.db` | Every message, FTS5-indexed, lineage across compressions |
+| Cron ledger | `~/.hermes/cron/executions.db` | Every scheduled run, five states |
+| Cron output | `~/.hermes/cron/output/<job>/<ts>.md` | What each run produced |
+| Delegation logs | `~/.hermes/cache/delegation/live/<id>/` | Append-only per-subagent transcripts |
+| Curator reports | `~/.hermes/logs/curator/<ts>/` | `run.json` and `REPORT.md`, with a rename map |
+| Skill telemetry | `~/.hermes/skills/.usage.json` | Per-skill use, view and patch counts |
+| Curator backups | `~/.hermes/skills/.curator_backups/` | Pre-run tar.gz of the whole skills tree |
+| Kanban events | `kanban.db` → `task_events` | Append-only, three event clusters |
+| Kanban runs | `kanban.db` → `task_runs` | Per-attempt history with structured handoffs |
+| Proxy log | `iron-proxy.log` | Per-request egress records |
+| Dashboard auth | `logs/dashboard-auth.log` | JSON lines, sensitive fields redacted |
+
+That is more than most people expect, and one entry is materially stronger than the
+rest.
+
+## The strongest artefact
+
+The Kanban `task_events` table is append-only and has a real vocabulary: lifecycle
+events (`created`, `promoted`, `claimed`, `completed`, `blocked`, `unblocked`,
+`archived`), edits (`assigned`, `edited`, `reprioritized`, `status`), and worker
+telemetry (`spawned`, `heartbeat`, `reclaimed`, `crashed`, `timed_out`, `stale`,
+`respawn_guarded`, `gave_up`).
+
+Alongside it, `task_runs` records each attempt with a structured handoff, and status
+changes that pull a task off `running` close the run as `reclaimed` rather than orphaning
+it.
+
+<ForTrack track="architect">
+
+If you need work an agent did to be reconstructable later, run it through the board. That
+is the practical consequence of this lesson: `delegate_task` produces logs, and Kanban
+produces a record — an append-only event stream with attempt history and named
+terminators.
+
+The distinction matters because logs answer "what happened" only if nobody rotated them,
+while an event table answers it by construction.
+
+</ForTrack>
+
+## The absence that is deliberate
+
+Here is the interesting one, and both halves have to be said together.
+
+From `06/05`: the background review fork sets `_persist_disabled` and `_session_db =
+None`. It is barred from writing to `state.db`, and that isolation exists to prevent the
+curator-takeover failure — the fork's own instructions landing in your session and being
+re-read as orders on your next turn.
+
+Which means: **the review fork's reasoning is not in the session transcript, by design.**
+
+That fix is also an audit gap. You can see that a skill was created — the notice prints,
+the file exists, `.usage.json` counts it — but not the deliberation that produced it. The
+same property that keeps the agent sane keeps its self-modification unexplained.
+
+Both things are true, and a governance review should record both rather than choosing
+one.
+
+## The questions with no answer
+
+**Which version of which skill produced this output?**
+
+There is no answer. Agent-authored skills carry no version field, as `06/01` established.
+The curator's reports record renames and `.usage.json` counts patches, but nothing binds
+a specific revision of a procedure to a specific result.
+
+This is acknowledged upstream — it sits as an open request under a title that names the
+need exactly: receipts for self-improving agents, proving which skill version produced
+which output.
+
+**What did a subagent do after a restart?**
+
+Running children are marked `unknown`. Their live logs exist up to the moment the process
+died, and nothing records what would have happened next.
+
+**What did the egress proxy decide?**
+
+`iron-proxy.log` holds per-request records today. There is a reserved `audit.log` path —
+pre-created, and empty on the pinned binary. So egress auditing is a request log rather
+than a decision log at present.
+
+<TrackCallout
+  operator="Two habits close most of the gap: keep ~/.hermes/skills/ in version control with automatic commits, and prefer the board over delegation for anything you may have to explain."
+  architect="The honest summary for a review: session and task history are strong, self-modification provenance does not exist, and one gap is structural rather than incidental — the isolation that prevents curator takeover is the same isolation that removes the review's reasoning from the record."
+/>
+
+## Reading it
+
+<Command verified="v0.19.0">hermes logs</Command>
+
+Named logs with level and component filters. Alongside it, `hermes insights` for token
+and cost analytics, and `hermes debug share` for a redacted support bundle — worth
+knowing the redaction options before you send one anywhere.
+
+The dashboard's Logs and Analytics tabs cover the same ground with less typing.
+
+## What to take from this
+
+Eleven durable artefacts, one of which — the Kanban event table — is a genuine audit
+trail rather than a log. Session history is complete and searchable. Cron and curator both
+report per run, and the curator's backups make every pass reversible.
+
+Three questions have no answer: which skill version produced an output, what an
+interrupted subagent was doing, and what the egress proxy decided rather than merely
+forwarded. Version-control the skills directory; it is the only one of the three you can
+close yourself.

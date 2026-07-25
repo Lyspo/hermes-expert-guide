@@ -15,10 +15,140 @@ prerequisites:
   - hermes/06-skills-and-the-loop/08-keeping-it-from-getting-worse
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+The last lesson in the guide, and it is permission to say no.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+Everything up to here has been how the thing works. This is where it should not be
+pointed, which is a question the documentation cannot answer for you and most writing
+about agents does not attempt.
+
+## Four criteria, and they are unglamorous
+
+Four conditions appear across independent operator sources, and work that meets all four
+is work this suits:
+
+1. **The task is repetitive but not fully structured.** Fully structured work is a script,
+   and a script is cheaper, faster and deterministic.
+2. **The data is safe to expose to a model.** Not "probably fine" — actually safe, under
+   whatever rules you operate by.
+3. **The output is easy for a human to review.** A summary you can check in thirty
+   seconds qualifies. A change buried in a thousand-line diff does not.
+4. **The time saved is measurable.** If you cannot say how much, you cannot tell whether
+   it worked.
+
+The sources add the corollary directly: the business case is weaker outside these
+conditions. Not impossible — weaker. That is a fair way to put it and it is the sentence
+to reuse when someone asks you to justify a deployment.
+
+Criterion three is the one most often waved through, and it is the one that governs
+whether the other three matter. Output you cannot review cheaply means you are not
+supervising, you are hoping.
+
+## Limits that are structural
+
+Some constraints are roadmap items. These are not, and a plan that assumes they will
+change soon is a plan with a hole in it.
+
+**Kanban is single-host by design.** The board is a local SQLite file and the dispatcher
+spawns workers on the same machine. Multi-host means independent boards and a bridge you
+build and maintain.
+
+**Multi-tenancy has no supported answer.** Running one Hermes for several humans is a
+cluster of open issues rather than a feature. Profiles isolate state on one machine for
+one operator; they are not a tenancy model.
+
+**Some platform bindings are exclusive.** One WhatsApp number cannot run multiple agents,
+and profiles do not share bot tokens.
+
+**Skill provenance does not exist.** From `10/03`: nothing binds a revision of a
+procedure to an output. If you must be able to prove which version of an instruction
+produced a given result, that capability is absent and acknowledged upstream.
+
+**Fixed overhead is roughly 73% of every call.** The proposed remedy is real and has not
+shipped.
+
+<TrackCallout
+  newcomer="You do not need to decide any of this today. Keep the four criteria — they are a good filter for whether a task is worth automating at all, whatever tool you use."
+  operator="Write the structural limits down where your team will read them. The expensive failure is not hitting a limit; it is planning six months of work that assumed a limit would move."
+  architect="These five are the substance of a defensible position. Each is either stated by the project or evidenced by its issue tracker, so a written internal standard citing them is arguing from primary sources rather than from vendor comparison."
+/>
+
+## Where it should not be pointed
+
+Given all of the above, four categories worth naming.
+
+**Work where an unreviewed mistake is expensive and invisible.** The pattern from
+`10/04` — an agent reporting a task complete that it had not done — is not caught by any
+artefact in `10/03`. Where that matters, the human review is the control, so the work must
+be cheap to review.
+
+**Anything requiring provenance.** Regulated changes, audited pipelines, anything where
+"which version did this" is a question you will be asked.
+
+**Multi-tenant service.** Not because it fails, but because you would be building the
+tenancy model yourself on a foundation that does not have one.
+
+**Data you cannot expose.** Criterion two, and worth noting that the egress proxy from
+`10/02` is a credential control, not a data-exfiltration control. It does not stop an
+agent putting your data in a request to an allowed host.
+
+## The comparison, used properly
+
+There is a large genre comparing Hermes to alternatives. It is worth reading as a lens
+and not as a verdict — and `10/04` gives the reason: a widely circulated comparison
+claimed no documented CVEs in the same month three were published.
+
+The synthesis those pieces reach, when they are careful, is that the choice is about
+posture rather than capability: one product optimises for a managed experience, the other
+for owning the whole surface. If you want to inspect the skills directory, read the
+session database and configure the approval gate yourself, this is the one that lets you.
+If you want none of that, the ownership is a cost rather than a feature.
+
+A migration path from at least one alternative exists in the CLI. It is mentioned here
+and not taught.
+
+<Depth min="operator">
+
+One methodological caveat about this entire guide, and it belongs in a lesson about
+limits.
+
+Everything here is a timestamped snapshot. The corpus behind it was assembled on
+2026-07-25 against v0.19.0, with two primary captures from a running install. This
+project ships fast enough that some of it will be wrong within a quarter, and the
+`hermesVersion` on each lesson is there so you can tell how stale a claim is rather than
+having to guess.
+
+Re-verify before you rely on anything here in an argument.
+
+</Depth>
+
+## A defensible position
+
+If you have to write one down, it has a shape:
+
+**Where it is used** — the tasks meeting all four criteria, named.
+
+**How it is configured** — the checklist from `10/01`, with the skipped items listed as
+accepted risk rather than omitted.
+
+**What is auditable** — the inventory from `10/03`, and the three questions that have no
+answer.
+
+**What we will not use it for** — the four categories above, with the structural limit
+each one rests on.
+
+**When we revisit** — a date, because the limits above are current facts rather than
+permanent ones.
+
+That is five sections, all of them sourced, none of them requiring you to predict
+anything.
+
+## What to take from this
+
+Four criteria, five structural limits, four places not to point it. The guide's whole
+posture in one line: this is a capable, inspectable, fast-moving piece of software whose
+most consequential risks are configuration and trust decisions rather than defects.
+
+Which means the useful skill was never operating it. It was knowing what it does, what it
+records, and what it cannot tell you — and you now do.

@@ -67,13 +67,14 @@ export, content pipeline. Full 51-lesson skeleton generated from the map by
 switcher, progress marks. Simulation engine with a pure timeline core and one flagship
 replay.
 
-**Written lessons: 23 of 51.** Modules **1, 4, 5 and 6 are complete**; plus `03/01` and
-`08/01`. Per module: 01 `4/4` · 02 `0/4` · 03 `1/4` · 04 `4/4` · 05 `5/5` · 06 `8/8` ·
-07 `0/6` · 08 `1/5` · 09 `0/5` · 10 `0/6`. This line has been stale before — the loop
-that regenerates it is in "Picking up" below.
+**Written lessons: 51 of 51. The curriculum is complete.** Every module, every lesson.
+All **six plates** from the map are built: VIZ-1 `prompt`, VIZ-2 `memory`, VIZ-3
+`skill-loop`, VIZ-4 `orchestration`, VIZ-5 `egress`, VIZ-6 `authorization`. Regenerate
+the per-module counts with the loop in "Picking up" rather than trusting this line.
 
-**Not built.** Remaining 28 lessons. SIM-4, SIM-8. Search, OG images, JSON-LD, sitemap.
-The landing page — currently a labelled placeholder. Glossary and cheatsheets. Colophon.
+**Not built.** The simulations beyond SIM-1's engine — the map specifies eight and one
+flagship replay exists. Search, OG images, JSON-LD, sitemap. The landing page — still a
+labelled placeholder, and now the single largest gap. Glossary and cheatsheets. Colophon.
 
 **Verification is thinner than it looks.** `pnpm verify` runs typecheck, lint, unit tests,
 the static export and a link check. There is **no** Playwright, no axe sweep and no
@@ -151,10 +152,21 @@ for d in content/guides/hermes/*/; do n=$(ls $d*.mdx | wc -l); \
   echo "$(basename $d): $((n-s))/$n"; done
 ```
 
-**Module 2 or 3 is the natural next one.** Between them they hold every remaining
-prerequisite that a written lesson points at: `02/04-blast-radius-before-you-continue`
-(pointed at by `04/03` and `04/04`) and `03/04-configuration-you-will-actually-touch`
-(pointed at by `04/01`). After those two, no written lesson has a "planned" prerequisite.
+**The curriculum is done, so the next work is not lessons.** In rough order of value:
+
+1. **The landing page.** Still a labelled placeholder, and now the only part of the site
+   that does not represent the work behind it. `design.md` specifies the GSAP scroll
+   narrative; nothing of it exists.
+2. **Search, OG images, JSON-LD, sitemap.** All four are scaffolded in `package.json`'s
+   `verify` chain in intent only — `pnpm verify` does not currently build a search index
+   or OG images despite the phase gate naming them.
+3. **The remaining simulations.** The map specifies eight; the engine and one flagship
+   replay exist. SIM-4 is still blocked on an uncaptured SKILL.md diff.
+4. **Glossary, cheatsheets, colophon** — all specified in the map, none started.
+
+Verification is still thinner than the plan calls for: no Playwright, no axe sweep, no
+Lighthouse CI, so the accessibility and performance budgets in `design.md` remain
+intentions. That gap is now the largest untruth a reader of this file could take away.
 
 Four of the map's six plates are built — VIZ-1 to VIZ-4. The two remaining are VIZ-5
 (`10/02`, secrets and egress) and VIZ-6 (`07/03`, the authorization chain); both sit in

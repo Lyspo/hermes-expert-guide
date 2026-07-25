@@ -15,10 +15,118 @@ prerequisites:
   - hermes/07-unattended/03-authorization-and-pairing
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Nothing in this module is new. Every control here was met in situ, in the lesson where
+it made sense; this is the consolidation, in the order you would actually apply it.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+The documentation publishes its own deployment checklist. It is good, and it is
+incomplete in ways the community has learned expensively.
+
+## The documented ten
+
+**1 — Explicit allowlists.** Never `GATEWAY_ALLOW_ALL_USERS=true`. From `07/03`: the
+chain defaults to deny, and every route past it is something you switched on.
+
+**2 — A container backend for the terminal.**
+
+```yaml
+terminal:
+  backend: docker
+```
+
+With the caveat from `04/03` that this **skips the dangerous-command check**. Isolation
+and approval are alternatives here, not layers.
+
+**3 — Restrict CPU, memory and disk.** `container_cpu`, `container_memory`,
+`container_disk`.
+
+**4 — Store `.env` securely.** `chmod 600`, and never paste a key into a chat.
+
+**5 — DM pairing over hardcoded ids.** Access with a record beats access by
+configuration edit.
+
+**6 — Review allowlists periodically.** They only ever grow otherwise.
+
+**7 — Set `terminal.cwd`.** The single highest-value line in the file.
+
+**8 — Run the gateway as non-root.**
+
+**9 — Monitor `~/.hermes/logs/`.**
+
+**10 — Keep it updated** with `hermes update` — noting from `02/01` that Docker installs
+do not support it and need an image rebuild instead.
+
+## Five the community added
+
+**11 — Read-only before write.** Run the workflow read-only first, watch what it tries
+to do, then grant write access. Most surprises surface in that first pass and cost
+nothing.
+
+**12 — `approvals.cron_mode: deny`.** Scheduled work runs when nobody is watching, and
+the approval prompt fails closed after 300 seconds anyway. Make the denial explicit.
+
+**13 — `hard_stop_enabled: true` for unattended contexts.** The documentation recommends
+it specifically for gateway, cron and Kanban workers, alongside `agent.max_turns`.
+
+**14 — Keep the dashboard on loopback.** From `09/04`: its auth is fail-closed on a
+non-loopback bind, *and* its middleware skips `/api/plugins/` by design — so binding
+publicly exposes the Kanban API behind a gate that just refused to start without a
+provider. An SSH tunnel avoids the whole question.
+
+**15 — Document which credentials belong to which agent.** Trivial with one agent, and
+the thing you will wish you had done with four.
+
+<TrackCallout
+  newcomer="Items 1, 7 and 11 are most of the value. Allowlist yourself, point it at one directory, and run read-only until you trust it."
+  operator="Work the list in order and record which items you deliberately skipped. The skipped ones are your risk register."
+  architect="Fifteen items, of which three are documented weaknesses rather than settings: the container backend removes the approval gate, the dashboard's plugin routes bypass its auth, and the egress proxy does not cover every provider. A checklist that hides those is worse than none."
+/>
+
+## Network isolation, when it matters
+
+If the workload justifies it, the documented pattern is a separate machine:
+
+```yaml
+terminal:
+  backend: ssh
+```
+
+with credentials in `.env` rather than `config.yaml`:
+
+```text
+TERMINAL_SSH_HOST=agent-host.internal
+TERMINAL_SSH_USER=agent
+TERMINAL_SSH_KEY=~/.ssh/agent_ed25519
+```
+
+SSH is the option worth understanding properly: it is the only backend that adds
+isolation **without** removing the dangerous-command check. Commands run somewhere else
+and are still assessed.
+
+## What is already hardened for you
+
+Worth knowing so you do not spend effort re-solving it. Sessions are isolated from each
+other and cannot read one another's state. Cron job storage is hardened against path
+traversal. Working directories are validated at dispatch, and the Kanban `dir:` workspace
+requires an absolute path — rejected otherwise as a confused-deputy vector.
+
+<Depth min="operator">
+
+The pattern for anything experimental is worth stating separately, because it is
+different from the production pattern: a container, a separate profile, its own
+credentials, and a working directory containing nothing you would miss. Experiments are
+where the two documented disasters happened, and neither needed a vulnerability.
+
+Review release notes monthly. This project ships fast enough that a quarterly cadence
+means running something whose behaviour you last understood two versions ago.
+
+</Depth>
+
+## What to take from this
+
+Fifteen items. Three of them — the container backend, the dashboard's plugin routes, the
+egress coverage gaps — are places where the documented control has a documented hole, and
+those are the ones to record as accepted risk rather than tick.
+
+The next lesson is the boundary all of this sits on: where the credentials actually are.

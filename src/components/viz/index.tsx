@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { AuthorizationPlate } from './authorization-plate'
+import { EgressPlate } from './egress-plate'
 import { MemoryPlate } from './memory-plate'
 import { OrchestrationPlate } from './orchestration-plate'
 import { PromptPlate } from './prompt-plate'
@@ -19,6 +20,7 @@ export const PLATES: Record<string, () => ReactNode> = {
   'skill-loop': SkillLoopPlate,
   orchestration: OrchestrationPlate,
   authorization: AuthorizationPlate,
+  egress: EgressPlate,
 }
 
 /**

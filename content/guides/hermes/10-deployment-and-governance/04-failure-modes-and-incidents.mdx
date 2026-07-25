@@ -15,10 +15,147 @@ prerequisites:
   - hermes/04-tools-and-isolation/04-approvals-in-depth
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+`02/04` told two of these as stories, because that is how they teach. This lesson is the
+analysis, plus the ones a beginner did not need.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+## Three CVEs
+
+| CVE | CVSS | What | Status |
+|---|---|---|---|
+| CVE-2026-7396 | 4.0 | Path traversal in the WeChat Work gateway adapter, v0.8.0 | Unauthenticated remote |
+| CVE-2026-7397 | 4.8 | Symlink following in the file-tools module, v0.8.0 | Fixed in v0.9.0 |
+| CVE-2026-6829 | 5.3 | Path traversal in the separately maintained `hermes-webui` package | Before v0.50.34 |
+
+Three findings, all mid-range, one in a component that is not maintained by the project
+at all. For software of this scope and adoption that is an unremarkable record — which is
+worth saying plainly, because "there are CVEs" and "this is unsafe" are different claims.
+
+## The audit that found worse than the CVEs
+
+An independent researcher published an audit in April 2026 finding **architectural**
+problems rather than implementation bugs, and these are the ones worth knowing:
+
+- **Regex-bypassable command detection.** The dangerous-command patterns are matched
+  textually and can be evaded.
+- **Unrestricted reads of sensitive files** — SSH keys, API tokens, git credential caches.
+  Recall from `04/02` that the blocklist covers *writes*.
+- **Container deployments shipping with all approval checks disabled by default.**
+- **Persistent skill files enabling post-session code execution.**
+
+Plus nine further high-severity findings, including that YOLO mode disables all security
+checks and that auto-approval is prompt-injectable.
+
+Read those against what you now know. The first is why `approvals.deny` globs matter more
+than the pattern list. The third is why "we containerised it" is not automatically safer —
+`04/03` covers the same ground from the configuration side. The fourth is why `06/03`
+treats installing a community skill as running a script.
+
+The research organisation's top-line conclusion is the sentence to keep:
+
+> The more consequential risks in both frameworks are architectural, not implementation
+> bugs.
+
+Specifically: persistent memory enabling indirect prompt injection, and community skill
+marketplaces carrying npm-style supply-chain risk. Neither is a bug anyone can patch.
+
+## The one that made the news
+
+In July 2026 an attacker with pre-existing access inside Thailand's Ministry of Finance
+network deployed open-source Hermes on a rented server and **enabled YOLO mode** to
+remove approval requirements.
+
+The agent then ran reconnaissance autonomously: kernel vulnerability scanning,
+privilege-escalation enumeration, filesystem exploration, and access to personnel records
+back to 2012. Investigators recovered 585 files, 470 MB of tooling, and around 575
+separate Hermes result folders from an exposed staging server with directory listing left
+open — a server that had previously hosted other malware infrastructure.
+
+Three things to get right about this story, because it is widely retold badly.
+
+**Hermes was not the way in.** The initial vector was an unauthenticated HiveServer2
+instance with a malicious Java UDF. Hermes was the post-exploitation automation layer.
+
+**Attribution is weak.** Low-to-medium confidence, based on SSH origin, a
+Chinese-language password string, and recovered search credentials. No group was formally
+attributed, and no data exfiltration was confirmed.
+
+**The significance is scale, not capability.** From the reporting: nothing in the
+recovered material shows it finding a new vulnerability. Agent automation let one
+operator do routine post-exploitation work faster.
+
+<TrackCallout
+  operator="The operationally useful reading: a documented feature, used as designed, by someone who already had access. There is no patch for this, and the control that would have mattered was the one that stops an unauthorised deployment existing at all."
+  architect="This is the case to cite when someone asks whether agents create novel risk. They mostly scale existing risk — which is still a change worth planning for, because the cost of routine attacker labour just fell."
+/>
+
+## The one that deleted someone's work
+
+No attacker, no vulnerability, no YOLO mode.
+
+A user set a Kanban board's default working directory to their main projects folder
+during setup. A task created later inherited that path and was automatically tagged as a
+scratch workspace. On completion, `_cleanup_workspace()` called `shutil.rmtree()` on the
+inherited path — **no confirmation prompt, no warning log** — and permanently deleted the
+entire directory.
+
+The root cause as filed: the cleanup function never checked whether the path was a
+task-scoped temporary directory or a real one. It was accepted as critical, and the
+proposed fixes were protecting well-known directories, restricting cleanup to a dedicated
+subtree, and requiring confirmation before deleting a directory containing pre-existing
+files.
+
+This is the incident that should worry you most, and it is the least dramatic. The others
+required an attacker. This one required a plausible configuration choice on day one.
+
+## The agent that said it had
+
+One further failure mode, reported first-hand and worth naming because it is invisible in
+every log in the previous lesson: an agent **hallucinated having completed a task** —
+claiming to have searched for a newly created skill when it had not.
+
+No artefact catches that. The tool feed shows what ran; nothing verifies that the summary
+describes it. It is the strongest practical argument for the two-week daily review from
+`08/05`.
+
+## The industry that reported none of it
+
+A widely circulated comparison piece claims Hermes had "no publicly documented CVEs
+through May 2026."
+
+It was published in the same month as the research note documenting three.
+
+<Revised
+  was="Hermes had no publicly documented CVEs through May 2026."
+  now="Three were documented that same month, with CVSS scores between 4.0 and 5.3."
+  why="A comparison article's claim, dated the same month as the security research note that enumerates them"
+  when="2026-07-25"
+/>
+
+That is not included to score a point. It is the clearest demonstration in this guide of
+why the sourcing rule exists: secondary sources about this ecosystem are frequently
+marketing-derived, and a confident security claim in a comparison article is worth
+approximately nothing without a primary reference.
+
+<Depth min="operator">
+
+Some context for reading the issue tracker, which you will if you deploy this. It carries
+around 25,000 open items, managed partly by a sweeper bot with three permitted auto-close
+reasons.
+
+Volume at that scale is a signal about triage capacity rather than about quality. Judge
+by whether *your* class of issue gets responses, not by the total.
+
+</Depth>
+
+## What to take from this
+
+Three mid-range CVEs, one of them in an unmaintained third-party package. An architectural
+audit whose findings matter more than the CVEs. One misuse case where the software worked
+as designed for somebody who should not have had it. One data-loss incident caused by a
+default nobody checked. And one hallucinated completion that no log would catch.
+
+The pattern across all five: the dangerous cases were configuration and trust decisions,
+not exploits. Which is why this module is a checklist and a boundary rather than a patch
+schedule.

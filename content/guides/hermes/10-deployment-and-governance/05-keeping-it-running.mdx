@@ -14,10 +14,122 @@ prerequisites:
   - hermes/07-unattended/02-the-gateway
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Operations, in the order you will need them: diagnose, inspect, back up, roll back,
+update.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+## The five when something breaks
+
+<Command verified="v0.19.0">hermes doctor</Command>
+
+Always first. `--fix` attempts repairs rather than only reporting.
+
+Then, in order of narrowing:
+
+```bash
+hermes status --deep     # a real health check, not just "running"
+hermes config check      # configuration state
+hermes logs              # named logs, with level and component filters
+hermes dump              # the full resolved setup
+```
+
+One caution on the last: `hermes dump` prints a setup summary that **can include
+credential material**. It is the right command for diagnosing your own machine and the
+wrong one to paste into an issue.
+
+For that, there is a purpose-built alternative:
+
+<Command verified="v0.19.0">hermes debug share</Command>
+
+which produces a redacted bundle. Read its redaction options before sending it anywhere.
+
+## Backups, and which one has your keys
+
+Two commands, and the difference matters:
+
+- **`hermes backup`** — everything, **credentials included**
+- **`hermes profile export`** — a shareable profile distribution
+
+`hermes import` restores. The distinction is the same one from `08/04` and worth
+re-checking every time, because one of these is safe to put in a git repository and the
+other very much is not.
+
+## Checkpoints are off, and worth turning on
+
+This is the feature most people do not know exists, because it is **opt-in by default as
+of v2**.
+
+```yaml
+checkpoints:
+  enabled: true
+```
+
+or per session with `hermes chat --checkpoints`.
+
+When enabled, Hermes snapshots before destructive operations and `/rollback` restores. The
+architecture is careful: a single shared **shadow git repository** under
+`~/.hermes/checkpoints/store/` that **never touches your project's `.git`**, with git's
+object database deduplicating across projects and turns.
+
+So it costs little, cannot corrupt your real repository history, and gives you an undo
+for the class of accident that produced this guide's data-loss story.
+
+<TrackCallout
+  newcomer="Turn checkpoints on. It is one line of config and it is the safety net for exactly the mistake that is easiest to make."
+  operator="One checkpoint per directory per turn, triggered by file tools and destructive terminal commands. /rollback also has diff and single-file restore, so it is usable as a review tool rather than only as a panic button."
+  architect="Note that restore also undoes the last conversation turn, and that seven safety guards apply — including skipping $HOME and directories over 50,000 files. Those guards mean it is not a general backup system and should not be described as one."
+/>
+
+## Updating
+
+<Command verified="v0.19.0">hermes update</Command>
+
+Two things to know before you run it on anything you care about.
+
+**Docker installs do not support it at all.** From `02/01` — a containerised deployment
+needs an image rebuild, not an in-place update.
+
+**Local changes are handled, quietly.** Git installs auto-stash dirty tracked files. If
+you have patched a bundled skill or edited code in place, that is where your changes went.
+
+The `updates:` block controls pre-update backups and how many are kept, which is the
+setting to check *before* your first update rather than after.
+
+And `hermes config migrate` exists for the case where an update moves configuration keys —
+the schema-version mechanism from `03/04`.
+
+<Depth min="operator">
+
+A supply-chain advisory scanner runs at startup, on `hermes doctor`, and on gateway start,
+checking dependencies against a public vulnerability database. Findings can be
+acknowledged persistently with `--ack` so a known-and-accepted advisory stops interrupting
+every start.
+
+Related: lazy installs pull dependencies on demand, with `security.allow_lazy_installs`
+governing whether that is permitted at all. On a locked-down deployment that is a setting
+worth an explicit decision, because "installs a package when it needs one" is a
+supply-chain surface.
+
+There is also `hermes security audit` for an on-demand check.
+
+</Depth>
+
+## Monthly, not quarterly
+
+Worth stating as a practice rather than a command. This project ships fast — a
+fortnight's release notes routinely contain behaviour changes — and the community advice
+that appears repeatedly is to review release notes monthly.
+
+The pattern to watch for is not new features but changed defaults. `06/07`'s curator, for
+instance, has an opt-in consolidation phase today; a release that flipped that default
+would change what happens to your skill library without changing anything you wrote.
+
+## What to take from this
+
+`hermes doctor` first, always. Know that `dump` can contain credentials and `debug share`
+is the redacted one. Know which of `backup` and `profile export` holds your keys.
+
+Turn checkpoints on — they are off by default, they never touch your project's git
+history, and they undo the accident this guide has told twice. Then read the release notes
+monthly, watching for changed defaults rather than new features.
