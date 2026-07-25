@@ -13,10 +13,213 @@ prerequisites:
   - hermes/05-what-it-knows/01-what-is-in-the-system-prompt
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+A skill is a markdown file with some YAML at the top. That is the entire mechanism.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+It is worth sitting with how unglamorous that is, because almost every wrong intuition
+about Hermes skills comes from expecting something more — a plugin, a sandboxed
+package, a registry object with a lifecycle. It is a file. You can read it, edit it in
+any text editor, delete it, and commit it to a repository.
+
+## Where they live
+
+`~/.hermes/skills/` is, in the documentation's words, "the primary source of truth."
+Each skill is its own directory containing a required `SKILL.md`, plus optional
+`references/`, `templates/`, `scripts/`, `examples/` and `assets/` subdirectories.
+
+<Command verified="v0.19.0" note="present in the installed binary's command list">hermes skills list</Command>
+
+Bundled skills ship inside the repository under `skills/<category>/<name>/`, and the
+same shape is used everywhere else. On a real install, the tree under your home
+directory is namespaced the same way:
+
+<Transcript label="~/.hermes/skills/" fidelity="verbatim" source="Read from an install, v0.19.0, 2026-07-25">
+{`github/
+└── github-repo-discovery/
+    ├── SKILL.md                          (2,793 bytes, mode 0600)
+    └── references/
+        └── github-api-query-patterns.md  (1,692 bytes, mode 0600)`}
+</Transcript>
+
+Two details there are worth carrying forward. The path is
+`~/.hermes/skills/<namespace>/<skill>/` — some documentation gives it as
+`~/.hermes/skills/<skill>/`, one level short. And the files are mode `0600`,
+owner-only, which matters when you get to deployment.
+
+## The frontmatter
+
+The canonical template is generous, and nearly all of it is optional:
+
+```yaml
+---
+name: my-skill
+description: Brief description (shown in skill search results)
+version: 1.0.0
+author: Your Name
+license: MIT
+platforms: [macos, linux]
+metadata:
+  hermes:
+    tags: [Category, Subcategory, Keywords]
+    related_skills: [other-skill-name]
+    requires_toolsets: [web]
+    fallback_for_toolsets: [browser]
+---
+```
+
+`name` and `description` are what the agent sees before it has read anything else, so
+`description` does more work than its length suggests — the docs recommend keeping it
+under sixty characters, because it appears in search results and in the metadata-only
+listing the agent reads first.
+
+`requires_toolsets` hides a skill when a listed toolset is **not** available.
+`fallback_for_toolsets` hides it when the toolset **is** — which is how you write a
+skill that only appears as a substitute for something better. The bundled
+`duckduckgo-search` skill uses exactly that.
+
+<Depth min="operator">
+
+Two more field groups exist and are easy to miss. `required_environment_variables`
+takes a list of `name`, `prompt`, `help` and `required_for`; a skill declaring these
+stays visible in discovery rather than vanishing, and Hermes prompts for the value only
+on a local CLI load. `required_credential_files` declares file-based tokens, mounted
+read-only into Docker and synced into sandboxes. Both exist so a skill can state its
+dependencies without a half-configured skill silently disappearing from the catalogue.
+
+</Depth>
+
+### What the agent actually writes
+
+Here the spec and the world diverge, and the gap is worth knowing.
+
+<Revised
+  was="An agent-authored SKILL.md carries a version field, so you can tell which revision you have."
+  now="It carries exactly two fields: name and description. There is no version key, and skill revisions are not tracked in frontmatter at all."
+  why="Read from the SKILL.md an agent wrote for itself on a v0.19.0 install"
+  when="2026-07-25"
+/>
+
+The template is not wrong — bundled skills really do carry `version: 1.0.0`, `author`
+and `license`. But those fields are optional, and the background review that writes
+skills on your behalf uses two of them. So a skill file cannot tell you which revision
+of itself you are reading, and "which version of this procedure produced that output"
+is a question the file does not answer.
+
+## The body
+
+Six sections, in the order the documentation publishes as the standard shape:
+
+```markdown
+# Skill Title
+
+## When to Use
+## Quick Reference
+## Procedure
+## Pitfalls
+## Verification
+```
+
+**`## When to Use` is the load-bearing one.** Everything below it is what the agent
+does once it has decided to act; that section is how it decides. A skill with a vague
+trigger will either never fire or fire constantly, and both failures look like the
+skill being bad at its job rather than badly addressed.
+
+`## Pitfalls` is the second most useful and the most often skipped. It is where a
+procedure records what went wrong last time, which is what turns a skill from
+documentation into something that improves.
+
+## A real one
+
+The bundled `arxiv` skill is 275 lines and does something genuinely useful with no
+dependencies at all:
+
+```markdown
+---
+name: arxiv
+description: "Search arXiv papers by keyword, author, category, or ID."
+version: 1.0.0
+author: Hermes Agent
+license: MIT
+platforms: [linux, macos, windows]
+metadata:
+  hermes:
+    tags: [Research, Arxiv, Papers, Academic, Science, API]
+    related_skills: [ocr-and-documents]
+---
+
+# arXiv Research
+
+Search and retrieve academic papers from arXiv via their free REST API.
+No API key, no dependencies — just curl.
+```
+
+Its `## Quick Reference` is a two-column table of actions and the `curl` commands that
+perform them. That is the whole trick: the skill is not code that calls arXiv, it is
+*instructions for an agent that already knows how to run `curl`*.
+
+## Every skill is a slash command
+
+Verbatim from the documentation: "Every installed skill is automatically available as a
+slash command." Install `arxiv` and `/arxiv find recent work on speculative decoding`
+works with no further setup.
+
+They stack, too — up to five leading skill tokens in one message:
+
+```text
+/skill-a /skill-b /skill-c your actual instruction
+```
+
+Parsing stops at the first token that is not a skill name, so the instruction that
+follows is passed through untouched.
+
+<MarginNote>
+Skill bundles group several skills under one slash command, defined in a YAML file
+under `~/.hermes/skill-bundles/`. A bundle wins on a slug collision with a skill.
+</MarginNote>
+
+## Skill, or tool?
+
+The documentation gives a decision rule, and it is unusually clean:
+
+> Make it a **Skill** when the capability is instructions plus shell commands plus
+> existing tools — wrapping a CLI or an API, with no custom integration needed. Make it
+> a **Tool** when it needs end-to-end API-key integration, custom processing logic that
+> must run precisely every time, or binary, streaming or real-time handling.
+
+The bias toward skills is economic rather than aesthetic. Every core tool's schema is
+sent on every API call for the life of a session; a skill costs one line in a metadata
+listing until something actually loads it. That asymmetry is why the extension ladder
+puts skills near the top and new core tools at the very bottom.
+
+<TrackCallout
+  newcomer="You could write one right now in a text editor. Name it, say when to use it, list the steps. There is no build step and nothing to register."
+  operator="Treat ~/.hermes/skills/ as a directory you version-control. It is plain text, it is the source of truth, and diffing it week to week is the cheapest observability you will get on an agent that edits its own procedures."
+  architect="Skills are inspectable capability: the review surface is a directory of markdown rather than a package graph, and a skill grants no permissions — it supplies instructions to an agent that already has the tools. The one exception is inline shell, which is why it ships disabled."
+/>
+
+## Two sharp edges
+
+**Template substitution.** `${HERMES_SKILL_DIR}` and `${HERMES_SESSION_ID}` are
+substituted into the body at load time, which is how a skill refers to its own
+`scripts/` directory portably. Disable globally with `skills.template_vars: false`.
+
+**Inline shell.** A skill body can carry inline shell snippets, and they are **off by
+default** — `skills.inline_shell: true` enables them. The reason is stated plainly in
+the documentation: they execute on the host with no approval prompt.
+
+That is the one place where "a skill is just a file" stops being reassuring. A file
+that runs commands on your machine at load time, before any approval gate, is a
+different kind of object from a file that suggests commands to an agent. Leave it off
+unless you have a specific reason, and remember it exists when you install someone
+else's skill.
+
+## What to take from this
+
+A skill is instructions, addressed to an agent that already has tools. Its frontmatter
+tells Hermes when to show it, its `## When to Use` tells the agent when to reach for
+it, and everything else is the procedure.
+
+Because it is a file, everything downstream in this module follows: you can read what
+your agent learned, diff it, delete it, and put it under version control. The rest of
+the module is about what happens when the agent starts writing them itself.

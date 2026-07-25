@@ -14,10 +14,181 @@ prerequisites:
   - hermes/06-skills-and-the-loop/01-skills-as-procedure
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+The rest of this module is about skills the agent writes without being asked. This
+lesson is the other path: the one you trigger, deliberately, when you already know what
+you want captured.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+The distinction is not cosmetic. `/learn` is **user-triggered and is not part of the
+autonomous nudge loop** — different entry point, different moment, and one consequence
+at the end of this lesson that catches people out.
+
+## `/learn`, and its four sources
+
+One command, four kinds of input:
+
+```text
+/learn ~/projects/sdk focus on the auth flow
+/learn https://docs.example.com/api
+/learn how I deployed staging just now
+/learn <pasted text>
+```
+
+A directory is read with the file tools. A URL is fetched and extracted. "What I just
+did" is read from the conversation you are already in. Pasted text is used as-is.
+
+What is *not* happening is the interesting part. There is no ingestion service and no
+distillation model. The documentation is explicit: "There is no separate distillation
+engine and no model-tool footprint: the agent does the work with its existing toolset."
+
+`/learn` assembles a single prompt telling the live agent to go and read the thing you
+named and then author a `SKILL.md` with the same tool it always uses. Every surface —
+the CLI, the gateway, the dashboard's "Learn a skill" panel — calls the same function
+to build that prompt.
+
+<MarginNote>
+Which is why `/learn` behaves like the rest of the agent rather than like an import
+wizard: it can get the sources wrong, it can be argued with, and it costs a normal
+turn.
+</MarginNote>
+
+## The house style is in the prompt
+
+The prompt carries authoring standards, embedded verbatim, of the kind a maintainer
+would enforce in review: keep `description` under sixty characters, use the literal
+`author: Hermes` rather than your operating-system username, and follow the standard
+section shape.
+
+That last point about `author` is small and worth honouring if you write skills by
+hand — a directory of skills whose author field is somebody's laptop login is a
+directory that cannot be shared.
+
+<ForTrack track="architect">
+
+That the standards live in a prompt constant rather than in a validator is the whole
+character of this feature. They are advisory: nothing rejects a skill for breaching
+them. If you need conformance guaranteed rather than encouraged, the check has to be
+yours — a lint step over the skills directory, run in your own CI.
+
+</ForTrack>
+
+## The tool underneath
+
+Whether the agent is answering `/learn` or writing a skill on its own initiative, it
+reaches for one tool with six actions:
+
+| Action | Use for | Key params |
+|---|---|---|
+| `create` | New skill from scratch | `name`, `content`, optional `category` |
+| `patch` | Targeted fixes — **preferred** | `name`, `old_string`, `new_string` |
+| `edit` | Major structural rewrites | `name`, `content` |
+| `delete` | Remove a skill entirely | `name` |
+| `write_file` | Add or update supporting files | `name`, `file_path`, `file_content` |
+| `remove_file` | Remove a supporting file | `name`, `file_path` |
+
+`patch` is marked preferred in the documentation, and that preference is load-bearing
+rather than stylistic: a targeted `old_string` / `new_string` edit keeps the rest of a
+skill intact, while `edit` replaces the file wholesale and quietly discards anything
+the agent forgot to carry over.
+
+<TrackCallout
+  newcomer="You will not call these yourself — they are what the agent uses on your behalf. Knowing the names is useful mainly for reading what it did."
+  operator="patch versus edit is the difference between a diff you can review and a rewrite you cannot. If you see edit in the logs on a skill you care about, check what survived."
+  architect="Six actions, one tool, one directory. That is the complete write surface for agent-authored procedure — worth stating plainly in a threat model, because it is smaller than people assume."
+/>
+
+## Approving writes before they land
+
+By default a skill write happens and you are told afterwards. If you would rather see
+it first, turn on the gate:
+
+```yaml
+skills:
+  write_approval: true
+```
+
+Writes are then staged as JSON under `~/.hermes/pending/skills/` and nothing touches
+the skills directory until you say so. Five commands review the queue:
+
+```text
+/skills pending          # list staged writes, one line each
+/skills diff <id>        # the full unified diff
+/skills approve <id>     # apply it — or 'all'
+/skills reject <id>      # drop it — or 'all'
+/skills approval on      # turn the gate on or off, and persist it
+```
+
+<Depth min="operator">
+
+The gate is worth switching on for the first week on any machine where skills matter,
+purely as a way of finding out what your agent thinks is worth remembering. It is a
+much faster education than reading the editorial policy, and you can turn it off once
+the answers stop surprising you.
+
+</Depth>
+
+## Blueprints: a skill that wants to be a job
+
+A skill can declare that it is a runnable automation by adding a `blueprint` block:
+
+```yaml
+metadata:
+  hermes:
+    blueprint:
+      schedule: "0 9 * * *"
+      deliver: origin
+      prompt: "Task instruction for each run"
+      no_agent: false
+```
+
+Installing a skill that carries one **does not schedule anything**. It registers a
+*suggested* cron job, which you review:
+
+```text
+/suggestions
+```
+
+with `accept`, `dismiss` and `catalog` as the actions. Accepting calls the same
+job-creation path the `cronjob` tool uses — the documentation's phrasing is "no second
+job engine," and the guarantee that follows is the useful part: everything scheduled on
+your machine is in one place, whatever created it.
+
+<ForTrack track="architect">
+
+Suggestions arrive from four sources, and it is worth knowing which is which when one
+appears: `catalog` (curated starters), `blueprint` (a skill you installed), `usage` (the
+background review noticed you asking for the same thing repeatedly), and `integration`
+(you connected an account). Only the second requires you to have installed anything.
+
+</ForTrack>
+
+That an installed file can propose recurring unattended work is exactly the kind of
+thing that should require a human keystroke, and it does.
+
+## The catch at the end
+
+`/learn` writes a skill using the same tool the background review uses, into the same
+directory. But it does not mark that skill as agent-created.
+
+That marker is set by exactly one code path — the background self-improvement review —
+and the curator uses it to decide which skills it is allowed to maintain. So a skill
+you asked for is left alone by the curator: never consolidated into an umbrella, never
+transitioned to stale, never archived.
+
+<TrackCallout
+  newcomer="Practically: skills you asked for stay exactly as you left them."
+  operator="A deliberate line between autonomous learning and user intent. If you want a skill to be curated, the curator will not do it just because the file looks the same — the provenance marker decides, not the contents."
+  architect="Provenance is a first-class field here, and it governs a maintenance boundary rather than merely recording history. Worth noting in any audit that asks which artefacts on a host are subject to automated modification."
+/>
+
+## What to take from this
+
+`/learn` is the agent doing ordinary work with ordinary tools against a prompt you
+triggered. It writes through the same six-action tool as everything else, it can be
+gated behind an approval queue, and what it produces is a file the curator will not
+touch.
+
+If you know what you want captured, say so. The autonomous loop in the next lesson is
+good at noticing patterns you did not articulate — but it is not a substitute for
+telling it.
