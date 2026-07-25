@@ -1,5 +1,5 @@
 ---
-title: 'Other people''s skills'
+title: "Other people's skills"
 description: >-
   The hub, the taps, the four trust levels, the scan that runs before
   install, and what the wildly inconsistent skill counts tell you about this
@@ -14,10 +14,147 @@ prerequisites:
   - hermes/06-skills-and-the-loop/01-skills-as-procedure
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+A skill is a file that tells an agent what to do. Installing someone else's skill is
+therefore closer to running their script than to importing their library, and the
+ecosystem around it is young enough that the difference matters.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+This lesson is the practical part — where skills come from, what the trust levels mean,
+what is checked before one lands — and one honest observation about the numbers.
+
+## Where they come from
+
+Hermes installs from several named sources: `official` (built into the repository),
+`skills-sh` (a public directory), `well-known` (a URL exposing
+`/.well-known/skills/index.json`), `url` (a direct link to a `SKILL.md`), and `github`
+(a repository and path). Several third-party hubs sit alongside them.
+
+<Command verified="v0.19.0" note="command surface from the skills documentation">hermes skills browse --source official</Command>
+
+The optional catalogue that ships with Hermes but is not installed by default is worth
+knowing about before you go looking further afield:
+
+<Command verified="v0.19.0" note="command surface from the skills documentation">hermes skills install official/security/1password</Command>
+
+## The four trust levels
+
+Every source resolves to one of four levels, and they are not advisory labels — they
+change what happens at install time.
+
+| Level | What it is | On a bad finding |
+|---|---|---|
+| `builtin` | Ships in the repository | Always trusted |
+| `official` | The repo's optional catalogue | Built-in trust, no warning |
+| `trusted` | A short list of vetted orgs | Permissive policy |
+| `community` | Everything else | Blocked, unless you override |
+
+The `trusted` list is short and specific — OpenAI, Anthropic, HuggingFace and NVIDIA
+skill repositories. Everything outside it is `community`, which is most of the
+internet.
+
+For a community skill, a non-dangerous finding can be overridden with `--force`. A
+finding classified **dangerous stays blocked**, and `--force` does not move it. That is
+the one place in this system where the software declines to let you talk it round.
+
+<MarginNote>
+Since v0.17.0 a security scan runs on each skill before install, and v0.19.0 folded
+skills, tools, MCP and the hub into a single Capabilities page.
+</MarginNote>
+
+## What the scan is and is not
+
+It is a scan of a file for dangerous patterns. It is not a review of intent, and a
+skill is a document written to be *followed by an agent with your credentials*. The
+gap between "contains no dangerous pattern" and "will not cause harm" is exactly as
+wide as it sounds.
+
+The community's own ecosystem listing says this about itself, and it is the most useful
+sentence in the whole space: a listing is **"a discovery aid, not a security
+endorsement."** It goes on to recommend checking who can trigger a skill, what tools
+and credentials it touches, and preferring the smallest toolset and an isolated backend
+for untrusted work.
+
+An independent security analysis of this class of product reached a compatible
+conclusion, and framed it structurally: the more consequential risks are architectural
+rather than implementation bugs — persistent memory enabling indirect prompt injection,
+and community skill marketplaces carrying **npm-style supply-chain risk**.
+
+<TrackCallout
+  newcomer="Install from official and trusted sources and you are fine. If you want something from a community source, read the SKILL.md first — it is a page of markdown and you can understand all of it."
+  operator="Treat a community skill like a shell script from a gist, because functionally that is what it is. Check what it touches before you install it, not after something surprising happens."
+  architect="The trust model is source-based, not content-based: the scan gates on patterns, the level gates on origin, and neither evaluates what a procedure will cause an agent holding real credentials to do. Any policy you write should name allowed sources rather than rely on the scan."
+/>
+
+## Your own tap
+
+A tap is a GitHub repository of curated skills under a `skills/` path — which makes
+"publish an internal skill library" a matter of putting markdown in a repo:
+
+```json
+{ "taps": [{ "repo": "my-org/platform-docs", "path": "internal/skills/" }] }
+```
+
+That lives in `~/.hermes/.hub/taps.json`. Slugs come from directory names; entries
+beginning with `.` or `_` are ignored.
+
+For an organisation, this is the answer to the trust problem rather than a
+convenience: an internal tap is a source you control, reviewed by the process you
+already use for code.
+
+## The update rule worth knowing
+
+Bundled skills sync on update, tracked by content hashes in a `.bundled_manifest` file
+at the skills root. An unchanged bundled skill is silently updated. **A bundled skill
+you have edited is permanently skipped** — your edit is protected, and it will never
+receive an upstream fix again.
+
+<Depth min="operator">
+
+That is a good default and a quiet trap. If you patch a bundled skill to fix something,
+you have opted that skill out of maintenance forever, without a warning at the moment
+it happens. Prefer copying it to a new name and editing the copy, so the original keeps
+tracking upstream and your version is visibly yours.
+
+A related switch: `skills.guard_agent_created: true` turns on a content scanner aimed
+specifically at skills your own agent wrote. Different risk, same instinct.
+
+</Depth>
+
+## What the numbers tell you
+
+Three figures circulate for how many skills are available, and they cannot all be true.
+
+| Figure | Source |
+|---|---|
+| 19,932 catalogue entries | Hermes's own release notes, v0.15.1 |
+| 672 skills | A third-party marketing site |
+| 124,000+ skills | A different third-party site |
+
+The first is the only one with a traceable origin: a specific release fixed a
+pagination cap and surfaced the full catalogue count. The other two are unverified and
+disagree with each other by a factor of nearly two hundred.
+
+The guide's position is to report all three and endorse none. But the spread is itself
+information, and it is the reason this lesson exists in the shape it does: **an
+ecosystem that cannot agree on its own size to within two orders of magnitude is not
+one to install from casually.** Judge a skill on its source and its contents, because
+the aggregate numbers will not help you.
+
+<ForTrack track="architect">
+
+The open format underneath is genuinely open, and that cuts both ways. At least
+forty-two distinct clients support the same `SKILL.md` standard — Claude Code, Codex,
+Cursor, Gemini CLI, Copilot, VS Code and many more — so a skill you write is portable,
+and a skill you install was very likely not written with Hermes's tool surface or its
+approval model in mind.
+
+</ForTrack>
+
+## What to take from this
+
+Source over popularity. `builtin` and `official` are safe by construction, `trusted` is
+four named organisations, and `community` means read it yourself.
+
+For anything you rely on, run your own tap. It turns the trust question into a code
+review question, which your organisation already knows how to answer.

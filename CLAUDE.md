@@ -67,11 +67,10 @@ export, content pipeline. Full 51-lesson skeleton generated from the map by
 switcher, progress marks. Simulation engine with a pure timeline core and one flagship
 replay.
 
-**Written lessons: 10 of 51.** All of module 1; `03/01`; `05/03`; `06/01`, `06/04`,
-`06/05`; `08/01`. This line has been stale before, so count the files rather than
-trusting it.
+**Written lessons: 15 of 51.** All of module 1; **all of module 6**; `03/01`; `05/03`;
+`08/01`. This line has been stale before, so count the files rather than trusting it.
 
-**Not built.** Remaining 41 lessons. SIM-4. Search, OG images, JSON-LD, sitemap. The
+**Not built.** Remaining 36 lessons. SIM-4. Search, OG images, JSON-LD, sitemap. The
 landing page — currently a labelled placeholder. Glossary and cheatsheets. Colophon.
 
 **Verification is thinner than it looks.** `pnpm verify` runs typecheck, lint, unit tests,
@@ -142,14 +141,19 @@ specifies six; VIZ-1, VIZ-5 and VIZ-6 were never in P7's scope and remain unbuil
 
 Next is **the remaining lessons, module by module**, against `research/curriculum-map.md`,
 which carries per-lesson sources and four amendment sections at the end recording what the
-captures changed. Module 6 is half written — `01`, `04` and `05` — so `02`, `03`, `06`,
-`07` and `08` finish it. `06/01` points at `05/01`, still a stub, which is the first
-lesson of the next module worth opening.
+captures changed. **Module 5 is the natural next one** — `05/01`
+(`what-is-in-the-system-prompt`) is the prerequisite two written module-6 lessons point
+at, and it also hosts VIZ-1, so writing it earns a plate.
 
-One deviation to know about: `06/04`'s source list in the map includes `[02]` §2's
-output/media delivery directives. They were left out — they describe how a *reply* is
-rendered on a messaging platform, not how a skill is authored, and belong with the
-gateway. Put them there rather than reinstating them here.
+Two things about module 6 worth not rediscovering:
+
+- `06/04`'s source list in the map includes `[02]` §2's output/media delivery directives.
+  They were left out — they describe how a *reply* renders on a messaging platform, not
+  how a skill is authored, and belong with the gateway. Put them there.
+- The map's conflict table (§18) assigns "autonomous skill creation reliability" to
+  `06/08` as unresolved, and research gap #7 still says the same. The capture in `[09]`
+  §8 partly overtakes both: it settles *whether* it fires, not *how reliably*. `06/08`
+  says exactly that and no more — do not upgrade it to "resolved" on one observation.
 
 `06/05` still owes SIM-4, the flagship replay. It is deliberately not stubbed in the MDX:
 the SKILL.md diff it needs to stop on has never been captured, so the replay cannot be

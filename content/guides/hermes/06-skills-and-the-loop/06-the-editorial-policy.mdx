@@ -13,10 +13,155 @@ prerequisites:
   - hermes/06-skills-and-the-loop/05-the-nudge-and-the-review-fork
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+The previous lesson covered what fires and what it is allowed to touch. This one is
+about what it decides — and the answer is stranger than the machinery around it.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+There is no classifier. No scoring model, no heuristic, no learned filter. The
+editorial policy is a **string constant**: a block of instruction text sent to the
+review fork as its user message. A normal model turn reads it and does what it says.
+
+<MarginNote>
+Everything quoted here is read from the source at a pinned commit rather than from
+documentation. The strings are the policy; there is nothing behind them.
+</MarginNote>
+
+That is good news, because a policy written in English is a policy you can read. It is
+also why this lesson is worth its twelve minutes: reading it is how you predict whether
+your agent gets better or gets strange.
+
+## It is instructed to be biased toward writing
+
+The first line that matters sets the disposition, and it is not neutral:
+
+> Be **ACTIVE** — most sessions produce at least one skill update, even if small. A
+> pass that does nothing is a missed learning opportunity, not a neutral outcome.
+
+Read that twice, because it explains behaviour you will otherwise find puzzling. The
+review is not asking "did something important happen here?" and stopping when the
+answer is no. It has been told that stopping is a failure.
+
+<TrackCallout
+  newcomer="This is why your agent accumulates skills faster than you expected. It is not confused — it was told that doing nothing is a wasted opportunity."
+  operator="Expect a write bias, and budget for pruning rather than for scarcity. The curator in the next lesson exists precisely because this instruction works."
+  architect="A system instructed that inaction is failure will produce false positives, by construction. That is a deliberate trade — recall over precision — and it is the right one only if something downstream prunes. Verify that the curator is enabled before treating this as safe."
+/>
+
+## What it is told to look for
+
+Any one of four signals is enough to warrant an update:
+
+- You corrected its style, tone, format or verbosity
+- You corrected its workflow or approach
+- A non-trivial technique, fix or workaround emerged
+- A skill it had loaded turned out to be wrong or outdated
+
+The first is more pointed in the original than that summary suggests. Frustration
+signals, the prompt says, "are FIRST-CLASS skill signals, not just memory signals."
+
+Which means: when you snap at your agent for being verbose, that is not noise it
+discards. It is training data with priority. Worth knowing before you decide how you
+talk to it.
+
+## Where the update is allowed to land
+
+The prompt gives a strict preference order and instructs the model to take the earliest
+option that fits.
+
+1. **Patch a skill already loaded this session.** The reasoning is quoted directly:
+   "It is the skill that was in play, so it's the right one to extend." This is the
+   concrete mechanism behind the phrase "skills self-improve during use."
+2. **Patch an existing umbrella skill**, found by listing and viewing.
+3. **Add a support file** under an existing umbrella — `references/<topic>.md` for
+   detail, `templates/` for copy-and-modify starters, `scripts/` for re-runnable checks.
+4. **Create a new umbrella skill** — only when nothing existing covers the class.
+
+The order is doing real work. Three of the four options improve something that already
+exists; only the last one adds to the count. That is what keeps a library converging
+instead of sprawling.
+
+Step four also carries a naming prohibition worth quoting, because it is the difference
+between a library and a junk drawer: the name "MUST NOT be a specific PR number, error
+string, feature codename, library-alone name, or 'fix-X / debug-Y / audit-Z-today'
+session artifact."
+
+<Depth min="operator">
+
+The target shape is stated explicitly: class-level skills, each with a rich `SKILL.md`
+and a `references/` directory for session-specific detail — "not a long flat list of
+narrow one-session-one-skill entries."
+
+If your skills directory is filling with names like `fix-auth-timeout-tuesday`, the
+policy is not being followed, and the usual cause is that nothing existed at the class
+level for the review to patch. Seeding one good umbrella skill by hand often fixes the
+pattern, because it gives step two something to find.
+
+</Depth>
+
+## What it is told never to capture
+
+This is the most useful list in the whole system, and it exists because each item
+describes a way an agent poisons itself.
+
+**Environment-dependent failures** — a missing binary, an unconfigured credential.
+"The user can fix these, they are not durable rules."
+
+**Negative claims about tools** — and here the prompt is unusually vivid about the
+consequence:
+
+> "browser tools do not work" — these harden into refusals the agent cites against
+> itself for months after the actual problem was fixed.
+
+**Transient session errors** that resolved before the conversation ended.
+
+**One-off task narratives** — what happened, rather than what to do.
+
+<ForTrack track="architect">
+
+That second item is the failure mode to carry into any review of a self-improving
+system. A capability claim written into durable memory becomes a constraint the system
+enforces on itself, indefinitely, with no expiry and no re-test. The asymmetry is
+brutal: the cost of writing it is one sentence, and the cost of discovering it is
+months of an agent declining work it could do.
+
+The mitigation available to you is not configuration — it is reading the skills
+directory occasionally and deleting sentences that begin "X does not work."
+
+</ForTrack>
+
+## What it will not touch
+
+Bundled skills and hub-installed skills are off-limits to the review fork. If the only
+skills that need updating are protected ones, the instructed output is a literal
+string:
+
+<Transcript fidelity="reconstructed" source="agent/background_review.py, pinned commit">
+Nothing to save.
+</Transcript>
+
+Which is the one case where the "be active" instruction is explicitly overridden.
+
+## The counters it leaves behind
+
+Both this path and the curator write telemetry to `~/.hermes/skills/.usage.json`, and
+knowing which counter means what makes the file readable:
+
+- `view_count` — the agent opened the skill to read it
+- `use_count` — the skill was loaded into a conversation's prompt
+- `patch_count` — any patch, edit, file write or file removal
+
+Those three, plus `last_used_at` and `last_patched_at`, are what the curator reads to
+decide a skill's fate. A skill with a high `view_count` and a low `use_count` is one
+the agent keeps checking and rarely applying — usually a trigger problem in its
+`## When to Use`.
+
+## What to take from this
+
+The policy is text, and you can read all of it. Its disposition is to write rather than
+abstain, its preference is to improve rather than add, and its prohibitions are aimed
+squarely at the ways an agent talks itself into being less capable than it is.
+
+The one thing to actually do with this lesson: **read your skills directory
+occasionally**, looking specifically for durable negative claims. Everything else in
+the loop degrades gracefully. That one compounds.

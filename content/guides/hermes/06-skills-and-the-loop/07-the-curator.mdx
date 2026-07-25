@@ -15,10 +15,157 @@ prerequisites:
   - hermes/06-skills-and-the-loop/06-the-editorial-policy
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+The review fork writes skills and is instructed that writing nothing is a wasted
+opportunity. Left alone, that has one obvious outcome, and the documentation names it
+without flinching: "you end up with dozens of narrow near-duplicates that pollute the
+catalog and waste tokens."
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+The curator is the answer to that. It is a maintenance pass over **agent-created
+skills** — and the qualification is the most important thing in this lesson, so it gets
+its own section.
+
+## When it runs
+
+Not a daemon. It is checked on CLI session start and on a recurring tick inside the
+gateway, and it fires only when **both** conditions hold:
+
+```yaml
+curator:
+  enabled: true
+  interval_hours: 168        # seven days since the last run
+  min_idle_hours: 2          # and two hours of agent idleness
+```
+
+Both, not either. A machine you use constantly may go a long time without a curator
+pass, because the idle window never opens.
+
+On a fresh install the first observation seeds the clock to *now* and defers the first
+real pass by a full interval — the documentation's reasoning is that it "gives you a
+full interval to review your skill library before the curator ever touches it."
+
+<MarginNote>
+So on a new machine, nothing is curated for seven days. If you are evaluating this
+behaviour deliberately, that is the wait — or run `hermes curator run --dry-run`.
+</MarginNote>
+
+## Two phases, and only one of them thinks
+
+**Phase one is deterministic and always runs.** No model involved. It moves skills
+between states on a clock:
+
+- unused for `stale_after_days` (30) → `stale`
+- unused for `archive_after_days` (90) → moved to `~/.hermes/skills/.archive/`
+
+**Phase two is an LLM pass, and it is off by default.** `curator.consolidate: false`
+until you turn it on. When enabled, a forked agent on the auxiliary model surveys
+agent-created skills, can open any of them, and proposes keep, patch, consolidate or
+archive.
+
+That split is worth internalising: **on a default install the curator never reasons
+about your skills.** It only counts days. Everything people worry about — an LLM
+quietly merging their work — requires a configuration change they made themselves.
+
+<TrackCallout
+  newcomer="Out of the box this only files away skills nothing has used in three months. It cannot delete anything."
+  operator="consolidate: false is the default and the deterministic phase is the whole behaviour you get. Turn consolidation on deliberately, after you have looked at a dry run."
+  architect="Two phases with different risk profiles and different enablement defaults, which is the right shape. The auditable claim is: on default configuration no model reads your skill library on a schedule."
+/>
+
+## It never deletes
+
+The worst thing the curator does is archive, and archives are recoverable. Before every
+real pass it takes a `tar.gz` snapshot of the whole skills directory:
+
+```text
+~/.hermes/skills/.curator_backups/<utc-iso>/skills.tar.gz
+```
+
+`hermes curator rollback` restores the newest snapshot, and **the rollback is itself
+reversible** — it snapshots before restoring, tagged as a pre-rollback. Five snapshots
+are retained by default.
+
+Every run also writes a report you can read afterwards, at
+`~/.hermes/logs/curator/<timestamp>/`, as both `run.json` and a human-readable
+`REPORT.md`. When consolidation ran, the report includes an explicit rename map of old
+name to new name — which is what makes a consolidation reviewable rather than merely
+survivable.
+
+## The three-part test
+
+Here is the qualification that governs everything above. A skill is "agent-created" —
+and therefore curatable — only if all three hold:
+
+1. It is not in `.bundled_manifest` (so: not a bundled skill)
+2. It is not in `.hub/lock.json` (so: not hub-installed)
+3. It is marked `created_by: agent` in the usage sidecar
+
+And **exactly one code path sets that marker**: the background self-improvement review,
+when it creates a new umbrella skill during its periodic pass.
+
+The consequence is the line the whole subsystem is drawn around. A skill you asked for
+— created mid-conversation at your explicit request, or via `/learn` — is *not* marked,
+and the curator leaves it alone permanently. Never consolidated, never transitioned to
+stale, never archived.
+
+<Depth min="operator">
+
+Bundled skills are a partial exception in the other direction. `prune_builtins: true`
+is the default, which lets the curator archive unused bundled skills after the same 90
+days — but bundled skills are **only ever archived**, never patched, consolidated or
+deleted. Hub-installed skills are categorically exempt regardless of configuration.
+
+So the permission ladder is: agent-created skills can be transitioned, patched and
+consolidated; bundled skills can be archived and nothing else; hub skills and
+user-requested skills are untouched.
+
+</Depth>
+
+## Pinning, and what it does not exempt
+
+`hermes curator pin <skill>` sets a flag in the usage sidecar and buys two things: the
+skill is exempt from curator transitions, and the agent's own delete action refuses on
+it, pointing at `unpin`.
+
+It does **not** stop content patches. The review fork can still improve a pinned
+skill's body — it simply can never remove, archive or consolidate it. Pinning protects
+a skill's existence, not its text.
+
+Only agent-created skills can be pinned, which follows from the same test. A small
+hardcoded set of protected built-ins — `plan`, which backs the `/plan` command, among
+them — is filtered out of the candidate list entirely and cannot be touched under any
+configuration or pin state.
+
+## Consolidation is package-aware
+
+When the LLM phase is enabled, it does not flatten skill directories into each other.
+A skill carrying `references/`, `templates/`, `scripts/` or `assets/` must be kept
+standalone, re-homed with its paths rewritten, or archived whole — never picked apart
+piecemeal into another skill's references.
+
+That rule exists because the alternative silently breaks every internal path a skill
+uses to find its own files.
+
+## The commands
+
+<Command verified="v0.19.0" note="argparse tree read from the CLI source at a pinned commit">hermes curator status</Command>
+
+`status` reports the last run, counts, the pinned list and the five least recently used
+skills. Beyond it: `run` (with `--consolidate`, `--background`, `--dry-run`), `pause`
+and `resume`, `pin` and `unpin`, `restore`, `list-archived`, `archive`, `prune`,
+`backup` and `rollback`. All of it is also reachable as `/curator` inside a session.
+
+`--dry-run` is the one to reach for first. It tells you what a pass would do to a
+library you have not looked at in a month, which is usually more interesting than
+expected.
+
+## What to take from this
+
+The curator is narrower than its reputation. It touches only skills your agent wrote
+for itself, it never deletes, it backs up before acting, it reports afterwards, and on
+default configuration it does not use a model at all.
+
+The one thing worth doing: run `hermes curator status` and `hermes curator run
+--dry-run` once, a few weeks in. If the loop has been productive, that output is the
+first honest picture you will get of what your agent has been teaching itself.

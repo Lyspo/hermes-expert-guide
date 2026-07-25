@@ -14,10 +14,116 @@ prerequisites:
   - hermes/05-what-it-knows/01-what-is-in-the-system-prompt
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Every core tool's schema is sent on every API call. Skills are not, and that single
+asymmetry is why you can install a hundred of them without noticing.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+The mechanism has a name — **progressive disclosure** — and it is three levels deep.
+
+## The three levels
+
+**Level 0 — the index.** At startup the agent receives each skill's name, description
+and category. Nothing else. The documentation puts the whole index at roughly **three
+thousand tokens**, which is the entire standing cost of your skill library however
+large it grows.
+
+**Level 1 — the skill.** When something matches, the agent calls `skill_view(name)` and
+the full `SKILL.md` enters the context. Now it costs what it costs, but only in the
+conversation that needed it.
+
+**Level 2 — the reference.** `skill_view(name, path)` pulls one file out of the skill's
+`references/` directory. This is why a well-written skill puts its trigger and its
+procedure in `SKILL.md` and its lookup tables in a reference: the tables are loaded
+only in the sessions that actually consult them.
+
+The open standard Hermes follows describes the same three beats as discovery,
+activation and execution.
+
+## What it looks like when it happens
+
+Level 2 is the one people take on faith. Here it is in a real session's tool feed, two
+consecutive lines:
+
+<Transcript label="tool feed" fidelity="verbatim" source="Captured session, v0.19.0, 2026-07-25">
+{`┊ 📚 skill     hermes-agent  0.0s
+┊ 📚 skill     hermes-agent → references/cli-reference.md  0.1s`}
+</Transcript>
+
+The first line is the skill loading. The second is the same skill reaching for one of
+its reference files, a tenth of a second later, because the work turned out to need it.
+The `→ <path>` form is the tell.
+
+<MarginNote>
+Worth watching for on your own machine. If a skill you wrote never shows the arrow
+form, its references are dead weight — either nothing points at them or the pointer is
+too vague to act on.
+</MarginNote>
+
+## Hiding a skill that would not help
+
+Two frontmatter flags decide whether a skill appears in the index at all:
+
+```yaml
+metadata:
+  hermes:
+    requires_toolsets: [web]        # hide unless the web toolset is available
+    fallback_for_toolsets: [browser] # hide when the browser toolset IS available
+```
+
+`requires_*` is the obvious one: do not offer a skill that depends on a capability this
+profile does not have.
+
+`fallback_for_*` is the clever one, and it inverts. It hides the skill *when the better
+thing is present*. The bundled `duckduckgo-search` skill uses exactly this — it exists
+to cover the case where no proper web toolset is configured, and it gets out of the way
+the moment one is.
+
+<Depth min="operator">
+
+Both have `_tools` variants as well as `_toolsets`, so the condition can be a single
+tool rather than a whole family. That is the right granularity for the common case: a
+skill that substitutes for one API-keyed tool when the key is missing.
+
+Skills can also live outside `~/.hermes/skills/` — `skills.external_dirs` accepts
+absolute paths, `~`, and `${ENV_VAR}` expansion. Local skills shadow external ones of
+the same name, new writes always land in the primary directory, and paths that do not
+exist are ignored silently. That last behaviour is worth knowing before you debug a
+skill that never appears.
+
+</Depth>
+
+## The ceiling this does not reach
+
+Progressive disclosure solves the skills problem completely. It does not solve the
+problem people usually mean when they complain about context cost, and it is worth
+being precise about the difference.
+
+Skills are lazy. **Tool schemas are not.** Every core tool's definition ships on every
+call, and the project's own issue tracker has measured what that adds up to: an
+analysis titled "73% of each API call is fixed overhead" — roughly 13.9K tokens — sits
+open alongside a long-running proposal for lazy, two-pass tool-schema loading.
+
+So the honest summary is: a hundred skills cost you about three thousand tokens, and
+your tool schemas probably cost four times that no matter what you do. Progressive
+disclosure is a real win in the half of the problem it covers.
+
+<ForTrack track="architect">
+
+The community has already built on top of this rather than waiting. One widely
+installed plugin is a five-layer skill router that narrows fifty-plus installed skills
+to five candidates per call — evidence that at genuine scale, a three-thousand-token
+flat index starts to be worth ranking rather than sending whole. If your skill library
+is heading past fifty, that is the shape of the next problem.
+
+</ForTrack>
+
+## What to take from this
+
+Install freely. The index is small, the skill body is loaded only when it matches, and
+a reference file is loaded only when the skill reaches for it.
+
+The design consequence for anything you write yourself: **put the trigger and the
+procedure in `SKILL.md`, and put the bulk in `references/`.** The agent that wrote a
+skill for itself in the capture did exactly that, unprompted, which is a reasonable
+endorsement of the pattern.

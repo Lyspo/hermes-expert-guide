@@ -15,10 +15,156 @@ prerequisites:
   - hermes/06-skills-and-the-loop/07-the-curator
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Everything so far has been mechanism. This lesson is about the part the software does
+not do for you, and the community's best sentence on the subject is the right place to
+start:
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+> The trick is not "evolve faster"; it's "evolve without quietly getting weird."
+
+A loop that writes procedures for itself, with an editorial policy that treats
+inaction as failure, will drift. Not dramatically — quietly, in the direction of
+whatever you happened to do last week.
+
+## First, the expectation to correct
+
+The most common disappointment with this feature comes from a reasonable-sounding
+assumption. One of the more careful community accounts states the correction plainly:
+
+> automatic does not mean magic... passive use generates minimal gains
+
+The loop learns from *corrections*, and corrections only exist if you make them. An
+agent you never push back on has nothing to capture except the fact that everything
+went fine. That is why two people can run the same install for a month and one of them
+has a useful skill library and the other has three near-empty files.
+
+<TrackCallout
+  newcomer="If you want it to get better, tell it when it is wrong. That is not a workaround — it is the input the mechanism runs on."
+  operator="Correction volume is the leading indicator here. A quiet month produces a thin library, and no configuration change fixes that."
+  architect="The system's learning rate is a function of user-supplied signal, which makes it unpredictable across teams by construction. Do not model expected improvement as a property of the deployment."
+/>
+
+## Champion and challenger
+
+The discipline layer power users add is borrowed straight from machine-learning
+evaluation, and it costs nothing to adopt.
+
+Keep a **champion** — the skill you currently trust. When the loop produces a revision,
+treat it as a **challenger**. Hold out a small set of examples, around six, that the
+loop has never touched. Promote the challenger only if it beats the champion **on the
+holdout set**, by a margin you decided in advance.
+
+The principle behind it is stated more sharply than most engineering advice:
+
+> never promote on the working set... holdout promotion is the immune system
+
+This is precisely the failure the self-improvement loop is prone to. It reads a recent
+session and generalises from it; a skill that improves on last week's examples and
+degrades everywhere else is exactly what that process produces when nothing checks it.
+
+<Depth min="operator">
+
+Six untouched examples per skill you actually depend on is a small ask, and it is the
+whole apparatus. The reported applications are unglamorous and repetitive by design —
+daily reports, headline synthesis, triage — because repetitive work is where drift is
+both most costly and most measurable.
+
+You do not need tooling for this. A directory of inputs and expected shapes, and the
+discipline not to look at them while iterating, is the mechanism.
+
+</Depth>
+
+## The pipeline that is not part of Hermes
+
+There is a repository called `hermes-agent-self-evolution` that gets cited as though it
+were a Hermes feature. It is not, and the distinction is worth getting right.
+
+It lives under the NousResearch organisation, so it is not a third-party project. But
+it is a **separate pipeline that proposes changes by pull request**, not a runtime
+capability. You point it at a local install, it runs an evolutionary search over a
+skill's text using DSPy and GEPA, and it opens a PR.
+
+What is genuinely good about it is the gate list. A candidate must pass all five:
+
+1. The full test suite, at 100%
+2. Size limits — skills under 15 KB, tool descriptions under 500 characters
+3. A caching-compatibility check, so nothing mutates a prompt mid-conversation
+4. A semantic-preservation check
+5. **Mandatory human PR review — "never direct commit"**
+
+No GPU is involved; it works through API calls at an estimated two to ten dollars per
+run.
+
+<ForTrack track="architect">
+
+Two things to weigh before you build on it. Its roadmap shows only **Phase 1 — skill
+files — implemented**; tool descriptions, system-prompt sections, code evolution and
+the continuous loop are all marked planned rather than built. And its issue tracker
+carries a reported no-op bug in which an optimised skill comes back identical to the
+baseline, alongside validator bugs rejecting legitimate output.
+
+Its own users are unsure of the boundary — there is an open issue asking, in effect,
+whether the project is integrated into Hermes at all. The answer is no, and if a
+document you are reading implies otherwise, that is a reason to check its other claims.
+
+</ForTrack>
+
+## What one observation settled, and what it did not
+
+Two first-person accounts disagree about whether autonomous skill creation actually
+fires. One reports it happening unprompted after a complex task; another reports it
+staying vague and generic unless explicitly asked.
+
+A direct capture on a fresh v0.19.0 install landed on one side of that: the review
+fired unprompted after the first substantial session, announced itself, and wrote a
+skill that turned out to be well-formed — a real trigger sentence, a numbered workflow,
+a `## Pitfalls` section, and a reference file it split out on its own.
+
+<Revised
+  was="Whether autonomous skill creation reliably fires is disputed between first-hand accounts."
+  now="It fires. Observed unprompted on the first substantial session of a fresh install, producing a well-structured skill rather than a generic one."
+  why="Captured from a real v0.19.0 session, with the resulting SKILL.md read from disk"
+  when="2026-07-25"
+/>
+
+That settles *whether*. It does not settle *reliably* — one observation is an existence
+proof, not a rate. The honest position is that the mechanism demonstrably works, and
+that the accounts reporting thin results are more likely describing the
+correction-volume problem at the top of this lesson than a broken feature.
+
+## The problem nobody has solved
+
+Here is the open one, and it is worth knowing that it is open rather than discovering
+it yourself.
+
+A skill has no version. The file an agent writes carries `name` and `description` and
+nothing that identifies a revision. The curator's reports record renames, and
+`.usage.json` counts patches — but none of that answers the question you will
+eventually want answered:
+
+**Which version of which skill produced that output?**
+
+The project's own issue tracker carries this as an open request, filed under a title
+that names the need exactly: receipts for self-improving agents, proving which skill
+version produced which output.
+
+<ForTrack track="architect">
+
+For a regulated or safety-critical deployment this is the blocker, and no configuration
+closes it. What you can do today is external: keep `~/.hermes/skills/` in version
+control with automatic commits, so the directory's history supplies the provenance the
+files do not. It is a workaround, and it is currently the only answer.
+
+</ForTrack>
+
+## What to take from this
+
+Three things, in order of how much they will matter to you.
+
+Correct your agent, or it will not learn. Hold out examples before you trust a
+revision. And keep the skills directory under version control, because the software
+cannot yet tell you which version of a procedure produced a given result.
+
+The loop is real and it works. Keeping it pointed in a useful direction is still a
+human job.
