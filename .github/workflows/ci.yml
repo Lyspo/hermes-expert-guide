@@ -36,11 +36,28 @@ jobs:
       - name: Unit tests
         run: pnpm test
 
+      - name: Social cards
+        run: pnpm og
+
       - name: Build and export
         run: pnpm build
 
+      - name: Search index
+        run: pnpm search-index
+
       - name: Internal links
         run: pnpm links
+
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Runs against out/, which the previous steps just produced.
+      - name: End-to-end and accessibility
+        run: pnpm e2e
+
+      - name: JavaScript budgets
+        run: pnpm budgets
+        continue-on-error: true
 
       - name: Upload export
         uses: actions/upload-artifact@v4

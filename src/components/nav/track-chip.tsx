@@ -43,7 +43,7 @@ export function TrackChip() {
         className="inline-flex h-[1.75rem] w-full cursor-pointer items-center justify-center gap-1.5 border border-ice-faint bg-transparent font-mono text-[0.65rem] tracking-[0.08em] text-ice uppercase transition-colors duration-200 hover:border-ice"
       >
         {TRACK_LABELS[state.track]}
-        <span aria-hidden="true" className="text-ice-faint">
+        <span aria-hidden="true" className="text-ice-dim">
           {open ? '–' : '⌄'}
         </span>
       </button>

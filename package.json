@@ -15,12 +15,13 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:e2e": "playwright test",
     "links": "node scripts/check-links.mjs",
     "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm og && pnpm build && pnpm search-index && pnpm links",
     "content": "content-collections build",
     "search-index": "node scripts/build-search.mjs",
-    "og": "pnpm content && node scripts/build-og.mjs"
+    "og": "pnpm content && node scripts/build-og.mjs",
+    "budgets": "node scripts/check-budgets.mjs",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@gsap/react": "2.1.2",
@@ -32,11 +33,13 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@content-collections/cli": "0.1.9",
     "@content-collections/core": "0.15.2",
     "@content-collections/mdx": "0.2.2",
     "@content-collections/next": "^0.2.11",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.62.0",
     "@resvg/resvg-js": "2.6.2",
     "@shikijs/rehype": "4.3.1",
     "@tailwindcss/postcss": "4.3.3",

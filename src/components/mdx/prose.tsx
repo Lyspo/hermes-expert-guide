@@ -31,13 +31,13 @@ export const prose = {
   ),
 
   ul: ({ children }: { children?: ReactNode }) => (
-    <ul className="mb-[var(--step)] max-w-[68ch] list-disc space-y-[calc(var(--step)*0.3)] pl-[var(--step)] marker:text-ice-faint">
+    <ul className="mb-[var(--step)] max-w-[68ch] list-disc space-y-[calc(var(--step)*0.3)] pl-[var(--step)] marker:text-ice-dim">
       {children}
     </ul>
   ),
 
   ol: ({ children }: { children?: ReactNode }) => (
-    <ol className="mb-[var(--step)] max-w-[68ch] list-decimal space-y-[calc(var(--step)*0.3)] pl-[var(--step)] marker:font-mono marker:text-ice-faint">
+    <ol className="mb-[var(--step)] max-w-[68ch] list-decimal space-y-[calc(var(--step)*0.3)] pl-[var(--step)] marker:font-mono marker:text-ice-dim">
       {children}
     </ol>
   ),

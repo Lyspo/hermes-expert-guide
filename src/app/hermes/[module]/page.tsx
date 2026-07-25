@@ -61,7 +61,7 @@ export default async function ModulePage({ params }: { params: Params }) {
             const written = isWritten(lesson)
             const body = (
               <>
-                <span className="shrink-0 font-mono text-[0.7rem] text-ice-faint">
+                <span className="shrink-0 font-mono text-[0.7rem] text-ice-dim">
                   {String(lesson.order).padStart(2, '0')}
                 </span>
                 <span className="flex-1">
@@ -70,7 +70,7 @@ export default async function ModulePage({ params }: { params: Params }) {
                     {lesson.description}
                   </span>
                 </span>
-                <span className="shrink-0 font-mono text-[0.7rem] text-ice-faint">
+                <span className="shrink-0 font-mono text-[0.7rem] text-ice-dim">
                   {written ? `${lesson.duration} min` : 'planned'}
                 </span>
               </>

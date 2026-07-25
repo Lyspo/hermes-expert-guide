@@ -50,7 +50,7 @@ export default function HomePage() {
     <main className="mx-auto max-w-[52rem] px-6 py-[calc(var(--step)*4)]">
       <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(websiteSchema())} />
 
-      <p className="font-mono text-[0.7rem] tracking-[0.09em] text-ice-faint uppercase">
+      <p className="font-mono text-[0.7rem] tracking-[0.09em] text-ice-dim uppercase">
         {site.name} · {guide?.subject} · verified against {guide?.verifiedAgainst}
       </p>
 
@@ -90,7 +90,7 @@ export default function HomePage() {
       {/* Real numbers, computed. A track's commitment is the thing a reader most
           wants and is least often told. */}
       <section className="mt-[calc(var(--step)*4)] border-t border-ice-faint pt-[calc(var(--step)*1.25)]">
-        <h2 className="font-mono text-[0.7rem] tracking-[0.09em] text-ice-faint uppercase">
+        <h2 className="font-mono text-[0.7rem] tracking-[0.09em] text-ice-dim uppercase">
           Three routes through the same material
         </h2>
         <dl className="mt-[calc(var(--step)*1.25)] grid gap-[calc(var(--step)*1.25)] sm:grid-cols-3">
@@ -189,13 +189,13 @@ export default function HomePage() {
                 key={entry.url}
                 className="flex items-baseline gap-[calc(var(--step)*0.75)] border-t border-ice-faint py-[calc(var(--step)*0.6)]"
               >
-                <span className="shrink-0 font-mono text-[0.7rem] text-ice-faint">
+                <span className="shrink-0 font-mono text-[0.7rem] text-ice-dim">
                   {String(entry.number).padStart(2, '0')}
                 </span>
                 <Link href={entry.url} className="flex-1">
                   {entry.title}
                 </Link>
-                <span className="shrink-0 font-mono text-[0.7rem] text-ice-faint">
+                <span className="shrink-0 font-mono text-[0.7rem] text-ice-dim">
                   {entry.lessons.length}
                 </span>
               </li>

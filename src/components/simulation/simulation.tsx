@@ -39,7 +39,7 @@ export function Simulation({ id }: { id: string }) {
   return (
     <figure className="my-[calc(var(--step)*1.6)]">
       <figcaption>
-        <p className="font-mono text-[0.65rem] tracking-[0.1em] text-ice-faint uppercase">
+        <p className="font-mono text-[0.65rem] tracking-[0.1em] text-ice-dim uppercase">
           Recorded session · {seconds}s
         </p>
         <p className="font-display mt-1 text-[1.125rem] tracking-[-0.02em]">

@@ -23,7 +23,7 @@ export function EventRow({
     case 'marker':
       return (
         <li className="mt-[calc(var(--step)*1.1)] flex items-center gap-3 first:mt-0">
-          <span className="font-mono text-[0.62rem] tracking-[0.14em] text-ice-faint uppercase">
+          <span className="font-mono text-[0.62rem] tracking-[0.14em] text-ice-dim uppercase">
             {event.label}
           </span>
           <span className="h-px flex-1 bg-ice-faint/40" aria-hidden="true" />
@@ -33,7 +33,7 @@ export function EventRow({
     case 'user':
       return (
         <li className="mt-[calc(var(--step)*0.6)] flex gap-3">
-          <span className="shrink-0 font-mono text-[0.8125rem] text-ice-faint" aria-hidden="true">
+          <span className="shrink-0 font-mono text-[0.8125rem] text-ice-dim" aria-hidden="true">
             ›
           </span>
           <span className="font-mono text-[0.8125rem] leading-[1.7] text-ice">
@@ -62,7 +62,7 @@ export function EventRow({
       return (
         <li className="mt-[calc(var(--step)*0.5)] font-mono text-[0.78rem] leading-[1.7] text-ice-dim">
           <span className="text-ice">{event.name}</span>
-          {event.args ? <span className="text-ice-faint"> {event.args}</span> : null}
+          {event.args ? <span className="text-ice-dim"> {event.args}</span> : null}
         </li>
       )
 
@@ -73,7 +73,7 @@ export function EventRow({
             {event.output}
           </pre>
           {event.truncated ? (
-            <p className="mt-1 font-mono text-[0.65rem] text-ice-faint">
+            <p className="mt-1 font-mono text-[0.65rem] text-ice-dim">
               {event.truncated} lines elided
             </p>
           ) : null}
@@ -95,7 +95,7 @@ export function EventRow({
     case 'memory':
       return (
         <li className="mt-[calc(var(--step)*0.7)] border-l border-ice-faint pl-3">
-          <p className="font-mono text-[0.65rem] tracking-[0.08em] text-ice-faint uppercase">
+          <p className="font-mono text-[0.65rem] tracking-[0.08em] text-ice-dim uppercase">
             {event.layer}
           </p>
           <p className="mt-1 max-w-[60ch] text-[0.9rem] text-ice-dim">{event.note}</p>
@@ -106,7 +106,7 @@ export function EventRow({
       return (
         <li className="mt-[calc(var(--step)*0.6)] font-mono text-[0.78rem] text-ice-dim">
           <span className="text-ice">{event.kind === 'spawn' ? '⊢' : '⊣'}</span> {event.label}
-          {event.note ? <span className="text-ice-faint"> — {event.note}</span> : null}
+          {event.note ? <span className="text-ice-dim"> — {event.note}</span> : null}
         </li>
       )
 

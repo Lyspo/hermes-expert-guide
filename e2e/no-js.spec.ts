@@ -1,0 +1,79 @@
+import { expect, test } from '@playwright/test'
+
+/**
+ * The third non-negotiable, asserted rather than asserted about.
+ *
+ * "Nothing breaks without JavaScript" is easy to believe and easy to lose: one
+ * component moved behind a `useEffect`, one list gated on hydration, and the claim
+ * quietly stops being true while every other gate stays green. This project runs with
+ * scripting disabled, so what it sees is what a crawler, a text browser, and a reader
+ * on a failed bundle see.
+ *
+ * These check *content completeness*, not that the page renders at all. A page that
+ * renders its shell and none of its substance is the failure worth catching.
+ */
+
+test('the landing page carries its whole argument', async ({ page }) => {
+  await page.goto('/')
+
+  // The hero is the argument: a claim struck, and its replacement.
+  await expect(page.locator('h1 del')).toHaveText(/three-layer memory system/)
+  await expect(page.locator('h1 ins')).toHaveText(/two capped files/)
+
+  // The corrections are the product. All four, with their links.
+  const corrections = page.locator('section ul li del')
+  await expect(corrections).toHaveCount(4)
+  await expect(page.getByRole('link', { name: /the lesson that carries the source/ })).toHaveCount(4)
+
+  // Real computed numbers, not placeholders.
+  await expect(page.getByText(/core lessons/).first()).toBeVisible()
+
+  // Every module reachable without a script.
+  await expect(page.locator('ol li a')).toHaveCount(10)
+})
+
+test('a lesson renders its prose, its transcripts and its plate', async ({ page }) => {
+  await page.goto('/hermes/05-what-it-knows/03-memory-the-two-files/')
+
+  await expect(page.locator('h1')).toHaveText(/Memory is two files and an index/)
+
+  // Prose from the body, not just the frontmatter — and specifically a paragraph,
+  // because the plate's own <desc> alternative states the same figures and is not
+  // visible by design.
+  await expect(
+    page.locator('article p').filter({ hasText: '2,200 characters' }).first(),
+  ).toBeVisible()
+
+  // The plate is SVG with real text, so it survives with no script and no image load.
+  const plate = page.locator('svg[role="img"]')
+  await expect(plate).toBeVisible()
+  await expect(plate.locator('title')).toHaveText(/Memory: two files and an index/)
+
+  // The correction gesture resolves to finished text, never to a scramble.
+  await expect(page.locator('ins').first()).toHaveText(/two capped markdown files/)
+})
+
+test('every track variant is present and labelled with no track set', async ({ page }) => {
+  await page.goto('/hermes/05-what-it-knows/03-memory-the-two-files/')
+
+  // This is the reason track adaptivity is CSS rather than conditional rendering:
+  // with no track chosen, a reader sees all three variants, each labelled.
+  const callouts = page.locator('.tk-block')
+  expect(await callouts.count()).toBeGreaterThan(2)
+
+  await expect(page.getByText('For newcomer readers', { exact: false }).first()).toBeVisible()
+  await expect(page.getByText('For operator readers', { exact: false }).first()).toBeVisible()
+  await expect(page.getByText('For architect readers', { exact: false }).first()).toBeVisible()
+})
+
+test('search degrades to a complete route through the curriculum', async ({ page }) => {
+  await page.goto('/search/')
+
+  // The input is inert without a script, so the page must carry a real alternative.
+  await expect(page.locator('ol li a')).toHaveCount(10)
+})
+
+test('the disclaimer is on the page, not painted on by a script', async ({ page }) => {
+  await page.goto('/hermes/06-skills-and-the-loop/05-the-nudge-and-the-review-fork/')
+  await expect(page.getByText(/Unofficial community project/)).toBeVisible()
+})

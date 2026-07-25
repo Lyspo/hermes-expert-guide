@@ -43,7 +43,7 @@ export default function GuidePage() {
               <div key={track} className="flex justify-between gap-4 text-[0.9rem]">
                 <dt className="text-ice-dim">
                   {TRACK_LABELS[track]}
-                  <span className="ml-2 font-mono text-[0.7rem] text-ice-faint">
+                  <span className="ml-2 font-mono text-[0.7rem] text-ice-dim">
                     {coreCountFor(track)} lessons
                   </span>
                 </dt>
@@ -81,7 +81,7 @@ export default function GuidePage() {
             <li key={mod.slug} className="border-b border-ice-faint/60 py-[var(--step)]">
               <h2 className="font-display text-[1.375rem] tracking-[-0.02em]">
                 <Link href={mod.url} className="no-underline">
-                  <span className="mr-3 align-middle font-mono text-[0.7rem] text-ice-faint">
+                  <span className="mr-3 align-middle font-mono text-[0.7rem] text-ice-dim">
                     {String(mod.number).padStart(2, '0')}
                   </span>
                   {mod.title}
@@ -90,7 +90,7 @@ export default function GuidePage() {
               <p className="mt-[calc(var(--step)*0.4)] max-w-[64ch] text-[0.95rem] text-ice-dim">
                 {mod.summary}
               </p>
-              <p className="mt-[calc(var(--step)*0.4)] font-mono text-[0.7rem] text-ice-faint">
+              <p className="mt-[calc(var(--step)*0.4)] font-mono text-[0.7rem] text-ice-dim">
                 {mod.lessons.length} lessons · {mod.minutes} min
                 {mod.written > 0 ? ` · ${mod.written} written` : ' · not yet written'}
               </p>

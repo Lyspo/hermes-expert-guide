@@ -93,7 +93,7 @@ export function Search() {
 
   return (
     <div>
-      <label htmlFor="q" className="font-mono text-[0.7rem] tracking-[0.09em] text-ice-faint uppercase">
+      <label htmlFor="q" className="font-mono text-[0.7rem] tracking-[0.09em] text-ice-dim uppercase">
         Search the guide
       </label>
       <input
@@ -104,7 +104,7 @@ export function Search() {
         onChange={(event) => setQuery(event.target.value)}
         placeholder={state === 'unavailable' ? 'Search is unavailable here' : 'approvals, memory, cron…'}
         disabled={state === 'unavailable'}
-        className="mt-[calc(var(--step)*0.5)] block w-full border-b border-ice-faint bg-transparent pb-[calc(var(--step)*0.4)] text-[1.25rem] outline-none placeholder:text-ice-faint focus-visible:border-ice"
+        className="mt-[calc(var(--step)*0.5)] block w-full border-b border-ice-faint bg-transparent pb-[calc(var(--step)*0.4)] text-[1.25rem] outline-none placeholder:text-ice-dim focus-visible:border-ice"
       />
 
       {state === 'unavailable' && (
@@ -118,7 +118,7 @@ export function Search() {
       {query.trim().length >= 2 && state !== 'unavailable' && (
         <p
           aria-live="polite"
-          className="mt-[calc(var(--step)*0.75)] font-mono text-[0.7rem] text-ice-faint"
+          className="mt-[calc(var(--step)*0.75)] font-mono text-[0.7rem] text-ice-dim"
         >
           {state === 'searching'
             ? 'Searching…'

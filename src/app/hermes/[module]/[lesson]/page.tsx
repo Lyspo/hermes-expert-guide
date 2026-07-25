@@ -110,7 +110,7 @@ export default async function LessonPage({ params }: { params: Params }) {
                   ) : (
                     <li key={prerequisite.id} className="text-ice-dim">
                       {prerequisite.title}{' '}
-                      <span className="font-mono text-[0.7rem] text-ice-faint">planned</span>
+                      <span className="font-mono text-[0.7rem] text-ice-dim">planned</span>
                     </li>
                   ),
                 )}

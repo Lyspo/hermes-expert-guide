@@ -28,7 +28,7 @@ export function Transcript({
     <figure className="my-[calc(var(--step)*1.5)]">
       <div className="transcript overflow-x-auto px-[calc(var(--step)*0.75)] py-[calc(var(--step)*0.7)]">
         {label && (
-          <p className="mb-[calc(var(--step)*0.5)] font-mono text-[0.65rem] tracking-[0.09em] text-ice-faint uppercase">
+          <p className="mb-[calc(var(--step)*0.5)] font-mono text-[0.65rem] tracking-[0.09em] text-ice-dim uppercase">
             {label}
           </p>
         )}
@@ -69,13 +69,13 @@ export function Command({
   return (
     <div className="my-[calc(var(--step)*1.25)]">
       <div className="transcript flex items-baseline gap-[calc(var(--step)*0.6)] overflow-x-auto px-[calc(var(--step)*0.75)] py-[calc(var(--step)*0.6)]">
-        <span className="shrink-0 font-mono text-[0.8125rem] text-ice-faint" aria-hidden="true">
+        <span className="shrink-0 font-mono text-[0.8125rem] text-ice-dim" aria-hidden="true">
           $
         </span>
         <code className="font-mono text-[0.8125rem] leading-[1.7] text-ice">{children}</code>
       </div>
       <p className="mt-[calc(var(--step)*0.35)] font-mono text-[0.65rem] text-ice-dim">
-        <span className="text-ice-faint">{verified}</span>
+        <span className="text-ice-dim">{verified}</span>
         {' · '}
         {note ?? 'verified against this release'}
       </p>

@@ -26,7 +26,7 @@ export default function SearchPage() {
         <Search />
 
         <section className="mt-[calc(var(--step)*3)] border-t border-ice-faint pt-[calc(var(--step)*1.25)]">
-          <h2 className="font-mono text-[0.7rem] tracking-[0.09em] text-ice-faint uppercase">
+          <h2 className="font-mono text-[0.7rem] tracking-[0.09em] text-ice-dim uppercase">
             Or go straight to a module
           </h2>
           <ol className="mt-[calc(var(--step)*1)]">
@@ -35,13 +35,13 @@ export default function SearchPage() {
                 key={entry.url}
                 className="flex items-baseline gap-[calc(var(--step)*0.75)] border-t border-ice-faint py-[calc(var(--step)*0.55)] first:border-t-0"
               >
-                <span className="shrink-0 font-mono text-[0.7rem] text-ice-faint">
+                <span className="shrink-0 font-mono text-[0.7rem] text-ice-dim">
                   {String(entry.number).padStart(2, '0')}
                 </span>
                 <Link href={entry.url} className="flex-1">
                   {entry.title}
                 </Link>
-                <span className="shrink-0 font-mono text-[0.7rem] text-ice-faint">
+                <span className="shrink-0 font-mono text-[0.7rem] text-ice-dim">
                   {entry.written}
                 </span>
               </li>

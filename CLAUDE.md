@@ -73,14 +73,33 @@ All **six plates** from the map are built: VIZ-1 `prompt`, VIZ-2 `memory`, VIZ-3
 the per-module counts with the loop in "Picking up" rather than trusting this line.
 
 **Not built.** The simulations beyond SIM-1's engine — the map specifies eight and one
-flagship replay exists. Search, OG images, JSON-LD, sitemap. The landing page — still a
-labelled placeholder, and now the single largest gap. Glossary and cheatsheets. Colophon.
+flagship replay exists. Glossary, cheatsheets, colophon. The landing page's GSAP scroll
+narrative. Lighthouse CI.
 
-**Verification is thinner than it looks.** `pnpm verify` runs typecheck, lint, unit tests,
-OG image generation, the static export, the search index and a link check — the full
-chain the plan named, as of this pass. There is still **no** Playwright, no axe sweep and
-no Lighthouse CI, so the performance budgets and accessibility gates in `design.md` remain
-intentions rather than gates. Do not describe them as enforced.
+**Verification, and what it does and does not cover.** `pnpm verify` runs typecheck,
+lint, unit tests, OG image generation, the static export, the search index and a link
+check. `pnpm e2e` is a separate Playwright suite against the exported `out/` — never the
+dev server — with two projects: a `no-js` pass asserting content completeness, and an axe
+sweep at WCAG 2.1 AA across eight templates. CI runs both.
+
+**The accessibility gate found a real violation on its first run, and it was ours.**
+`--ice-faint` (#4A5C65) on `--void` is **2.85:1** — it fails AA for text at any size. It
+was being used as a text colour in 29 places, which `design.md` never sanctioned: its
+palette table gives that token as "hairlines, inactive nodes, disabled states". All 29
+are now `--ice-dim` (7.5:1). **`--ice-faint` is a hairline colour. Never set text in it.**
+
+**The JavaScript budget is measured and currently missed.** `pnpm budgets` reads what each
+page actually references in the export and gzips it. Landing is **186.6 kB** against its
+200 kB budget and passes. A lesson page is **190.5 kB** against a 130 kB budget and does
+not — and essentially all of it is the React 19 + Next 16 App Router client runtime rather
+than first-party code. Removing Zod from `src/lib/storage.ts` took 63 kB off every page
+and was the whole of the available win; what remains is the framework floor. Do not
+"fix" this by raising the number in `design.md` — either the stack changes or the budget
+is documented as unreachable. `pnpm budgets` is `continue-on-error` in CI for exactly
+that reason, and that is a temporary honesty measure, not an acceptance.
+
+Still **no** Lighthouse CI, so LCP and CLS remain unmeasured. Do not describe them as
+enforced.
 
 Two build steps reach the network on a cold run and are worth knowing about before a CI
 job fails mysteriously. `pnpm og` downloads two TTFs from Google Fonts and caches them
