@@ -1539,3 +1539,39 @@ is inferred from secondary guide-sites. The local-model story in `02/02` and the
 cost-optimisation material in `07/06` both lean on that community's findings at one
 remove. **Task:** source it directly, or attribute those claims to the secondary
 sites that actually carry them rather than to "the community".
+
+---
+
+## 21. Amendments from the installed binary (2026-07-25)
+
+`research/08-installed-binary.md` records read-only introspection of a real v0.19.0
+install. Two amendments to this map follow from it, and one confirmation.
+
+**Amendment 1 — `hermes journey` needs a home in module 6.** The command (aliased
+`learning` and `memory-graph`) renders a timeline of learned skills and memories over
+time, with `--reveal`, `--play`, and `--json`, plus `list`/`delete`/`edit` on
+individual nodes. It appears nowhere in this map and nowhere in `[01]`–`[07]`. It is a
+first-party visualisation of the exact mechanism the guide claims is Hermes's
+differentiator, and its `delete`/`edit` subcommands are a governance control — a human
+correcting what the agent learned — which module 10 currently cannot answer. Proposed:
+a section in `06/07-the-curator` or a new `06/09`, plus a citation in
+`10/03-the-record-what-is-auditable`.
+
+**Amendment 2 — `06/08-keeping-it-from-getting-worse` has a stronger opening than
+planned.** The curator's own help text states that bundled and hub-installed skills
+are never touched, and that "archives are recoverable; auto-deletion never happens."
+That is the single strongest reassurance in the product about the self-improvement
+loop, and it should lead the lesson rather than appear as mitigation. The binary also
+exposes `curator backup` and `curator rollback` — the skill library is versioned,
+which this map does not currently claim anywhere — and `curator usage`, which reports
+telemetry for all skills "with provenance," distinguishing built-in from hub from
+agent-created. That is an audit surface for module 10.
+
+**Confirmation — the `hermes daemon start` drift is now a stronger claim.** There is no
+`daemon` subcommand in the shipped binary. Lesson `01/04` has been updated: the
+third-party command is wrong against the software, not merely absent from the docs.
+
+**Unchanged.** Nothing here upgrades SIM-1 or SIM-4; no session was run, so both remain
+reconstructions. `hermes dump` was deliberately not captured because it can contain
+credential material, so the docs' stale `0.8.0` block is still the only published
+example of that command's output.

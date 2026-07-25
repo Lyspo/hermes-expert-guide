@@ -28,6 +28,19 @@ it.
 
 <Command verified="v0.19.0">hermes version</Command>
 
+<Transcript label="hermes version" fidelity="verbatim" source="Captured from an installed v0.19.0 on macOS, 2026-07-25; install path abbreviated">
+{`Hermes Agent v0.19.0 (2026.7.20) · upstream 760112ad
+Install directory: ~/.hermes/hermes-agent
+Install method: git
+Python: 3.11.15
+OpenAI SDK: 2.24.0
+Up to date`}
+</Transcript>
+
+Six lines, and the useful ones are the last two: `Install method` tells you whether
+`hermes update` will work the way you expect, and `Up to date` is the only place
+Hermes volunteers that it has checked.
+
 For anything beyond the number, `hermes dump` prints the whole machine. It is also
 the one place the documentation ships a complete literal terminal block, which
 makes it worth reading closely:
@@ -94,7 +107,7 @@ Here is a live example, published four days before this lesson was written.
 <Revised
   was="hermes daemon start"
   now="hermes gateway install, or hermes gateway run"
-  why="A practitioner guide updated 2026-07-24 publishes the first form; no such command appears in the official CLI reference"
+  why="A practitioner guide updated 2026-07-24 publishes the first form. Checked against an installed v0.19.0: there is no daemon subcommand at all, so this is wrong against the software and not merely undocumented"
   when="2026-07-25"
 />
 
