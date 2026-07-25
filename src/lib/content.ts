@@ -109,13 +109,22 @@ export function pathFor(track: Track): Lesson[] {
 }
 
 /**
- * Honest reading time for a track, in minutes.
+ * The core path: minutes of lessons a track is actually asked to complete.
  *
- * `core` counts in full and `skim` at 40%, because the condensed variant really is
- * shorter rather than merely optional. The convention matters: without it a "total
- * minutes" figure means nothing.
+ * Core only. Skim lessons are deliberately excluded rather than discounted — a
+ * reader planning their time wants to know what the commitment is, not a weighted
+ * average of it, and skim material is genuinely optional. This is the figure the
+ * curriculum map calls "the number that actually matters".
  */
 export function durationFor(track: Track): number {
+  return plannedLessons.reduce(
+    (total, lesson) => (lesson.tracks[track] === 'core' ? total + lesson.duration : total),
+    0,
+  )
+}
+
+/** Everything on a track including skim material, for the completeness-minded. */
+export function durationWithSkim(track: Track): number {
   return Math.round(
     plannedLessons.reduce((total, lesson) => {
       const relevance = lesson.tracks[track]
@@ -124,6 +133,11 @@ export function durationFor(track: Track): number {
       return total
     }, 0),
   )
+}
+
+/** How many lessons a track must read, for stating the commitment plainly. */
+export function coreCountFor(track: Track): number {
+  return plannedLessons.filter((lesson) => lesson.tracks[track] === 'core').length
 }
 
 /** Previous and next among written lessons — you cannot navigate to a stub. */

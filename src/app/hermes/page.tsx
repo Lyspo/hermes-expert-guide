@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { durationFor, guides, modules } from '@/lib/content'
+import { coreCountFor, durationFor, guides, modules } from '@/lib/content'
 import { Page } from '@/components/ui/page'
 import { TRACKS, TRACK_LABELS } from '@/lib/site'
 
@@ -25,21 +25,28 @@ export default function GuidePage() {
       aside={
         <div className="lg:sticky lg:top-[calc(var(--step)*3)]">
           <p className="font-mono text-[0.7rem] tracking-[0.06em] text-ice-dim uppercase">
-            Reading time by track
+            The core path
           </p>
           <dl className="mt-[calc(var(--step)*0.6)] space-y-[calc(var(--step)*0.4)]">
             {TRACKS.map((track) => (
               <div key={track} className="flex justify-between gap-4 text-[0.9rem]">
-                <dt className="text-ice-dim">{TRACK_LABELS[track]}</dt>
+                <dt className="text-ice-dim">
+                  {TRACK_LABELS[track]}
+                  <span className="ml-2 font-mono text-[0.7rem] text-ice-faint">
+                    {coreCountFor(track)} lessons
+                  </span>
+                </dt>
                 <dd className="font-mono tabular-nums">
-                  {Math.floor(durationFor(track) / 60)}h {durationFor(track) % 60}m
+                  {Math.floor(durationFor(track) / 60)}h{' '}
+                  {String(durationFor(track) % 60).padStart(2, '0')}m
                 </dd>
               </div>
             ))}
           </dl>
           <p className="mt-[var(--step)] border-t border-ice-faint pt-[calc(var(--step)*0.6)] text-[0.85rem] text-ice-dim">
-            Tracks are three perspectives on the same material, not three difficulty
-            levels. Nothing is hidden from anyone.
+            Core lessons only — what each track is asked to complete. Skim material is
+            genuinely optional. Tracks are three perspectives on the same material, not
+            three difficulty levels, and nothing is hidden from anyone.
           </p>
         </div>
       }
