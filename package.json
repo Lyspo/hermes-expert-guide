@@ -11,13 +11,14 @@
     "prebuild": "content-collections build",
     "build": "next build",
     "start": "npx serve out",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "pnpm content && tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "links": "node scripts/check-links.mjs",
-    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm links"
+    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm links",
+    "content": "content-collections build"
   },
   "dependencies": {
     "@gsap/react": "2.1.2",
