@@ -14,10 +14,158 @@ prerequisites:
   - hermes/06-skills-and-the-loop/01-skills-as-procedure
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Before anything else: the extension ladder from `01/02` puts plugins fifth of six, and
+most needs that feel like a plugin are better served further up it. Extend existing code,
+write a skill, add a service-gated tool — then consider a plugin.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+What follows is for the cases that genuinely need to change behaviour rather than add
+capability.
+
+## What a plugin is
+
+A directory with a `plugin.yaml` and a `register(ctx)` function. Discovery has five
+sources with a defined override order, including `~/.hermes/plugins/`, a project-local
+`.hermes/plugins/`, and pip entry points — so a plugin can be distributed as a package.
+
+The `ctx` object is the contract. It can register tools, register hooks, read
+configuration, and log. The only sanctioned way to shadow a built-in tool is explicit:
+
+```python
+ctx.register_tool(..., override=True)
+```
+
+Which is the right design — shadowing is possible, and impossible by accident.
+
+Plugins are **opt-in**: you enable them, with a few specialised categories excepted.
+Two of those categories are single-select, and that constraint is easy to trip over:
+**one memory provider and one context engine at a time.**
+
+<MarginNote>
+Plugin engines are never auto-activated. The documentation is explicit: you must set
+`context.engine` to the plugin name yourself. An installed context engine that appears to
+do nothing is usually just not selected.
+</MarginNote>
+
+## Three hook systems, and which one you are using
+
+This is the part that causes real confusion, because "hooks" names three separate
+mechanisms with different registration, different runtimes and different purposes.
+
+| System | Registered via | Runs in | For |
+|---|---|---|---|
+| **Gateway hooks** | `HOOK.yaml` + `handler.py` in `~/.hermes/hooks/` | Gateway only | Logging, alerts, outbound webhooks |
+| **Plugin hooks** | `ctx.register_hook()` | CLI **and** gateway | Tool interception, metrics, guardrails |
+| **Shell hooks** | `hooks:` block in `config.yaml` | CLI **and** gateway | Drop-in scripts: blocking, formatting, context injection |
+
+The distinction that matters operationally: **gateway hooks do not run in the CLI.** A
+guardrail written as a gateway hook does nothing when you use the terminal, which is
+exactly the wrong way round for most guardrails.
+
+All three are non-blocking by design — "errors in any hook are caught and logged, never
+crashing the agent." Reassuring for stability, and worth knowing before you rely on a
+hook as a control: **a hook that fails does not stop anything.**
+
+## Gateway hooks, and the events they see
+
+A directory with a manifest and a `handle` function. The event catalogue is worth
+skimming even if you never write one, because it tells you what the gateway considers
+observable:
+
+`gateway:startup` · `session:start` · `session:end` · `session:reset` · `agent:start` ·
+`agent:step` (every tool-loop iteration) · `agent:end` · `reaction:added` and
+`reaction:removed` · and `command:*` as a wildcard over slash commands.
+
+`agent:step` is the one to note — it fires per iteration with the tool names, which makes
+it the natural place for per-turn metrics.
+
+## Shell hooks, and the JSON in the middle
+
+The lowest-ceremony option: a command in `config.yaml`, a JSON payload on stdin, a JSON
+response on stdout.
+
+```yaml
+hooks:
+  pre_tool_call:
+    - matcher: "terminal"
+      command: "/usr/local/bin/audit-command.py"
+      timeout: 30
+```
+
+The payload carries the event name, tool name, tool input, session id and working
+directory. The response shape decides what happens:
+
+- `{"decision": "block", "reason": "..."}` blocks a `pre_tool_call`
+- `{"context": "..."}` injects at `pre_llm_call`
+- `{"action": "continue", "message": "..."}` keeps the agent going at `pre_verify`
+
+Both the Claude-Code-style and Hermes-canonical dialects are accepted and normalised,
+which is a small kindness if you are porting scripts. Malformed JSON, a non-zero exit and
+a timeout all log a warning and never abort the loop.
+
+Timeouts default to 60 seconds and are clamped at 300. Commands run via `shlex.split`
+with `shell=False` — so no shell interpolation, which is correct.
+
+## The consent model, and the gap in it
+
+Each unique **(event, command)** pair prompts for approval the first time it is seen, and
+the approval persists to `~/.hermes/shell-hooks-allowlist.json`.
+
+The gap is in that sentence, and the documentation states it plainly: the allowlist is
+keyed on **the exact command string**, so *"script edits are silently trusted."*
+
+Approve `/usr/local/bin/audit-command.py` once and every future version of that file runs
+without asking again. The path is what you consented to; the contents are not.
+
+<Command verified="v0.19.0">hermes hooks doctor</Command>
+
+`doctor` flags modification-time drift specifically to catch this, which makes it the
+command to run after anything touches your hook scripts — and a reasonable thing to run
+on a schedule.
+
+<TrackCallout
+  operator="Three bypasses exist for the interactive prompt — the --accept-hooks flag, HERMES_ACCEPT_HOOKS=1, and hooks_auto_accept — and one of them is required in any non-TTY context. Without it a newly added hook silently stays unregistered in gateway, cron and CI."
+  architect="Consent keyed on a command string with acknowledged silent trust of edits is a supply-chain surface. Treat hook scripts as reviewed code with restricted write permissions, and schedule hooks doctor rather than running it after incidents."
+/>
+
+## The one hook whose return value matters
+
+Among the plugin hooks — `pre_tool_call`, `post_tool_call`, `post_llm_call`,
+`pre_verify`, session and subagent lifecycle, and the transform hooks — only
+**`pre_llm_call`** has a return value that changes the request.
+
+Two details about it are worth knowing before you use it. It **appends to the user
+message rather than the system prompt**, which is deliberate: the system prompt is the
+cached prefix from `05/01`, and mutating it would invalidate the cache for the rest of
+the session. And output above 10,000 characters spills to a file under `hook_outputs/`
+rather than being injected inline.
+
+<Depth min="operator">
+
+Ordering: when a plugin hook and a shell hook both handle the same event, **plugin hooks
+win ties.**
+
+The transform hooks — `transform_tool_result`, `transform_terminal_output`,
+`transform_llm_output` — are the mechanism behind the token-reduction integrations from
+`07/06`. Rewriting verbose terminal output before it enters context is exactly what
+`transform_terminal_output` is for, and one reported integration cut 60–90% of context
+tokens that way.
+
+</Depth>
+
+## Four mistakes with names
+
+The developer documentation names common errors, and they are the ones you would make:
+doing heavy work at import time rather than in `register`; assuming a hook's failure will
+stop the agent; registering a tool name that collides with a built-in without
+`override=True`; and writing a gateway hook for behaviour you also want in the CLI.
+
+## What to take from this
+
+A plugin is `plugin.yaml` plus `register(ctx)`, and it is fifth on the ladder for a
+reason. Hooks are three systems, and the one you want is usually a shell hook or a plugin
+hook — not a gateway hook, which the CLI never runs.
+
+And carry the consent gap: approval is keyed on a command string, so editing an approved
+script is trusted silently. `hermes hooks doctor` is what closes that loop.

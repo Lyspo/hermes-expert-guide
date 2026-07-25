@@ -14,10 +14,165 @@ prerequisites:
   - hermes/03-running-a-session/04-configuration-you-will-actually-touch
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+MCP is how Hermes gets tools it does not implement. A server exposes some capability —
+GitHub, a database, a browser — and Hermes discovers and registers its tools at startup
+as if they were built in.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+This module comes ninth for a reason worth stating: MCP is a mechanism for acquiring
+tools written by strangers, and it is only safe to teach to someone who already
+understands toolset scoping, approval gates and the narrow-waist argument. You do.
+
+## Two transports, and one with OAuth
+
+A local subprocess:
+
+```yaml
+mcp_servers:
+  github:
+    command: "npx"
+    args: ["-y", "@modelcontextprotocol/server-github"]
+    env:
+      GITHUB_PERSONAL_ACCESS_TOKEN: "${GITHUB_TOKEN}"
+```
+
+A remote endpoint:
+
+```yaml
+mcp_servers:
+  remote_api:
+    url: "https://mcp.example.com/mcp"
+    headers:
+      Authorization: "Bearer ${API_TOKEN}"
+```
+
+Or a remote endpoint that handles its own login:
+
+```yaml
+mcp_servers:
+  linear:
+    url: "https://mcp.linear.app/mcp"
+    auth: oauth
+```
+
+OAuth tokens cache under `~/.hermes/mcp-tokens/`. Note the `${VAR}` substitution, which
+is the same syntax from `03/04` and resolves from your environment file at connect time —
+so credentials stay out of `config.yaml`.
+
+mTLS is supported too, with a combined PEM or separate cert and key, encrypted keys
+included.
+
+## The filter is the whole security story
+
+Every tool an MCP server offers becomes a tool your model can call, named
+`mcp_<server>_<tool>`. That is convenient and it is also the entire risk.
+
+So the field to learn is `tools`:
+
+```yaml
+mcp_servers:
+  github:
+    tools:
+      include: [create_issue, list_issues, get_pull_request]
+      resources: false
+      prompts: false
+```
+
+`include` is a whitelist, `exclude` is a blacklist, and **if both are set, include wins.**
+`enabled: false` disables the server entirely.
+
+<TrackCallout
+  newcomer="If you install one of these, use the checklist it shows you and untick anything you cannot name a use for. You can always turn one back on."
+  operator="Always include rather than exclude. A server that adds tools in a later version silently expands your surface under an exclude list, and does not under an include list."
+  architect="This is the model-visible surface control, and it belongs in reviewed configuration rather than in an interactive picker. Combine with toolset scoping: MCP tools are subject to the same registry and the same enumeration."
+/>
+
+That distinction between `include` and `exclude` is the one worth acting on. An
+exclude list is a statement about the tools that exist today; an include list is a
+statement about the tools you have decided to allow. Servers gain tools over time.
+
+## Installing without writing YAML
+
+<Command verified="v0.19.0">hermes mcp</Command>
+
+The interactive picker is the default. There is also a curated catalog, and the
+documentation makes a specific claim about it worth quoting:
+
+> Manifests are gated by PR review into the hermes-agent repo, so Nous has reviewed each
+> entry before it shipped.
+
+That is a real, checkable trust statement — a reviewed manifest, not a reviewed server —
+and it puts catalog entries meaningfully above an arbitrary URL.
+
+The rest: `hermes mcp catalog`, `install`, `configure`, `add --preset`, `remove`, `list`,
+`test`, and `login`. `/reload-mcp` re-reads servers without restarting.
+
+After credentials are configured, Hermes probes the server and shows you a checklist of
+its tools, pre-ticked from prior choices or the manifest's defaults. That checklist is
+the filter above, in interactive form — it is worth reading rather than accepting.
+
+<Depth min="operator">
+
+Two operational keys that matter for long-running deployments. `idle_timeout_seconds`
+recycles an idle stdio server, and `max_lifetime_seconds` caps total server age — both
+useful for browser-backed servers that leak over hours.
+
+`supports_parallel_tool_calls: true` enables concurrent read-only calls to a server that
+can handle them.
+
+And servers can push a `notifications/tools/list_changed` message to trigger a re-fetch
+without a manual reload — meaning **the tool surface can change while you are running**,
+which is another argument for an include list.
+
+</Depth>
+
+## What the sandbox actually is
+
+For stdio servers, the subprocess environment is filtered: "only explicitly configured
+environment variables plus safe baseline are passed." So a local MCP server does not
+inherit your whole environment, which would otherwise hand it every credential you have
+exported.
+
+That is a genuinely good default. Be clear about what it is not: the server is still a
+local process with your user's filesystem access. The filtering protects your
+environment variables, not your disk.
+
+Errors from MCP servers also pass through credential-redaction patterns before reaching
+the model, which stops a failing request echoing a token back into the transcript.
+
+## It runs the other way too
+
+The part people miss:
+
+<Command verified="v0.19.0">hermes mcp serve</Command>
+
+This exposes **Hermes itself** as an MCP server, offering ten tools — conversation
+listing, message sending, channel listing, event polling — to other MCP clients like
+Claude Code or Cursor.
+
+So the protocol is bidirectional here, and there is an established community pattern of
+running Hermes as a specialised subagent behind another assistant, reached over MCP. If
+you already have an assistant you like, that is a way to give it Hermes's messaging and
+automation surface without switching.
+
+<ForTrack track="architect">
+
+`hermes mcp serve` is a governance surface in its own right and deserves separate
+treatment from inbound MCP. It grants an external client the ability to send messages as
+your agent on your connected platforms.
+
+Also worth reviewing before enabling: **MCP sampling**, where a server requests LLM
+inference *from* Hermes. It is capped — a model, a max-tokens cap, requests per minute
+and tool rounds — but the shape is a third party spending your tokens with your
+credentials, so the caps are the control and should be set deliberately.
+
+</ForTrack>
+
+## What to take from this
+
+Two transports, one filter, and a naming convention. Use `include` rather than
+`exclude`, prefer catalog entries whose manifests were reviewed, and remember that a
+stdio server's environment is filtered while its filesystem access is not.
+
+And know the protocol runs both ways — `hermes mcp serve` is a door in as well as out.

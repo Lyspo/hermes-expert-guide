@@ -15,10 +15,163 @@ prerequisites:
   - hermes/07-unattended/06-what-unattended-costs
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Start with what Mixture of Agents is **not**, because the name misleads and this module
+sits next to one about multi-agent orchestration.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+**MoA is not task orchestration.** No work is divided, no subagent is spawned, nothing is
+delegated. It is several models answering the *same* question, with one of them writing
+the final answer using the others as advice. Everything in `08` is about splitting work
+up; this is about not splitting it at all.
+
+With that cleared, the lesson is one idea in three sizes: not every part of the work
+deserves your best model.
+
+## The auxiliary slots
+
+Hermes runs background work you rarely think about — compression, the self-improvement
+review, the curator, triage, decomposition — and each has its own model slot:
+
+```yaml
+auxiliary:
+  compression:
+    model: ""                    # empty = use the main model
+  background_review:
+    provider: openrouter
+    model: google/gemini-3-flash-preview
+  curator:
+    provider: openrouter
+    model: google/gemini-3-flash-preview
+    timeout: 600
+```
+
+The pattern is universal across the slots, and it is the highest-value routing you can
+do: mechanical background work moves to a cheap fast model while your interactive turns
+stay on the good one.
+
+Two rules that catch people:
+
+**Main-agent routing does not propagate.** Provider-routing preferences and coding-score
+filters set for your main model do **not** apply to auxiliary tasks. Each slot is
+configured independently.
+
+**Routing has a quality cost where fidelity matters.** From `06/05`: a background review
+routed to a different model replays a 24-message digest rather than the full
+conversation, because it cannot reuse the parent's cache key.
+
+## Fallbacks, and pools
+
+Per-task fallback chains are walked in order on rate-limit, timeout and payment errors,
+which is the difference between a 3am job failing and a 3am job costing slightly more.
+
+Credential pools rotate across multiple keys for the same provider — the same
+mechanism, one layer down. Both matter far more unattended than interactively, where you
+would simply retry.
+
+<TrackCallout
+  newcomer="You can skip the detail here. The one thing worth doing is pointing background work at a cheap model, which the config above shows."
+  operator="Auxiliary slots plus per-task fallbacks are the two settings that most change an always-on bill. Configure the slots first — they are pure saving — then the chains, which are reliability."
+  architect="Each slot is an independent provider relationship: separate credentials, separate egress, separate data handling. A deployment with a data-residency position needs to enumerate the slots, not just the main model."
+/>
+
+## Reasoning effort
+
+Eight levels, settable globally and overridable per model, with a four-level resolution
+priority and spelling-tolerant matching:
+
+```text
+/reasoning high
+```
+
+Worth using deliberately rather than leaving at a default. High effort on a mechanical
+task is money spent on deliberation about nothing, and low effort on a genuinely hard
+one produces confident wrong answers.
+
+## Provider routing
+
+Through OpenRouter you get sort options — throughput, price, latency — plus the `:nitro`
+and `:floor` suffixes for the fast and cheap ends of a model's provider set, and a
+Pareto code router with a minimum coding score.
+
+For a deployment, the sort choice is a policy: `price` for scheduled bulk work,
+`latency` for anything a person is waiting on.
+
+## Mixture of Agents, properly
+
+A **virtual model provider**. Every named preset shows up as a selectable model under a
+`moa` provider on every surface — `/model`, the dashboard, the desktop dropdown.
+
+Selecting one makes its **aggregator** the acting model: the one that writes the response
+and emits tool calls. The **reference models** run first, and their output becomes
+private advisory context.
+
+```yaml
+moa:
+  default_preset: default
+  presets:
+    default:
+      reference_models:
+        - provider: openai-codex
+          model: gpt-5.5
+        - provider: openrouter
+          model: deepseek/deepseek-v4-pro
+      aggregator:
+        provider: openrouter
+        model: anthropic/claude-opus-4.8
+      reference_max_tokens: 600
+      fanout: user_turn
+```
+
+Per turn: resolve the preset, run the reference models **without tool schemas**, append
+their output as private context, call the aggregator with the normal tool schema, and
+treat its response as the real one. Tool calls execute normally.
+
+That the references run without tool schemas is the design detail that makes this
+affordable — they see conversation text only, not the system prompt or the tool-call
+transcript, so reference calls stay cheap and avoid strict-provider rejections.
+
+<Depth min="operator">
+
+Three levers decide what MoA costs you.
+
+**`fanout`** — how often the reference models run. `user_turn` (the default since July
+2026, changed from `per_iteration`), `per_iteration`, or `every_n:3`. The default change
+is the important one: running references on every tool-loop iteration multiplies calls
+by your iteration count.
+
+**`reference_max_tokens`** — uncapped by default, and the main latency lever. Advisors
+producing 600 tokens instead of 4,000 changes the wall-clock feel substantially.
+
+**Preset scope.** `/moa` is one-shot by design and deliberately not a model switch, so
+you can reach for a panel on a hard question without changing your session's model.
+
+Reference outputs are appended below the stable prefix, which preserves prompt caching —
+the same discipline as everything else in `05/01`.
+
+</Depth>
+
+The published benchmark figures for the documented presets are **0.8202**, **0.7607** and
+**0.7412** on HermesBench. Real gains, and against a real cost: you are paying for
+several model calls to answer one question.
+
+<ForTrack track="architect">
+
+Two constraints worth recording. Presets cannot recurse — a preset cannot reference
+another preset. And a single reference-model failure does not abort the turn; the
+aggregator proceeds with fewer advisors, which is the right resilience behaviour and
+means output quality can vary silently between turns.
+
+`privacy_filter` levels control what reference models see, with credential masking always
+on. For a panel spanning several providers, that setting decides how much of your
+conversation reaches each of them — and it should be a deliberate choice, not a default.
+
+</ForTrack>
+
+## What to take from this
+
+Route background work to cheap models through the auxiliary slots — that is the free
+win. Set fallback chains for anything unattended. Pick reasoning effort deliberately.
+
+And MoA is a panel of advisors answering one question, not a team dividing a task. Use it
+for hard single questions, watch `fanout`, and cap the advisors' output.

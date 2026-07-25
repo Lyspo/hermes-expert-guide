@@ -15,10 +15,138 @@ prerequisites:
   - hermes/07-unattended/02-the-gateway
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Three modalities bolted onto the same loop. None of them changes the agent — they change
+what reaches it and what leaves it.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+The one that surprises people is the first, because it can run entirely on your machine
+for free.
+
+## Voice
+
+The pipeline is three stages: speech to text, the ordinary agent loop, text to speech.
+Voice-activity detection handles silence, and replies stream sentence by sentence rather
+than waiting for the whole response.
+
+```text
+/voice on     # voice replies to voice messages
+/voice tts    # voice replies to everything
+/voice off
+```
+
+In the CLI, `Ctrl+B` records and it auto-stops after three seconds of silence. In Discord
+the bot can join a voice channel with `/voice join` and reply by speech.
+
+**The zero-cost path is real.** Local `faster-whisper` handles transcription with no API
+key at all, and Edge TTS is the free default for speech output. The full fallback order is
+local, then Groq, then OpenAI — so a machine with no keys configured still does voice, and
+only reaches for a paid provider if you configure one.
+
+```yaml
+stt:
+  enabled: true
+  provider: "local"
+  local:
+    model: "base"     # tiny, base, small, medium, large-v3
+```
+
+Groq's turbo model is around half a second and has a free tier; OpenAI is one to two
+seconds and paid. For TTS, Edge is free at about a second, ElevenLabs is paid and better,
+NeuTTS is free and depends on your hardware.
+
+<TrackCallout
+  newcomer="This is worth trying even if you think you do not want voice. It runs locally, costs nothing, and needs no keys."
+  operator="The local-first fallback order means a voice deployment has no hard external dependency. Worth knowing for anything air-gapped or cost-sensitive."
+/>
+
+<Depth min="operator">
+
+Two implementation details that show care. Barge-in is supported — you can interrupt the
+agent mid-sentence, and it is *told* it was interrupted rather than silently truncated,
+which changes how it resumes.
+
+And there is a filter for whisper hallucinations: a list of phrases that transcription
+models emit on silence, discarded rather than sent as user input. Silence detection is
+two-stage with explicit thresholds. Both are the sort of thing you only build after
+watching a pipeline misbehave.
+
+</Depth>
+
+<ForTrack track="newcomer">
+
+Worth saying plainly, because the feature is usually framed as a novelty: for some people
+this is access rather than convenience. Community accounts include a developer who cannot
+type comfortably using voice as their primary interface, and a blind developer who built
+a screen-reader translator addon on top of it.
+
+</ForTrack>
+
+## Vision, in both directions
+
+**Input.** `vision_analyze` handles images, and you can paste from the clipboard with
+`Alt+V` — or `Ctrl+V`, which pastes text and opportunistically attaches clipboard images.
+On messaging platforms, images sent to the bot work directly.
+
+**Output.** `image_generate` goes through FAL by default, with around a dozen named
+models, and the Tool Gateway covers it if you are on a Portal subscription. Per-tool
+`use_gateway` settings decide whether a given tool routes through the subscription or your
+own key.
+
+## The browser reads structure, not pixels
+
+This is the design decision worth understanding, because it explains both the strengths
+and the failures.
+
+Hermes represents a page as an **accessibility tree** — a text snapshot where interactive
+elements get reference ids like `@e1` — rather than as a screenshot. The agent clicks
+`@e1`, it does not click coordinates.
+
+That makes browsing cheap, reliable across window sizes, and immune to visual layout
+changes. It also means a page that is inaccessible to a screen reader is largely
+inaccessible to Hermes, for exactly the same reasons.
+
+`browser_vision()` exists for when you genuinely need pixels.
+
+The tool surface is small and predictable: `navigate`, `snapshot`, `click`, `type`,
+`scroll`, `press`, `back`, `get_images`, `console`, `dialog`, and a raw CDP passthrough.
+
+## Six backends, and one clever routing rule
+
+Cloud: Browserbase, Browser Use, Firecrawl. Local: Camofox, a Chromium attached over CDP,
+or a standalone Chromium.
+
+The rule worth knowing is **hybrid routing**. With a cloud provider configured, private
+and LAN addresses — `localhost`, `127.0.0.1`, `192.168.*`, `10.*`, `*.local` and the rest
+— automatically spawn a **local** browser, while public URLs go to the cloud provider, in
+the same conversation.
+
+So your internal staging site is never fetched by a third-party cloud browser that could
+not reach it anyway, and you do not have to think about the distinction. That is good
+design, and it is also a quiet SSRF control.
+
+<Depth min="operator">
+
+Snapshots are capped at **15,000 characters**; oversized ones are summarised by a model
+and cached. So on a very large page the agent may be reading a summary rather than the
+page, which is worth knowing when it misses something that is definitely there.
+
+Sessions are isolated per task and cleaned up after 120 seconds of inactivity, with a
+background sweeper and emergency cleanup on exit. `dialog_policy` defaults to
+`must_respond`, so a JavaScript dialog blocks until handled rather than being silently
+dismissed.
+
+Two limitations: **file downloads are not supported**, and `/browser connect` — attaching
+to your already-running Chrome — is **CLI-only** and is not dispatched through gateways.
+
+</Depth>
+
+## What to take from this
+
+Voice runs locally and free, and for some readers it is the point of the product rather
+than a garnish. Vision works in both directions. The browser reads accessibility trees,
+which makes it cheap and reliable and blind to anything a screen reader could not see
+either.
+
+And hybrid routing means your private addresses stay on a local browser without you
+configuring anything.

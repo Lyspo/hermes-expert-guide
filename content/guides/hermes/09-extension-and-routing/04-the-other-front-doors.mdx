@@ -14,10 +14,117 @@ prerequisites:
   - hermes/03-running-a-session/04-configuration-you-will-actually-touch
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+This is a survey, deliberately. Four more ways into the same agent, none of which is a
+different product, and two facts among them that change your threat model.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+If you read nothing else here, read the two boxed facts.
+
+## The web dashboard
+
+<Command verified="v0.19.0">hermes dashboard</Command>
+
+It binds to `127.0.0.1:9119` by default and covers most of the surface: status, a chat
+embedding the full TUI over a websocket, a config editor exposing 150-plus fields, API
+key management, session search, logs, analytics, cron, profiles, skills, MCP, webhooks,
+pairing, channels, and a system page with host stats and operational commands.
+
+**Fact one, and it is good news.** The auth gate engages when you bind to a non-loopback
+address without `--insecure`, and it is **fail-closed**: if no authentication provider is
+registered, `hermes dashboard` refuses to bind at all rather than starting unprotected.
+
+Providers include Nous OAuth by default and self-hosted OIDC — Keycloak, Authelia, Auth0,
+Okta and others — with tokens verified against the issuer's key set. There is an audit
+log at `logs/dashboard-auth.log`.
+
+That is a properly designed control, and the refusal-to-start behaviour is the right
+default.
+
+**Fact two, and it undoes some of fact one.** From `08/03`: the dashboard's auth
+middleware **skips `/api/plugins/` routes by design**, on the assumption that the
+dashboard binds to localhost.
+
+So a non-loopback bind gives you an authenticated dashboard whose plugin routes —
+including the entire Kanban API — are not behind that authentication. The two facts sit
+in different documents and are easy to meet separately.
+
+<TrackCallout
+  operator="Keep the dashboard on loopback and reach it through an SSH tunnel. That sidesteps both facts and needs no configuration."
+  architect="Worth writing down explicitly: dashboard auth is fail-closed on the main surface and absent on plugin routes. A deployment that binds non-loopback needs a reverse proxy denying /api/plugins/, not just the built-in gate."
+/>
+
+## The desktop app
+
+A native wrapper around the same agent, adding repository discovery, project grouping,
+and its own plugin system.
+
+The detail worth knowing is in the status bar: **a per-session YOLO toggle.** From
+`04/04`, YOLO disables the approval checks — so a UI control makes that a one-click
+change rather than a deliberate flag. Worth knowing it is there, and where.
+
+It can also connect to a remote backend, and the documentation attaches an unambiguous
+warning to that: put it behind a VPN.
+
+## The editor adapter
+
+ACP exposes Hermes to VS Code, Zed and JetBrains, and the interesting part is what it
+deliberately leaves out. The `hermes-acp` toolset excludes capabilities the editor
+already provides — the editor is the file browser, so the agent does not need to be.
+
+Four approval tiers exist, and the editor default is `allow_session`: approve once for
+the session rather than per action. The reasoning is honest — an approval prompt per
+action inside an editor produces click-through, which is worse than one considered
+decision.
+
+`HERMES_ACP_SKIP_CONFIGURED_MCP` exists for the case where your editor already has its
+own MCP servers and you do not want them twice.
+
+## The HTTP API
+
+An OpenAI-compatible endpoint, so Open WebUI, LobeChat and LibreChat can drive Hermes as
+if it were a model:
+
+```text
+API_SERVER_ENABLED=true
+API_SERVER_KEY=change-me-local-dev
+API_SERVER_PORT=8642
+```
+
+**Bearer authentication is required on all deployments, including loopback.** No
+localhost exemption, which is a better default than the dashboard's plugin routes
+manage.
+
+The surface: `/v1/chat/completions` (stateless, streaming with inline tool progress),
+`/v1/responses` (server-side state via a previous-response id), a Runs API for
+long-running work with SSE events, plus health and capability endpoints.
+
+<Depth min="operator">
+
+Two limitations to know before designing around it. Stored responses are capped at **100
+with LRU eviction**, so the server-side conversation state is a convenience rather than a
+store. And **file uploads are not supported** — inline images work via URL or base64, but
+an uploaded file returns a 400.
+
+`X-Hermes-Session-Key` scopes memory per caller, which is how you serve several users
+from one deployment without their contexts merging. Multi-user setups otherwise run one
+port per profile.
+
+</Depth>
+
+## They are all the same agent
+
+The point of the survey: none of these is a different product or a different
+configuration. Each is an adapter onto the same `AIAgent`, with the same skills, the
+same memory, the same toolsets and the same approval configuration.
+
+Which means two things. A capability you configure once applies everywhere — and a
+misconfiguration you make once applies everywhere too.
+
+## What to take from this
+
+Four doors, one agent. Keep the dashboard on loopback, know that plugin routes bypass its
+auth, remember the desktop app has a one-click YOLO toggle, and note that the HTTP API
+requires bearer auth even locally.
+
+Everything else here is a lookup when you need it.
