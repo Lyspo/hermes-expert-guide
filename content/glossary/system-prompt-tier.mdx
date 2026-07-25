@@ -1,0 +1,10 @@
+---
+term: 'System prompt tier'
+aliases: ['tier', 'prompt tier']
+short: 'One of three assembly bands — stable, context, volatile — that determine what may change without breaking the prefix cache.'
+hermesVersion: v0.19.0
+---
+
+The ordering is the point rather than the naming: anything fixed goes first so it can be cached, and anything variable goes last so that changing it invalidates as little as possible behind it.
+
+[Where this is taught](/hermes/05-what-it-knows/01-what-is-in-the-system-prompt/)

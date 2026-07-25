@@ -21,6 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages: MetadataRoute.Sitemap = [
     { url: url('/'), changeFrequency: 'monthly', priority: 1 },
     { url: url('/begin/'), changeFrequency: 'yearly', priority: 0.5 },
+    { url: url('/glossary/'), changeFrequency: 'monthly', priority: 0.6 },
     { url: url('/about/'), changeFrequency: 'yearly', priority: 0.3 },
   ]
 

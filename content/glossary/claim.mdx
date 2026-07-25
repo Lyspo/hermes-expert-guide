@@ -1,0 +1,9 @@
+---
+term: 'Claim'
+short: 'A worker''s atomic lease on a ready task, reclaimed only if the worker''s process has actually died.'
+hermesVersion: v0.19.0
+---
+
+Expiry alone releases nothing. A live worker in a long model call has its claim extended, which makes reclaim a crash recovery rather than a timeout.
+
+[Where this is taught](/hermes/08-more-than-one-agent/03-the-kanban-board/)

@@ -1,0 +1,10 @@
+---
+term: 'Terminal backend'
+aliases: ['backend']
+short: 'Where the agent''s shell commands execute: local, docker, ssh, singularity, modal or daytona.'
+hermesVersion: v0.19.0
+---
+
+Four of the six skip the dangerous-command check entirely, so the choice silently selects which of the two safety mechanisms you are relying on.
+
+[Where this is taught](/hermes/04-tools-and-isolation/03-execution-backends-and-isolation/)

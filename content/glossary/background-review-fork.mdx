@@ -1,0 +1,10 @@
+---
+term: 'Background review fork'
+aliases: ['review fork']
+short: 'A daemon-thread copy of the agent spawned after the visible response, restricted to memory and skill tools, barred from writing to state.db.'
+hermesVersion: v0.19.0
+---
+
+It shares the parent session id deliberately, for cache warmth, and holds no handle to the session database. Its answer arrives after yours, never instead of it.
+
+[Where this is taught](/hermes/06-skills-and-the-loop/05-the-nudge-and-the-review-fork/)

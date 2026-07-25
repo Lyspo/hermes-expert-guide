@@ -1,0 +1,10 @@
+---
+term: 'Egress proxy'
+aliases: ['iron-proxy', 'hermes egress']
+short: 'A host daemon that swaps an opaque sandbox token for a real upstream credential, so the sandbox never holds a key.'
+hermesVersion: v0.19.0
+---
+
+Docker only, and it publishes seven things it does not protect against. Two matter in practice: it does not stop exfiltration to an allowlisted host, and it does not cover Bedrock or Vertex at all.
+
+[Where this is taught](/hermes/10-deployment-and-governance/02-secrets-and-egress/)

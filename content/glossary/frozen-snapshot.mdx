@@ -1,0 +1,9 @@
+---
+term: 'Frozen snapshot'
+short: 'The rule that memory is read into the prompt once at session start; a write lands on disk immediately but reaches the model only next session.'
+hermesVersion: v0.19.0
+---
+
+This is why an agent asked what it remembers right after being told something new describes the pre-write state. It is the prefix cache being protected, not a bug.
+
+[Where this is taught](/hermes/05-what-it-knows/03-memory-the-two-files/)

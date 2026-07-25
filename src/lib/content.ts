@@ -1,4 +1,4 @@
-import { allLessons } from 'content-collections'
+import { allGlossaries, allLessons } from 'content-collections'
 import type { Track } from './site'
 
 export type Lesson = (typeof allLessons)[number]
@@ -154,3 +154,14 @@ export function prerequisitesOf(lesson: Lesson): Lesson[] {
     .map((id) => plannedLessons.find((candidate) => candidate.id === id))
     .filter((candidate): candidate is Lesson => candidate !== undefined)
 }
+
+/**
+ * Glossary terms, alphabetical, with a leading punctuation-insensitive sort so that
+ * `/learn` and `.usage.json` file where a reader would look for them rather than in
+ * a clump at the top.
+ */
+export const glossary = [...allGlossaries].sort((a, b) =>
+  a.term.replace(/^\W+/, '').localeCompare(b.term.replace(/^\W+/, ''), 'en', {
+    sensitivity: 'base',
+  }),
+)

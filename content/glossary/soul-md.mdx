@@ -1,0 +1,9 @@
+---
+term: 'SOUL.md'
+short: 'The agent identity file, loaded from HERMES_HOME into slot 1 of the system prompt and never read from the working directory.'
+hermesVersion: v0.19.0
+---
+
+The "never from the working directory" half is the part that matters: no repository can hand your agent an identity by dropping a file in its root. Identity travels with the agent; project knowledge belongs in a context file.
+
+[Where this is taught](/hermes/05-what-it-knows/02-soul-and-project-context/)

@@ -1,0 +1,9 @@
+---
+term: 'Protocol violation'
+short: 'A worker exiting cleanly while its task is still running, having called neither complete nor block.'
+hermesVersion: v0.19.0
+---
+
+Exactly one terminator per run is the contract; anything else is reaped by the kernel and recorded as such.
+
+[Where this is taught](/hermes/08-more-than-one-agent/03-the-kanban-board/)
