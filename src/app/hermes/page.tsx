@@ -11,7 +11,15 @@ const GUIDE = 'hermes'
 const guide = guides.find((candidate) => candidate.slug === GUIDE)
 
 export const metadata: Metadata = guide
-  ? { title: guide.title, description: guide.summary }
+  ? {
+      title: guide.title,
+      description: guide.summary,
+      openGraph: {
+        title: guide.title,
+        description: guide.summary,
+        images: [{ url: `/og/guide-${guide.slug}.png`, width: 1200, height: 630 }],
+      },
+    }
   : {}
 
 export default function GuidePage() {

@@ -77,9 +77,17 @@ flagship replay exists. Search, OG images, JSON-LD, sitemap. The landing page �
 labelled placeholder, and now the single largest gap. Glossary and cheatsheets. Colophon.
 
 **Verification is thinner than it looks.** `pnpm verify` runs typecheck, lint, unit tests,
-the static export and a link check. There is **no** Playwright, no axe sweep and no
-Lighthouse CI yet, so the performance budgets and accessibility gates in `design.md` are
+OG image generation, the static export, the search index and a link check — the full
+chain the plan named, as of this pass. There is still **no** Playwright, no axe sweep and
+no Lighthouse CI, so the performance budgets and accessibility gates in `design.md` remain
 intentions rather than gates. Do not describe them as enforced.
+
+Two build steps reach the network on a cold run and are worth knowing about before a CI
+job fails mysteriously. `pnpm og` downloads two TTFs from Google Fonts and caches them
+under `node_modules/.cache/og-fonts`; it asks the *v1* CSS endpoint with an old **Safari**
+user agent, because Google picks a format per agent — IE6 gets EOT, Firefox 3 gets WOFF,
+and only Safari 5 gets the plain TTF that Satori can parse. `pnpm search-index` is
+offline. Neither is currently vendored.
 
 ## Facts that override the documentation
 
@@ -169,12 +177,11 @@ for d in content/guides/hermes/*/; do n=$(ls $d*.mdx | wc -l); \
    and it is entirely server-rendered with no client JavaScript. What is *not* built is
    the GSAP scroll scene `design.md` specifies. `src/components/landing/` does not
    exist; the eslint rule permitting GSAP there is currently unused.
-2. **Search, OG images, JSON-LD, sitemap.** All four are scaffolded in `package.json`'s
-   `verify` chain in intent only — `pnpm verify` does not currently build a search index
-   or OG images despite the phase gate naming them.
-3. **The remaining simulations.** The map specifies eight; the engine and one flagship
+2. **The remaining simulations.** The map specifies eight; the engine and one flagship
    replay exist. SIM-4 is still blocked on an uncaptured SKILL.md diff.
-4. **Glossary, cheatsheets, colophon** — all specified in the map, none started.
+3. **Glossary, cheatsheets, colophon** — all specified in the map, none started. The
+   `glossaries` and `cheatsheets` collections already exist in `content-collections.ts`
+   and are empty.
 
 Verification is still thinner than the plan calls for: no Playwright, no axe sweep, no
 Lighthouse CI, so the accessibility and performance budgets in `design.md` remain
