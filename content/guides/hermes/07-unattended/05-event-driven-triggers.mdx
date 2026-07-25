@@ -13,10 +13,168 @@ prerequisites:
   - hermes/07-unattended/03-authorization-and-pairing
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+So far something you did starts the work — you type, or a schedule fires. Webhooks are
+the third case: something else entirely starts it. A pull request opens, an alert fires,
+a payment succeeds, and your agent begins.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+That is the most useful and most dangerous trigger in the product, and the reason is one
+sentence you will meet halfway down.
+
+## The shape
+
+The webhook adapter runs an HTTP server, validates a signature, turns the payload into a
+prompt, runs the agent, and delivers the result somewhere.
+
+```text
+WEBHOOK_ENABLED=true
+WEBHOOK_PORT=8644
+WEBHOOK_SECRET=your-global-secret
+```
+
+Health check, which is worth wiring into monitoring:
+
+<Command verified="v0.19.0">{'curl http://localhost:8644/health'}</Command>
+
+## A route
+
+Routes live in `config.yaml`. The fields that matter:
+
+| Field | What it does |
+|---|---|
+| `events` | Which event types to accept — empty means all |
+| `secret` | HMAC secret. **Required** — the gateway refuses to start without one |
+| `prompt` | A template with dot notation: `{pull_request.title}` |
+| `filters` | Declarative matching; a non-match returns 200 and does nothing |
+| `script` | A pre-processing script that can rewrite or drop the payload |
+| `skills` | Skills to attach to the run |
+| `deliver` | Where the result goes — `github_comment`, `telegram`, `log`, and so on |
+| `deliver_only` | **Skip the agent entirely** |
+
+Templating is forgiving in a specific way worth knowing: a missing key stays literal
+rather than erroring, so `{issue.titel}` renders as the characters `{issue.titel}` in
+your prompt. No failure, just a strange instruction. `{__raw__}` dumps the whole payload,
+truncated at 4,000 characters.
+
+## The zero-cost path
+
+`deliver_only` is the feature to reach for more often than people do. It renders the
+prompt template literally and delivers it — **no model call at all**.
+
+Sub-second, free, and exactly right for "tell me in Telegram when a PR opens." A large
+share of what people build agent runs for is really a notification with formatting, and
+this does that without a token.
+
+<TrackCallout
+  operator="Start every route as deliver_only. Add the agent when you can name what judgement it is supposed to apply — most routes never need one."
+  architect="deliver_only is also a containment control, not only a cost one: a route with no agent run has no tool surface and therefore no injection consequence. Prefer it wherever the task is transformation rather than decision."
+/>
+
+## Filters, before you spend anything
+
+Filters run before the agent and cut the noise:
+
+```yaml
+filters:
+  all:
+    - field: action
+      equals: opened
+    - field: pull_request.draft
+      equals: false
+```
+
+The operator set is generous — `exists`, `missing`, `equals`, `not_equals`, `contains`,
+`in`, `in_file`, `regex`, and `all`/`any`/`not` groups — and `headers.<Name>` reads
+request headers, which is how you filter on things the body does not carry.
+
+A non-matching request returns HTTP 200 with an ignored status. That is correct
+behaviour: the sender does not need to know your filtering rules, and a 4xx would make
+GitHub start disabling your webhook.
+
+Script filters go further — stdin is the payload, and stdout replaces it. Empty output,
+`[SILENT]`, a nonzero exit or a timeout all mean *ignore this event*.
+
+## The sentence
+
+The security documentation attaches a warning to all of this, and it is the most
+important sentence in the lesson:
+
+> HMAC validation authenticates the *sender*, not the *content*... The trust boundary is
+> the agent's capability surface, not the input channel.
+
+Sit with that. A verified GitHub webhook proves GitHub sent it. It proves nothing about
+the pull request title, which was written by whoever opened the pull request — and which
+your template is about to interpolate directly into a prompt.
+
+**Anyone who can open an issue on your public repository can write text into your
+agent's context.** The signature is entirely valid. That is the point.
+
+<ForTrack track="architect">
+
+The recommended hardenings are four, and they are the same four every time:
+
+**Sandbox the runtime.** A container backend for anything webhook-triggered, with the
+caveat from `04/03` that this trades away the dangerous-command check.
+
+**Scope the toolset.** A route that comments on pull requests does not need the memory,
+delegation or cron toolsets. `enabled_toolsets` per route.
+
+**Keep approvals on.** This is where `cron_mode: deny` and manual approvals earn their
+inconvenience, because there is no human in this loop at all.
+
+**Template narrowly.** `{pull_request.title}` is a smaller attack surface than
+`{__raw__}`. Interpolate the fields you need and no more.
+
+To that list, add: prefer `deliver_only` unless an agent run is genuinely needed. It is
+the only one of these that removes the exposure rather than reducing it.
+
+</ForTrack>
+
+## What the transport already handles
+
+Credit where due — the adapter does a lot of tedious work correctly:
+
+- **Four HMAC schemes.** GitHub's `X-Hub-Signature-256`, GitLab's plain token, and a
+  generic V2 with a ±300-second timestamp window for replay protection. V1 exists,
+  lacks replay protection, and logs a deprecation warning.
+- **Rate limiting** at 30 requests per minute per route.
+- **Idempotency** — delivery ids cached for an hour, duplicates silently accepted and
+  skipped.
+- **A 1 MB body cap.**
+- **Every route requires a secret**, and startup fails without one. `INSECURE_NO_AUTH`
+  exists and works on loopback only.
+
+That last one is a good default: it is not possible to accidentally deploy an
+unauthenticated public route.
+
+<Depth min="operator">
+
+Dynamic subscriptions can be managed from the CLI without editing config or restarting:
+
+```bash
+hermes webhook subscribe github-issues \
+  --events "issues" \
+  --prompt "New issue #{issue.number}: {issue.title}" \
+  --deliver telegram
+hermes webhook list
+hermes webhook test github-issues --payload '{"issue": {"number": 42}}'
+```
+
+They hot-reload per request, and static routes take precedence over dynamic ones of the
+same name. `webhook test` is the right way to develop a template — it exercises the
+route without needing the real event.
+
+Worth knowing for a threat model: the agent can create its own subscriptions through the
+terminal tool if guided by a skill.
+
+</Depth>
+
+## What to take from this
+
+Routes, signatures, filters, delivery. Start with `deliver_only` and add an agent run
+only when judgement is genuinely required.
+
+And carry the sentence: authentication proves who sent it, not what it says. Every field
+you interpolate was written by somebody, and on a public repository that somebody is
+anybody.

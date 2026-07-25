@@ -15,10 +15,155 @@ prerequisites:
   - hermes/04-tools-and-isolation/04-approvals-in-depth
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+A scheduled job is the smallest complete unit of unattended work, which is why this
+module starts here rather than with the gateway. Everything that makes unattended
+operation hard shows up in one cron job: nobody to answer an approval prompt, no
+conversation to carry context, and a failure nobody sees.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+## Four ways to say when
+
+```text
+30m                    # relative — once, in thirty minutes
+every 2h               # interval — recurring, forever
+0 9 * * *              # cron expression — 9am daily
+2026-03-15T09:00:00    # ISO timestamp — once, at that moment
+```
+
+Relative and ISO are one-shots. Interval and cron expressions recur.
+
+## Three ways to create one
+
+From a session:
+
+```text
+/cron add "every 2h" "Check server status"
+/cron add 30m "Reminder text" --skill blogwatcher
+```
+
+From the shell:
+
+<Command verified="v0.19.0">hermes cron create "every 2h" "Check server status"</Command>
+
+Or by asking. Natural language works — "every morning at nine, summarise my
+unread GitHub notifications" — and it is not a separate path: it calls the same
+`cronjob` tool the other two surfaces use.
+
+Lifecycle from the CLI: `list`, `pause`, `resume`, `run`, `remove`, `status`, `tick`,
+plus `edit` for schedules and skill attachment, and `hermes cron runs` for history.
+
+## What actually happens
+
+Quoted, because the sentence contains three separate facts worth noticing:
+
+> The gateway ticks the scheduler every 60 seconds, running any due jobs in isolated
+> agent sessions.
+
+**The gateway ticks it.** The scheduler lives inside the gateway process. No gateway,
+no jobs — which is the single most common reason a cron job silently never fires, and
+it produces no error because nothing is running to produce one.
+
+**Every 60 seconds.** Your minimum resolution is one minute, and a job scheduled for
+09:00:00 runs somewhere in the following minute.
+
+**Isolated agent sessions.** Each due job gets a *fresh* `AIAgent`. Not your session, not
+a shared one — a new one, every time.
+
+Per tick: load the job store, check what is due, start a fresh session per due job,
+inject any attached skills, run to completion, deliver, update the next run time. A lock
+file prevents overlapping ticks.
+
+<MarginNote>
+Jobs live in `~/.hermes/cron/jobs.json`, output in `~/.hermes/cron/output/`, and run
+history in `~/.hermes/cron/executions.db`. All three are worth knowing when a job
+misbehaves.
+</MarginNote>
+
+## The fresh-session consequence
+
+Because every run starts clean, **your prompt must be self-contained.** There is no
+"as we discussed" and no memory of yesterday's run.
+
+That is the discipline the format imposes and it is a good one — but it also means a job
+prompt is closer to a script than to a message. Write it as if for someone who has never
+seen your project, because that is literally the situation.
+
+Two features exist to soften it. `context_from` chains jobs: job B reads job A's most
+recent output and prepends it to its own prompt. And `attach_to_session` (or the global
+`cron.mirror_delivery`) makes a job's result continuable — you can reply to it, in a
+thread where the platform supports one.
+
+## Four constraints that surprise people
+
+**A cron session cannot create cron jobs.** The cron-management tools are disabled
+inside cron executions. No self-replicating schedules, which is the correct call.
+
+**Unpinned jobs snapshot the model at creation, and fail closed.** If a job did not pin a
+provider and model, it captured your default at creation time — and if that default
+later changes, the job fails rather than silently running on something else.
+
+**Workdir jobs run sequentially.** `--workdir /path` scopes the terminal and file tools
+to a directory and injects that project's context file, and such jobs are deliberately
+taken out of the parallel pool to avoid terminal-state corruption.
+
+**Failed jobs always deliver.** An agent response containing `[SILENT]` suppresses
+delivery while still saving output locally — but that suppression does not apply to
+failures. You cannot accidentally silence your own alerting.
+
+<TrackCallout
+  newcomer="Start with one job you would actually miss if it stopped. A daily summary is a good first one, because you will notice its absence."
+  operator="Set approvals.cron_mode: deny. Combined with the fail-closed 300-second approval timeout, that guarantees an unattended job cannot approve its own dangerous command by waiting for nobody to answer."
+  architect="Fresh session per run, prompts scanned for injection at creation and update time, and cron sessions barred from creating more jobs. The residual risk is the workdir: a job with --workdir has scoped file and terminal access to a real path with nobody watching."
+/>
+
+## Delivery
+
+A job can deliver to `origin`, `local`, or any configured platform — `telegram`,
+`discord`, `slack`, `whatsapp`, `signal`, `matrix`, `email`, `sms`, `homeassistant` —
+or `all`, or a comma-separated combination.
+
+One detail in the delivery wrapper is worth internalising, because it explains a class
+of confusion: the delivered message carries a note saying **the agent cannot see this
+message**. The job ran, produced output, and finished. What you are reading is a report,
+not a conversation, unless you explicitly made the job continuable.
+
+## The cheap mode people miss
+
+Not every scheduled task needs a language model, and paying for one every five minutes
+to check whether a disk is full is absurd. So there is a script mode:
+
+```bash
+hermes cron create "every 5m" --no-agent --script watchdog.sh \
+  --deliver telegram --name "memory-watchdog"
+```
+
+Scripts live in `~/.hermes/scripts/` and run under bash or Python by extension. Empty
+output means a silent tick; a non-zero exit raises an alert.
+
+The clever part: the final line of stdout can emit `{"wakeAgent": false}` to suppress
+waking the model. So a polling loop can run every minute for free and only escalate to
+an agent when it finds something — which is the right shape for monitoring and costs
+essentially nothing.
+
+<Depth min="operator">
+
+Attach skills to give a job a procedure rather than a paragraph: `--skill blogwatcher`,
+or several via the tool call. Toolsets resolve job-specific first, then your cron
+platform configuration, then defaults — so a job can be given a narrower surface than
+your interactive sessions have.
+
+Jobs also inherit configured fallback providers and credential-pool rotation, which
+matters more unattended than interactively: a rate limit at 3am should fail over rather
+than fail.
+
+</Depth>
+
+## What to take from this
+
+A job is a schedule, a self-contained prompt, and a delivery target, run in a fresh
+session by a scheduler that lives inside the gateway. If the gateway is not running,
+nothing happens and nothing complains.
+
+Set `cron_mode: deny` before you schedule anything that touches your machine, and reach
+for `--no-agent` whenever the task is a check rather than a judgement.

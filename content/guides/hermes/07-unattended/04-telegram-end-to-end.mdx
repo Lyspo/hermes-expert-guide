@@ -14,10 +14,152 @@ prerequisites:
   - hermes/07-unattended/03-authorization-and-pairing
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Twenty-odd platforms are supported. This lesson does one of them properly, because the
+gateway is a single process with one authorization chain and identical mechanics per
+adapter — so the second platform you connect is a lookup rather than a lesson.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+Telegram is the right one to learn on: the setup is entirely in-app, it supports
+everything Hermes can do, and it has one configuration trap that will cost you an hour
+if nobody warns you.
+
+## The bot
+
+Message **@BotFather** and send `/newbot`. You pick a display name and a unique username
+ending in `bot`. It returns a token shaped like this:
+
+```text
+123456789:ABCdefGHIjklMNOpqrSTUvwxYZ
+```
+
+BotFather attaches a warning worth taking literally: *"Keep your bot token secret.
+Anyone with this token can control your bot."* It goes in `~/.hermes/.env` and nowhere
+else.
+
+While you are there, `/setcommands` is worth two minutes — it populates the command menu
+users see:
+
+```text
+help - Show help information
+new - Start a new conversation
+sethome - Set this chat as the home channel
+```
+
+## The trap
+
+**Privacy mode is on by default**, and while it is on your bot only sees messages that
+start with `/`, direct replies to its own messages, and service messages. In a group, it
+will appear to ignore most of what is said.
+
+Turn it off via BotFather: `/mybots` → your bot → Bot Settings → Group Privacy → Turn
+off.
+
+Then the part that catches everyone:
+
+> You must remove and re-add the bot to any group after changing the privacy setting.
+
+Telegram caches the setting per group membership. Changing it does nothing to groups the
+bot has already joined. If you change the setting and the behaviour does not change,
+this is why — and re-reading the setting will not help, because it is already correct.
+
+## Wiring it up
+
+You need your own numeric user id. Message **@userinfobot** and it tells you instantly.
+
+Then either run the wizard:
+
+<Command verified="v0.19.0">hermes gateway setup</Command>
+
+or write the two lines yourself:
+
+```text
+TELEGRAM_BOT_TOKEN=123456789:ABCdefGHIjklMNOpqrSTUvwxYZ
+TELEGRAM_ALLOWED_USERS=123456789
+```
+
+Then start the gateway. Remember from two lessons ago that setup does not start
+anything.
+
+<TrackCallout
+  newcomer="Do these in order and you will have a working assistant in about ten minutes. If it does not reply, check that your user id is in the allowlist before anything else."
+  operator="TELEGRAM_ALLOWED_USERS is the per-platform allowlist from the authorization chain. It is checked before the global list, and either one admitting is enough."
+/>
+
+## The home channel
+
+`/sethome` in a chat makes it the default delivery target — which is what your cron jobs
+mean when they deliver to a platform rather than to `origin`.
+
+One detail that trips people up: **group chat ids are negative numbers.** If you are
+configuring a delivery target by hand and it silently goes nowhere, check that you kept
+the minus sign.
+
+## Settings worth changing
+
+**Notification volume.** The default rings for everything. `important` restricts it to
+final responses and approval prompts, leaving tool progress silent — which is almost
+always what you want on a phone.
+
+**Streaming.** The bot edits one message bubble as it works rather than posting a stream
+of new ones, and it pins your message at the start of a turn and unpins it when done,
+which is a neat visual "still working" indicator.
+
+**Group mentions.** In groups the bot replies only when mentioned by default.
+`observe_unmentioned_group_messages` lets it read everything as context while still only
+replying when addressed — useful, and worth a moment's thought about who else is in that
+group.
+
+<Depth min="operator">
+
+Several capabilities need one extra thing:
+
+**Voice** works in both directions and needs `ffmpeg` for audio conversion — which the
+installer already provided.
+
+**Large files** use a separate transport path; the ordinary bot API caps out well below
+what people expect to be able to send.
+
+**Webhook mode** is available instead of polling and **requires a secret** — the gateway
+will not start a webhook without one.
+
+**Forum topics** can be bound to specific skills, which is a genuinely good pattern: one
+topic per workflow, each with its procedure attached.
+
+</Depth>
+
+## What approvals look like here
+
+The approval flow from module 4 becomes a message rather than a menu:
+
+<Transcript label="Telegram" fidelity="verbatim" source="Telegram documentation, v0.19.0">
+{`⚠️ This command is potentially dangerous (recursive delete). Reply "yes" to approve.`}
+</Transcript>
+
+You reply `yes` or `no`. Remember the 300-second fail-closed timeout — a notification
+you do not see for six minutes is a denial.
+
+The `clarify` tool renders as an inline keyboard, with a 600-second timeout:
+
+<Transcript label="Telegram" fidelity="verbatim" source="Telegram documentation, v0.19.0">
+{`❓ Which framework should I use for the dashboard?
+[1. Next.js] [2. Remix] [3. Astro] [✏️ Other (type answer)]`}
+</Transcript>
+
+## When it does not work
+
+Four things, in the order worth checking:
+
+1. **Is the gateway running?** `hermes gateway status`.
+2. **Is your user id in the allowlist?** The default is deny.
+3. **Is the token valid?** A revoked or mistyped token fails at connection time and
+   appears in `~/.hermes/logs/gateway.log`.
+4. **Group behaviour wrong?** Privacy mode — and did you remove and re-add the bot?
+
+## What to take from this
+
+BotFather for the token, `@userinfobot` for your id, two lines in `.env`, and start the
+gateway. Turn privacy mode off *and* re-add the bot to your groups. Set a home channel
+so scheduled work has somewhere to land, and turn notifications down to `important`.
+
+Every other platform is the same shape with different credentials.

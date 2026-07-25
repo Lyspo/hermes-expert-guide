@@ -13,10 +13,118 @@ prerequisites:
   - hermes/07-unattended/01-scheduled-work
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+The previous lesson ended on a dependency: cron jobs only run because something is
+ticking the scheduler. That something is the gateway, and it is worth meeting as the
+thing your job needs rather than as a platform tour.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+## What it is, mechanically
+
+Quoted, because the description is unusually precise:
+
+> Each platform adapter receives messages, routes them through a per-chat session store,
+> and dispatches them to the AIAgent for processing. The gateway also runs the cron
+> scheduler, ticking every 60 seconds to execute any due jobs.
+
+So: **one process.** It holds every platform connection you have configured, keeps a
+separate session per chat, hands messages to the same agent core the CLI uses, and ticks
+cron on the side.
+
+That is the whole architecture. There is no per-platform daemon, no queue service, and
+no separate scheduler — which is why the gateway going down takes your bot *and* your
+scheduled jobs with it.
+
+## The single most common "my bot is broken"
+
+<Revised
+  was="Running hermes setup and configuring a platform is enough to get a bot responding."
+  now="Setup configures the gateway. It does not start it. Until you run the gateway process, nothing receives messages and no cron job fires."
+  why="Reported as the most common cause of a non-responding bot"
+  when="2026-07-25"
+/>
+
+Configuration and execution are separate steps, and the failure is silent in both
+directions: the bot does not reply, and nothing logs an error, because no process exists
+to log one.
+
+<Command verified="v0.19.0">hermes gateway status</Command>
+
+That is the first thing to run whenever something unattended has not happened.
+
+## Running it
+
+```bash
+hermes gateway run        # foreground — you watch it
+hermes gateway start      # background
+hermes gateway stop
+hermes gateway restart
+hermes gateway install    # install as a system service
+```
+
+`hermes gateway run` in the foreground is the right way to *develop* against it: you see
+the startup lines, the authorization decisions and the errors as they happen. Logs
+otherwise land in `~/.hermes/logs/gateway.log`.
+
+For production, `hermes gateway install` registers it as a system service so it survives
+a reboot.
+
+<Depth min="operator">
+
+Two platform-specific notes worth having before you debug for an hour.
+
+**On WSL2, prefer foreground `hermes gateway run` over systemd.** The documentation
+recommends it directly, on stability grounds.
+
+**On macOS, `hermes gateway install` re-captures your `PATH`.** A service started from a
+minimal environment frequently cannot find the tools the agent expects, and reinstalling
+the service after a `PATH` change is the fix rather than a workaround.
+
+</Depth>
+
+## How many platforms is a question with three answers
+
+<Revised
+  was="Hermes supports 27+ messaging platforms."
+  now="The messaging index links 20 platform pages and the enumerated list contains 21 rows; the architecture page says 20 adapters; the integrations index says 27+."
+  why="Three documentation sources disagree, and the enumerated list disagrees with its own summary"
+  when="2026-07-25"
+/>
+
+The number does not matter much, and the reason it does not is the point of this module's
+scope: the gateway is one process with one authorization chain and identical mechanics
+per adapter. The second platform you connect is a lookup, not a lesson.
+
+The list, for orientation: Telegram, Discord, Slack, Google Chat, WhatsApp and WhatsApp
+Cloud API, Signal, SMS via Twilio, Email, Home Assistant, Mattermost, Matrix, DingTalk,
+Feishu/Lark, WeCom, Weixin, BlueBubbles for iMessage, QQBot, Yuanbao, Microsoft Teams,
+and IRC.
+
+<TrackCallout
+  newcomer="One process, one command to check it, and one place its logs go. That is genuinely all the mental model you need."
+  operator="Everything unattended shares a single point of failure. hermes gateway status belongs in whatever monitoring you already run, and its absence is the first thing to check when a job did not fire."
+  architect="A single process holding every platform credential, every per-chat session, and the scheduler is a concentration worth noting. It is also the reason the authorization chain in the next lesson is the whole access-control story rather than one of several."
+/>
+
+## What it does per message
+
+Beyond receiving and dispatching, the gateway owns four things worth knowing exist:
+
+**Session routing** — which conversation a message belongs to, isolated per chat.
+
+**Authorization** — the six-check chain that decides whether this sender is allowed to
+talk to your agent at all. That is the next lesson, and it defaults to deny.
+
+**Slash-command dispatch** — the same `/commands` you use in the terminal, delivered over
+a messaging platform.
+
+**Lifecycle hooks** — events other things can subscribe to.
+
+## What to take from this
+
+One long-lived process is the whole unattended story: platform adapters, per-chat
+sessions, authorization, and the cron tick that makes the previous lesson work.
+
+Configure it with `hermes gateway setup`, start it with `run` or `install`, and check it
+with `status` before you debug anything else. The next lesson is who is allowed to reach
+it — which, by default, is nobody.

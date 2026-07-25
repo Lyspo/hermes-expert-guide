@@ -15,10 +15,134 @@ prerequisites:
   - hermes/05-what-it-knows/01-what-is-in-the-system-prompt
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Unattended means nobody is watching, which includes nobody watching the meter. This
+lesson is the arithmetic, and it starts from a figure that reliably shocks people.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+## The numbers people actually report
+
+Four figures from published first-hand accounts. None is a benchmark; all are real usage:
+
+| Reported | Context |
+|---|---|
+| 4 million tokens in two hours | An enthusiastic first session |
+| 21,000 tokens for a simple query | Through a messaging gateway |
+| 37M input / 120K output, 600 requests | One reader's **day two** |
+| Under $20/month | A VPS deployment on a cheap model |
+
+The spread between the last two is the entire lesson. The same software costs 37 million
+tokens a day or twenty dollars a month depending on decisions this lesson describes.
+
+## Why the gateway costs more
+
+Reported gateway overhead runs **two to three times CLI cost for the same question**,
+and the mechanism is not mysterious: the gateway re-sends platform state, user state,
+conversation history, skills, memory and the system prompt every turn.
+
+Which is to say — it re-sends the diagram from `05/01`, every message. In the terminal
+you feel like you are continuing a conversation. Through Telegram you are, from the
+model's perspective, arriving fresh each time with a lot of luggage.
+
+<TrackCallout
+  newcomer="Expect a chat bot to cost noticeably more than the same conversation in the terminal. It is not misconfigured — it is carrying more state per message."
+  operator="Two to three times is the planning multiplier for anything gateway-fronted. Model it per turn and multiply by expected message volume, not by expected task count."
+  architect="Per-message cost is roughly the fixed prefix plus history. For always-on deployments that makes flat-rate plans structurally attractive over per-token billing, because the variance is what hurts."
+/>
+
+## The fixed floor
+
+Before your message, every call carries the assembled prefix. The project's own tracker
+puts it at **73% of each API call — around 13.9 thousand tokens.**
+
+That is the floor. A one-word question and a paragraph of analysis cost almost the same
+in input tokens, which inverts the intuition that short questions are cheap.
+
+The lever that does most for this is caching. Prompt caching is auto-enabled for Claude
+models on native Anthropic, OpenRouter and Nous Portal, with a configurable five-minute
+or one-hour TTL and breakpoints on the system prompt and skill blocks. A cached prefix
+is roughly ten times cheaper to read than to write — so a long-lived session is
+dramatically cheaper per turn than a series of fresh ones.
+
+**Consequence worth acting on:** unattended work made of many short fresh sessions —
+one cron job per minute, say — pays full price for that prefix every time. Fewer, longer
+runs are cheaper than more, shorter ones, which is the opposite of how people usually
+schedule.
+
+## Five settings that change the number
+
+**1 — A cheaper model.** The largest single lever, and the least clever. Published
+deployments running under twenty dollars a month are running mid-tier models, not
+frontier ones.
+
+**2 — Auxiliary models.** Hermes can route background work off your main model
+entirely — compression, the background review, the curator, triage — each with its own
+provider and model slot:
+
+```yaml
+auxiliary:
+  compression:
+    model: ""          # empty = main model
+  background_review:
+    provider: openrouter
+    model: google/gemini-3-flash-preview
+```
+
+Remember the trade from `06/05`: a review routed to a different model replays a
+24-message digest rather than the full conversation, so you are paying in fidelity.
+
+**3 — Fewer toolsets.** Every enabled toolset's schemas ship on every call forever.
+`agent.disabled_toolsets` is a cost control as much as a security one, and for an
+unattended job the right toolset list is usually much shorter than your interactive one.
+
+**4 — Guardrails.** For anything unattended, cap the loop:
+
+```yaml
+agent:
+  max_turns: 90
+```
+
+At the limit the agent gets one grace call to wrap up. There are also
+`tool_loop_guardrails`, and the documentation recommends `hard_stop_enabled: true`
+specifically for gateway, cron and Kanban workers — which is to say, exactly the contexts
+this module is about.
+
+**5 — Skip the model entirely.** `--no-agent` cron scripts and `deliver_only` webhook
+routes cost nothing per run. A surprising share of scheduled work is a check or a
+notification rather than a judgement.
+
+<Depth min="operator">
+
+The tiered-routing pattern several practitioners report is worth copying: a cheap fast
+model for mechanical work, a mid-tier one for anything delicate, and the expensive model
+reserved for the cases that actually need it. One published account puts the saving at
+around forty dollars and ten hours.
+
+A different lever, also reported: rewriting verbose tool output before it enters context
+cut 60–90% of context tokens in one integration. Terminal output is frequently the
+largest single contributor and `tool_output.max_bytes` is the blunt version of the same
+idea.
+
+</Depth>
+
+## Measuring instead of guessing
+
+<Command verified="v0.19.0">hermes insights --days 7</Command>
+
+Token, cost and activity analytics, filterable by source with `--source`, so you can
+compare what the CLI costs against what the gateway costs on your own usage rather than
+on this lesson's figures.
+
+The dashboard's Analytics tab shows the same over 7, 30 and 90 days — including
+**cache-hit percentage**, which is the number to watch. A low cache-hit rate on a
+long-running deployment means something is invalidating the prefix, and that is a bug
+worth finding rather than a bill worth paying.
+
+## What to take from this
+
+The floor is around 13.9K tokens per call, the gateway multiplies your per-message cost
+by two to three, and fresh short sessions pay that floor repeatedly.
+
+So: pick a cheaper model, route background work to auxiliary slots, cut toolsets you do
+not need, cap the loop, and use the no-model paths where the work is not a judgement.
+Then run `hermes insights` and check whether any of it worked.

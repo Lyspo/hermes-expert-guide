@@ -15,10 +15,132 @@ prerequisites:
   - hermes/02-standing-it-up/04-blast-radius-before-you-continue
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Your gateway is running and connected to a platform. Who can talk to it?
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+By default, nobody. That is worth stating first because it is the opposite of what most
+people assume, and because the assumption produces a specific bad outcome: a reader who
+learns the platform walkthrough first, finds their bot ignoring them, and pastes an
+allow-all into their config to make the tutorial work.
+
+## The chain
+
+<Viz
+  id="authorization"
+  caption="Five checks that can admit, and a floor that is reached by falling rather than by failing. Every route past that floor is something a person switched on deliberately."
+/>
+
+Six steps, in order, and any of the first five can admit a message:
+
+1. A per-platform allow-all flag
+2. The DM-pairing approved list
+3. The platform-specific allowlist
+4. The global allowlist
+5. The global allow-all flag
+6. **Default deny**
+
+The documentation states the terminus in bold, and it is the sentence to remember:
+
+> If no allowlists are configured and `GATEWAY_ALLOW_ALL_USERS` is not set, all users
+> are denied.
+
+Denial is not a failure state here. It is the resting state.
+
+## Allowlists
+
+Per-platform lists live in `~/.hermes/.env` as comma-separated user ids:
+
+```text
+TELEGRAM_ALLOWED_USERS=123456789,987654321
+GATEWAY_ALLOWED_USERS=123456789
+```
+
+The global list applies across every platform; the per-platform one is checked first.
+
+`GATEWAY_ALLOW_ALL_USERS` exists and the deployment checklist says, in as many words,
+never to use it. It is the one switch in this chain that converts a private assistant
+into a public one, and it does so for every platform at once.
+
+<TrackCallout
+  newcomer="If your bot is ignoring you, this is why — and the fix is to add your own user id, not to turn on allow-all."
+  operator="Never GATEWAY_ALLOW_ALL_USERS. Prefer pairing over hardcoded ids so that access has a record, and review the lists periodically — they only ever grow otherwise."
+  architect="Default deny with five explicit admit paths is a defensible design, and the audit question is simple: enumerate which of the five is configured. Note that this chain authorises a *sender*; it says nothing about what they may then ask the agent to do."
+/>
+
+## Pairing, for people whose id you do not have
+
+Collecting a colleague's numeric platform id before they can say hello is a poor
+onboarding experience, so there is an alternative.
+
+An unknown user messages the bot. Instead of silence, they get an eight-character
+pairing code. You approve it:
+
+<Command verified="v0.19.0">hermes pairing approve telegram A1B2C3D4</Command>
+
+Alongside it: `hermes pairing list`, `revoke`, and `clear-pending`. Behaviour for
+unknown senders is set by `unauthorized_dm_behavior`, which takes `pair` or `ignore`.
+
+The limits are sensible and worth knowing, because they are also a rate-limiting story:
+
+| Limit | Value |
+|---|---|
+| Code lifetime | 1 hour |
+| Requests per user | 1 per 10 minutes |
+| Pending codes | 3 maximum |
+| Failed attempts | 5, then a 1-hour lockout |
+
+Pairing state lives under `~/.hermes/pairing/`, per platform, stored `0600`.
+
+## Beyond the individual
+
+Per-platform configuration goes further than a flat user list, and the vocabulary is
+worth having:
+
+- **`allow_from`** — who may talk to the bot directly
+- **`group_allow_from`** and **`group_allowed_chats`** — which people, and which groups
+- **Guest mode** — a reduced-capability tier for unknown users
+- **Admin-only and user-allowed command lists** — which slash commands each tier can run
+
+Plus `/whoami`, which is the fastest way for someone to tell you what id to add.
+
+<Depth min="operator">
+
+Group chats are where this gets subtle. A user allowlist does not by itself decide
+whether the bot responds in a group, and a group allowlist does not decide who within
+that group is authorised. The two interact, and the safe configuration names both.
+
+Sessions are isolated per chat, so one authorised user cannot read another's
+conversation through the bot. Cron job storage is separately hardened against path
+traversal.
+
+</Depth>
+
+## What the chain does not cover
+
+The chain answers *who may send a message*. It does not answer what happens next, and
+one community project makes the gap concrete: someone built a DM-based approval gate for
+Discord bots facing children, because the built-in chain authorises the sender but does
+not gate what the agent then says in a public channel.
+
+<ForTrack track="architect">
+
+That is the boundary to be clear about in any review. Authorization here is
+sender-level and binary. Once a message is admitted, it reaches the same agent core with
+the same toolset and the same approval configuration as your terminal — so the controls
+that matter after admission are the ones from module 4, not this chain.
+
+The corollary for deployment: the authorization chain is necessary and nowhere near
+sufficient. An allowlisted user of a gateway running with a host-reaching backend and
+`approvals.mode: smart` has a great deal of reach.
+
+</ForTrack>
+
+## What to take from this
+
+Six steps, five of which are things you switched on, and a default that denies everyone.
+Add yourself to an allowlist, use pairing to add other people, and never reach for
+allow-all.
+
+And keep the boundary straight: this decides who gets in. What they can do once inside
+was decided in module 4.
