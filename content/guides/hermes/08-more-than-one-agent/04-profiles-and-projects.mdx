@@ -14,10 +14,135 @@ prerequisites:
   - hermes/08-more-than-one-agent/01-two-orchestration-models
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+A profile is a complete second Hermes on the same machine: its own config, API keys,
+memory, sessions, skills and gateway state.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+That is the sanctioned way to run a work agent and a personal agent without them
+learning about each other. It is also, in one specific and important respect, not what
+people assume.
+
+## Creating one
+
+```bash
+hermes profile create mybot          # blank
+hermes profile create work --clone   # clone config
+hermes profile create backup --clone-all
+```
+
+Each profile gets a command alias at `~/.local/bin/<name>`, so `work` starts the work
+agent directly. The `-p` flag targets a profile per invocation, and `hermes profile use
+coder` makes one sticky.
+
+The full surface: `list`, `use`, `create`, `delete`, `show`, `alias`, `rename`, `export`,
+`import`, `install`, `update`.
+
+## What it isolates
+
+Everything Hermes owns. Config, credentials, both memory files, the session database,
+installed skills, and gateway state.
+
+Each profile runs its own gateway service with its own bot token, and there are **token
+locks** preventing you from accidentally using one bot token from two profiles — which
+is a considerate detail, because that failure mode produces confusing message loss rather
+than an error.
+
+There is no documented limit on how many profiles you can have.
+
+## What it does not isolate
+
+<Revised
+  was="Running an agent in a separate profile sandboxes what it can reach."
+  now="Profiles isolate Hermes state — config, memory, sessions, skills. They do not sandbox filesystem access. Terminal working directories are separate from profile boundaries."
+  why="Stated directly in the profiles documentation"
+  when="2026-07-25"
+/>
+
+Two profiles are two agents with the same access to your disk. The `work` agent can read
+your personal projects; the `personal` agent can read your employer's repository. Nothing
+in the profile mechanism prevents it, because the profile boundary is around Hermes's own
+state and not around the filesystem.
+
+If you need a filesystem boundary, that is a container backend, from `04/03` — with the
+caveat that it also removes the dangerous-command check.
+
+<TrackCallout
+  newcomer="Use a second profile to keep work and personal memory apart. Do not assume it stops either one reading your files — that is a different setting."
+  operator="Profile for state separation, terminal.cwd for scope, container backend for an actual boundary. The three are independent and you usually want all three."
+  architect="The isolation claim needs stating precisely in any review: profiles are a state boundary, not a security boundary. The credential separation is real and useful; the filesystem separation does not exist."
+/>
+
+## Backups contain different things
+
+A distinction worth getting right before you share anything:
+
+- **`hermes backup`** — everything, credentials included
+- **`hermes profile export`** — a shareable profile distribution
+
+A profile built on one machine can be packaged as a git repository and installed
+elsewhere with one command, which is a genuinely good distribution story for a team
+standard. Just know which of the two commands you ran before you push it anywhere.
+
+`hermes update` syncs skills across all profiles at once, which is usually what you
+want and is worth knowing when a profile you had deliberately frozen changes.
+
+## Projects, from the source rather than the docs
+
+<MarginNote>
+Everything in this section is read from the command's own module docstring. `hermes
+project` has **no documentation page at all** — a gap worth knowing when you go looking
+for one.
+</MarginNote>
+
+A newer, separate primitive sits alongside profiles:
+
+> A Project is a human-named workspace spanning one or more folders, with one designated
+> primary repo. Projects anchor desktop session grouping and (when bound to a kanban
+> board) give kanban tasks a deterministic worktree + branch convention.
+
+So a project is about *folders*, where a profile is about *state*. They are orthogonal
+and you can use either without the other.
+
+```bash
+hermes project create acme ~/src/acme-api ~/src/acme-web --primary ~/src/acme-api
+hermes project use acme
+hermes project bind-board acme production
+```
+
+The binding is the part with a concrete effect. `bind-board` records the board on the
+project and then points that board's default working directory at the project's primary
+repository — so **new tasks on that board default their working directory to that repo**
+unless a task overrides it.
+
+<ForTrack track="architect">
+
+That defaulting behaviour is exactly the mechanism behind the data-loss incident in
+`02/04`: a board's default working directory was set to a real projects folder, a task
+inherited it, and the scratch-workspace cleanup deleted the lot.
+
+So treat `bind-board` as a change with blast radius rather than a convenience. The
+binding itself succeeds even if the workdir sync fails — failures in that step are
+swallowed as non-fatal — which means the two halves can end up in states you did not
+intend.
+
+</ForTrack>
+
+## The fleet pattern
+
+For anyone running several agents seriously, the pattern reported by practitioners is
+worth copying: **a folder per agent**, each with its own environment file, its own
+container, and its own repository.
+
+That gives you the filesystem boundary profiles do not, keeps credentials genuinely
+separate, and makes each agent's configuration reviewable as code. Profiles then handle
+the Hermes-side state within that structure.
+
+## What to take from this
+
+Profiles isolate everything Hermes owns and nothing your operating system owns. Use them
+for credential and memory separation, `terminal.cwd` for scope, and a container when you
+need a real boundary.
+
+Projects are a different axis — folders and a primary repo — documented only in source,
+and `bind-board` changes where tasks will run.

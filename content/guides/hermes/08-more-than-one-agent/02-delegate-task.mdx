@@ -15,10 +15,164 @@ prerequisites:
   - hermes/04-tools-and-isolation/01-tools-and-toolsets
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+The documentation has a section heading that saves a great deal of confusion, and it is
+worth putting first:
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+> **Subagents Know Nothing**
+
+A child agent starts a completely fresh conversation with zero knowledge of the parent's
+history. Not a summary. Not the last few turns. Nothing except what you handed it.
+
+Almost every disappointing `delegate_task` result comes from forgetting that.
+
+## The call
+
+```python
+delegate_task(
+  goal="Add a --dry-run flag to the sync command",
+  context="Repo at ~/src/tool. The CLI lives in cli.py and uses argparse. "
+          "Existing flags follow the --kebab-case convention. Tests in tests/."
+)
+```
+
+Two fields, and `context` is where the whole quality of the result is decided. The child
+gets a focused system prompt built from your goal and context, and is instructed to
+complete the task and return a structured summary.
+
+For a batch, pass a `tasks` array — each element with its own `goal` and `context`.
+**Three run concurrently by default**, via a thread pool, and results come back sorted
+by task index regardless of the order they finished in.
+
+<TrackCallout
+  newcomer="Think of it as briefing a contractor who has never met you. Everything they need has to be in the brief."
+  operator="Write context as if for a new hire with repository access and no Slack history. The most common failure is a child re-deriving something the parent already knew and getting it wrong."
+  architect="Zero inheritance is a containment property as well as a limitation: nothing from the parent conversation reaches the child except fields you explicitly passed, which bounds what a compromised or confused parent can leak downward."
+/>
+
+## Async, or synchronous — and the docs disagree
+
+This is the detail that decides how you structure orchestration, and it is worth being
+careful about because two documentation pages describe it differently.
+
+Top-level `delegate_task` calls run **asynchronously in the background**: Hermes returns
+a handle immediately and posts results later. But a subagent given `role="orchestrator"`
+waits **synchronously** for its own workers before returning.
+
+<Revised
+  was="The parent blocks until the child returns."
+  now="Top-level calls are asynchronous and hand back a handle; only orchestrator-role children wait synchronously for their workers."
+  why="The delegation page describes async background execution with handles; the Kanban comparison table says the parent blocks. Both pages are current"
+  when="2026-07-25"
+/>
+
+So background parallelism and synchronous hierarchical coordination are both available,
+and which you get depends on the role. Verify the behaviour you intend to depend on
+rather than the sentence.
+
+## Flat by default
+
+Children cannot delegate further. `max_spawn_depth` defaults to **1**, and getting
+nesting requires two changes: `role="orchestrator"` on the child *and* raising the depth.
+
+Leaf subagents are also blocked from a set of toolsets — and here the corpus contains a
+genuine mess worth flagging rather than smoothing over.
+
+<Revised
+  was="Leaf subagents cannot call delegation, clarify, memory and code_execution."
+  now="Three different blocklists appear across the documentation: that one; delegation/clarify/memory/send_message; and delegate_task/clarify/memory/send_message/cronjob. The three agree on delegation, clarify and memory, and disagree on everything else."
+  why="Two passages on the delegation page and one in the simulation reference give three different lists"
+  when="2026-07-25"
+/>
+
+The safe reading is the intersection: a leaf cannot delegate, cannot clarify, and cannot
+write memory. Beyond that, test rather than trust.
+
+Tool inheritance is stated clearly and is the important guarantee anyway: subagents
+inherit the parent's enabled toolsets "so the model cannot grant a child capabilities
+that the parent does not have." A child is never more powerful than its parent.
+
+## Watching them
+
+`/agents` opens a live tree of running and recently finished subagents grouped by
+parent, with cost and token rollups and kill and pause controls.
+
+Per-task logs are append-only files you can tail:
+
+```bash
+tail -f ~/.hermes/cache/delegation/live/<delegation_id>/task-1.log
+```
+
+That is the honest way to find out why a child is taking four minutes.
+
+## The durability gap
+
+This is the part to plan around, and it is the same fact `08/01`'s plate draws.
+
+Completion events are stored in `state.db` *before* they are published, so a result that
+came back is safe. But **a process restart does not resume running children.** They are
+marked `unknown`, and nothing retries them.
+
+The documentation's own recommendation follows: when durability matters, use `cronjob`
+or `terminal(background=True)` instead. Or, from the previous lesson, the board.
+
+<Depth min="operator">
+
+Two more lifecycle behaviours worth knowing before you rely on this.
+
+There is **no wall-clock timeout by default** — children fail only from real errors or
+by exhausting the iteration budget. `child_timeout_seconds` adds a hard cap, with a
+floor of 30 seconds.
+
+And the session relationship: `/stop` cancels background delegations, closing or
+resetting the owning session discards active children, but follow-up messages do *not*
+cancel background work. So a child can outlive the exchange that produced it, and a
+reset kills work you may still have wanted.
+
+</Depth>
+
+## Configuration
+
+```yaml
+delegation:
+  max_iterations: 50
+  max_concurrent_children: 3
+  max_spawn_depth: 1
+  orchestrator_enabled: true
+  model: "provider/model-name"
+```
+
+The model override is worth noting: children can run on a cheaper model than the parent,
+which is often right — the parent is doing the judgement and the children are doing the
+legwork.
+
+<ForTrack track="architect">
+
+One containment detail that surprises people: **parallel subagents share one Docker
+container**. Isolation is per-agent in context terms and not in filesystem terms, so
+three children working concurrently are working in the same writable space and can
+collide.
+
+That is fine for read-heavy fan-out and wrong for parallel builds. Where genuine
+isolation between concurrent workers matters, the board's per-task worktree workspaces
+are the mechanism, not delegation.
+
+</ForTrack>
+
+## Delegate, or execute?
+
+A useful distinction the docs draw: `delegate_task` is a full reasoning loop with tools,
+for work needing judgement. `execute_code` is mechanical Python with no reasoning, for
+data pipelines.
+
+Reaching for a subagent to do something deterministic is a common and expensive mistake.
+
+## What to take from this
+
+Children know nothing, so the brief is the job. Three at a time by default, flat unless
+you deliberately nest, never more capable than the parent, and sharing one container
+when containerised.
+
+And the line to keep from the previous lesson: work in flight does not survive a
+restart. If that matters, this is the wrong tool.

@@ -15,10 +15,160 @@ prerequisites:
   - hermes/07-unattended/02-the-gateway
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+The definition is worth quoting in full, because every clause is load-bearing:
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+> Hermes Kanban is a durable task board, shared across all your Hermes profiles, that
+> lets multiple named agents collaborate on work without fragile in-process subagent
+> swarms. Every task is a row in `~/.hermes/kanban.db`; every handoff is a row anyone
+> can read and write; every worker is a full OS process with its own identity.
+
+Rows, not frames. Processes, not threads. That is the whole difference from the previous
+lesson.
+
+## Two front doors, one store
+
+Agents drive the board through a dedicated `kanban_*` tool schema — **never** by
+shelling out to `hermes kanban`. People, scripts and cron drive it through the CLI, the
+`/kanban` slash command, or the dashboard. Both routes reach the same database layer.
+
+The reason agents get tools rather than a shell is worth knowing, because it is a real
+architectural constraint rather than a preference: a worker running on a Docker, Modal
+or SSH backend that shelled out to `hermes kanban complete` would run **inside the
+container**, where `hermes` is not installed and the board database is not mounted. The
+tools run in the agent's own process and always reach the real store.
+
+## The data model
+
+**Board** — a standalone queue with its own SQLite database, workspace directory and
+dispatcher loop. A fresh install has one, called `default`.
+
+**Task** — a row: title, body, one assignee (a profile name), and a status from
+`triage`, `todo`, `ready`, `running`, `blocked`, `done`, `archived`.
+
+**Link** — a parent-to-child dependency. The dispatcher promotes `todo → ready` once all
+parents are `done`.
+
+**Comment** — the inter-agent protocol. The full thread is read by a worker on every
+spawn, which makes it the durable equivalent of "as we discussed."
+
+**Workspace** — three kinds, and the middle one carries a warning worth repeating:
+`scratch` (an ephemeral temp directory, deleted on completion except declared artifacts),
+`dir:<path>` (**must be absolute** — relative paths are rejected at dispatch as a
+"confused-deputy escape vector"), and `worktree` (a git worktree, preserved).
+
+**Dispatcher** — a long-lived loop, ticking every 60 seconds inside the gateway. It
+reclaims stale claims, promotes ready tasks, and atomically claims and spawns.
+
+## The worker's day
+
+The dispatcher spawns a worker with an environment variable naming its task, which flips
+on the tool schema. A guidance block is injected automatically — nothing to install or
+configure.
+
+The worker calls `kanban_show()` to read its task, prior attempts, parent handoffs and
+comments; changes into its workspace; heartbeats periodically during long operations;
+and terminates in exactly one of two ways:
+
+- **`kanban_complete`** with a `summary` and structured `metadata`
+- **`kanban_block`** with a reason and a kind — `dependency` auto-resumes, while
+  `needs_input`, `capability` and `transient` surface to a human
+
+Anything else — a crash, a timeout, an exit without terminating — is reaped by the
+kernel as `crashed`, `gave_up` or `timed_out`.
+
+<TrackCallout
+  operator="The heartbeat is the liveness contract. A worker doing a long operation without heartbeating looks dead, and the dispatcher will reclaim its task — which is recoverable but wasteful."
+  architect="Exactly one terminator per run, an append-only event log, and every handoff a row. This is the only part of Hermes with a genuine audit trail, and it is the reason to prefer it for anything you may later have to explain."
+/>
+
+## Claim, and reclaim
+
+A claim has a **15-minute TTL** — but expiry alone does not release the task. The
+dispatcher reclaims only if the worker's process is **actually dead**. A live worker
+sitting in a long model call has its claim *extended* rather than stolen.
+
+That distinction is what makes reclaim a crash-recovery mechanism rather than a timeout,
+and it is why the plate in `08/01` draws restart as a reclaim on this side.
+
+When a task is pulled off `running` — by a dashboard drag, or by archiving it — the
+in-flight run closes with an outcome of `reclaimed` rather than being orphaned.
+
+## Decomposition
+
+A rough one-line task in `triage` can be turned into a graph:
+
+<Command verified="v0.19.0">hermes kanban decompose t_abcd</Command>
+
+An auxiliary model reads your installed profile roster and their descriptions, creates a
+child-task graph, links the root, and flips the parent to `todo`. **Auto mode is on by
+default**, running on the dispatcher tick, capped at three tasks per tick.
+
+A lighter variant, `specify`, rewrites a rough one-liner into a full body and promotes it
+without fanning out. Decompose falls back to that when it judges fan-out unwarranted.
+
+And `swarm` builds a whole topology in one command — a blackboard root, N parallel
+workers, a verifier gated on all of them, and a synthesiser gated on the verifier.
+
+<Depth min="operator">
+
+Two deterministic guards worth knowing, because both prevent a class of runaway.
+
+**The block-loop breaker.** A task blocked, unblocked and re-blocked for the *same
+reason* twice is routed to `triage` for human judgement. The documentation is explicit
+that this is "a deterministic DB guard, not an LLM judgment call," and the counter
+survives unblocks — it resets only on a successful completion.
+
+**The circuit breaker.** After N consecutive failures a task auto-blocks with the last
+error and emits `gave_up`. Related, `respawn_guarded` declines to respawn for named
+reasons: a rate-limit or auth failure, a recent success awaiting review, or an existing
+pull request found in a comment.
+
+Those two mean a board left alone does not spin. It stops and waits for you.
+
+</Depth>
+
+## Runs and the handoff
+
+A **task** is the logical unit; a **run** is one attempt. Completing writes a summary and
+free-form metadata onto the run row, and downstream tasks read it.
+
+The recommended metadata shape is a convention rather than a schema — `changed_files`,
+`verification`, `dependencies`, `blocked_reason`, `retry_notes`, `residual_risk` — and
+adopting it is what makes a board legible weeks later.
+
+One deliberate refusal worth admiring: **bulk-closing several tasks with one summary is
+rejected**, on the grounds that per-run structured handoff copy-pasted across N tasks is
+"almost always wrong." Bulk close without a summary still works for admin cleanup.
+
+## The security note to read before you expose it
+
+There is a dashboard and a REST API under `/api/plugins/`, with a WebSocket tailing the
+event table. The documentation states the model plainly: **the dashboard's HTTP auth
+middleware skips `/api/plugins/` routes by design**, on the assumption that the dashboard
+binds to localhost.
+
+Run `hermes dashboard --host 0.0.0.0` and every plugin route, Kanban's included, becomes
+reachable from the network with no authentication. The docs' own comment is the right
+one:
+
+> **Don't do that on a shared host.**
+
+## Two limits, stated by the project
+
+**Single-host by design.** The board is a local SQLite file and the dispatcher spawns
+workers on the same machine. Multi-host means independent boards with a bridge you build.
+
+**Non-Hermes workers are "not yet a paved path."** A lane is a class of process the
+dispatcher routes to, and the spawn function is pluggable — but wiring another vendor's
+CLI as a lane is per-integration design work rather than configuration.
+
+## What to take from this
+
+Durable rows, named processes, one terminator per run, and an event log that outlives
+every conversation. Reclaim is crash recovery rather than a timeout, two deterministic
+guards stop a board from spinning, and the audit trail is the real reason to choose this
+over delegation.
+
+Keep the dashboard on localhost.

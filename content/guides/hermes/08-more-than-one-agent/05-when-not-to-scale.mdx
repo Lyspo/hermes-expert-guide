@@ -14,10 +14,120 @@ prerequisites:
   - hermes/08-more-than-one-agent/04-profiles-and-projects
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+This module has spent four lessons on ways to add agents. This one is about not doing it
+yet, and it rests on a sentence from a widely read community framework that is repeated
+throughout the piece because it is the whole argument:
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+> Every level multiplies whatever quality you've established at the level before it.
+
+Multiplication is the right word and the uncomfortable one. If a single agent produces
+work you quietly correct, three agents produce three times as much of it, arriving
+faster, with a handoff protocol in between.
+
+The same piece puts the corollary bluntly: **you do not want to automate slop.**
+
+## Four levels, each with a gate
+
+**Level 1 — one agent.** You and a single instance. Real production work daily,
+episodic memory actively managed, a few skills built or installed, one messaging platform
+connected.
+
+*Gate:* two or three workflows consistently need only minimal editing.
+
+**Level 2 — specialised agents.** Two or three domain-specific instances, each with its
+own profile, session database and skill library. You still route work by hand.
+
+Keep it to two or three. Beyond that the routing overhead exceeds the specialisation
+benefit, and you have built a filing problem rather than a team.
+
+*Gate:* routing takes you longer than reviewing the output would.
+
+**Level 3 — an orchestrated team.** An orchestrator breaks down requests and dispatches
+to specialists with tailored context. This is where the board from `08/03` becomes
+necessary rather than interesting, because you now need handoff protocols that survive
+somebody's laptop closing.
+
+*Gate:* honestly, there is not a clean one. This level still needs regular human review
+for quality drift, and the framework says so.
+
+**Level 4 — automated.** Cron and event triggers replace human kickoff. The team runs
+asynchronously and you read results.
+
+*Gate:* launch **one** automated workflow at a time, add confidence thresholds that
+route uncertain output to a human, and watch it closely for the first two weeks.
+
+<TrackCallout
+  newcomer="You are at level 1 and that is the correct place to be. Level 1 done well is more valuable than level 3 done early, and most people never need to leave it."
+  operator="The gates are the useful part. “Routing takes longer than reviewing” is a real, checkable signal; “it would be cool to have an orchestrator” is not."
+  architect="Each level adds a failure mode rather than replacing one: level 2 adds routing errors, level 3 adds handoff loss, level 4 removes the human who would have noticed either. Budget review capacity per level, not just compute."
+/>
+
+## When splitting is actually right
+
+Independent of the progression, there is a narrow test for whether work belongs to a
+*separate agent* rather than a separate skill or directory. Split when the work needs
+genuinely different:
+
+- **permissions** — one agent should be able to do something the other must not
+- **secrets** — different credentials that must not mix
+- **long-term memory** — the contexts would pollute each other
+
+If none of those applies, you want a skill, not an agent. And the opposite failure is
+also documented: one mega-agent with excessive scope and every toolset enabled is
+explicitly warned against.
+
+## The concrete cost of scaling early
+
+`02/04` told the story; here is what it cost specifically.
+
+A user set a Kanban board's default working directory to their main projects folder
+during setup. A task created later inherited that path, was tagged as a scratch
+workspace, and on completion the cleanup routine deleted the entire directory — code,
+scripts, outputs, configs — with **no confirmation prompt and no warning log**.
+
+That is not a story about a bug, although a bug was filed. It is a story about reaching
+level 3 machinery before understanding level 3 cleanup semantics. The board's workspace
+kinds are covered in `08/03` for exactly this reason, and the `dir:<path>` requirement
+that paths be absolute is described in the source as guarding a confused-deputy escape
+vector.
+
+## The first two weeks
+
+One piece of advice appears in essentially every independent account, which is unusual
+enough to be worth acting on: **review output daily for about two weeks before tapering
+to spot checks.**
+
+Not because the software is unreliable, but because that is how long it takes to
+calibrate what its failures look like. An agent's mistakes are not random — they have
+characteristic shapes, and you cannot recognise them until you have seen a few.
+
+<Depth min="operator">
+
+The synthesised first-week pattern from multiple sources, for anyone who wants a plan
+rather than a principle:
+
+**Days 1–2** — install, pick a model with adequate context, run read-only work in the
+CLI, connect one gateway with a locked-down allowlist.
+
+**Days 3–5** — start explicitly asking for successful approaches to be saved as skills,
+add one low-stakes cron job, watch token usage.
+
+**Days 6–7 and after** — consider a second profile if contexts are mixing, decide whether
+an external memory provider earns its latency, and read what the curator has been
+consolidating.
+
+Note what is absent from that entire week: subagents, boards, and orchestration.
+
+</Depth>
+
+## What to take from this
+
+Four levels, each multiplying the quality of the one before. Move up when a real signal
+says so — workflows needing minimal editing, routing costing more than reviewing — rather
+than when the next level sounds interesting.
+
+Split into separate agents only for different permissions, secrets or memory. And give
+yourself two weeks of daily review before trusting anything unattended, because that is
+how long it takes to learn what its mistakes look like.
