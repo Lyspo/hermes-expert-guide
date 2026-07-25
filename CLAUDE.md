@@ -185,6 +185,23 @@ orchestration did not arrive in v0.6.0.
   means the first frame after a stall arrives with a large delta and lands on the
   finished text. Caught by looking at the page, not by any test — the build, the types
   and the link check were all green.
+- **Hit-test a canvas by nearest neighbour, never by a proximity radius.** The
+  curriculum map shipped with a 26px threshold against nodes two or three pixels across
+  spread over a box a thousand wide, so sweeping the pointer over the graph selected
+  nothing about four times in five, and the page read as a decorative field of dots that
+  ignored you. While the pointer is over the map, *something* is always the nearest
+  lesson — say that instead. Nothing caught it: the unit tests cover the graph and not
+  the canvas, an `aria-hidden` canvas has no surface for axe to fail, the no-js pass
+  asserts the index rather than the interaction, and every hand-check drove the highlight
+  by hovering the lesson *links*, which set state directly and never execute the
+  hit-test. **If an interaction has two input paths, test the one you did not build the
+  feature through.** `e2e/curriculum-map.spec.ts` now moves a real mouse across the real
+  canvas.
+- **`mouse.move` takes viewport coordinates, so scroll the target in first.** The
+  regression test above failed on its own first run for this reason, not because the
+  component was wrong — the map is taller than the fold and the lower probe points were
+  simply off-screen. A test aiming outside the viewport looks exactly like a broken
+  component. Scroll, re-read the box, and skip any point still outside it.
 - **`Page` gives a second column only to pages that pass an `aside`.** It used to
   reserve the 17rem margin unconditionally, which left the glossary, the cheatsheets and
   search at a 44rem measure with a void beside them — that is how a reference table ends

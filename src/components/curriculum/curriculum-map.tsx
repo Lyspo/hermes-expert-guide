@@ -41,8 +41,6 @@ const TONE: Record<Readiness, { rgb: string; alpha: number; scale: number }> = {
 
 /** How much of the box the nearest nodes reach. Slightly over 1, so the graph bleeds. */
 const FILL = 1.12
-/** Pointer slop for hit-testing, in CSS pixels. Generous: the targets are small. */
-const REACH = 26
 
 /** A module's shop-window prose, so the index below the map is the only index. */
 export interface MapModule {
@@ -229,8 +227,18 @@ export function CurriculumMap({
     const x = event.clientX - rect.left
     const y = event.clientY - rect.top
 
+    // Always the nearest node, with no proximity threshold: while the pointer is over
+    // the map it owns whichever lesson is closest, the way a Voronoi cell does.
+    //
+    // This was a radius check, and it made the whole page look broken. The nodes are
+    // two or three pixels across and spread over a box a thousand wide, so requiring
+    // a hit within 26px of one meant that sweeping the pointer across the graph found
+    // nothing about four times in five — and a map that does not respond is
+    // indistinguishable from a decorative field of dots. It survived review because
+    // every check drove the interaction through the lesson links below, which set the
+    // state directly and never exercise this function at all.
     let nearest: number | null = null
-    let best = REACH
+    let best = Infinity
     points.current.forEach((point, index) => {
       const distance = Math.hypot(point.x - x, point.y - y)
       if (distance < best) {
@@ -281,7 +289,10 @@ export function CurriculumMap({
         */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 min-h-[5.5rem]">
           {active ? (
-            <div className="max-w-[38rem] border-l border-signal pl-[calc(var(--step)*0.6)]">
+            <div
+              data-readout
+              className="max-w-[38rem] border-l border-signal pl-[calc(var(--step)*0.6)]"
+            >
               <p className="font-mono text-[0.65rem] tracking-[0.06em] text-ice-dim uppercase">
                 {String(active.moduleNumber).padStart(2, '0')} · {active.moduleTitle}
               </p>
