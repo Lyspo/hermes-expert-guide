@@ -1633,3 +1633,14 @@ refusal durability is prompt-level for pattern matches, and enforced in code onl
 the hardline list and `approvals.deny` globs. `04/04` gains the default-versus-manual
 contrast as its spine, `10/06` should quote the hardline message's "run it yourself in a
 terminal outside the agent", and SIM-5 is buildable except for the option-set frame.
+
+**Amendment from the pending-prompt capture.** `[09]` §14 captures the approval prompt
+itself. Two documented facts are wrong on v0.19.0: the option set is a numbered arrow-key
+menu ("1. Allow once / 2. Allow for this session / 3. Add to permanent allowlist /
+4. Deny"), not `[o]nce [s]ession [a]lways [d]eny`; and the prompt carries a 300-second
+countdown that **fails closed**, configurable as `approvals.timeout` and undocumented.
+The panel is titled `⚠️ Dangerous Command`, displays the matched pattern description
+(`delete in root path`), and redacts secrets in the displayed copy while executing the
+original. SIM-5 is now fully buildable from three captured frames — default silence,
+pending prompt, denial — and the letter-key option set must be struck wherever the map
+marked it VERBATIM.

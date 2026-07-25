@@ -467,3 +467,93 @@ project has.
 No revision was observed — this file is at its first write. A *diff* between two versions
 of a skill would need the loop to fire again on a related task. That is the last
 uncaptured piece of module 6.
+
+## 14. The approval prompt itself — and the docs are wrong about the options
+
+**Captured 2026-07-25** under `approvals.mode: manual`, screenshotted while the prompt
+was pending. Every string below is verbatim, cross-checked against `cli.py` and
+`tools/approval.py`.
+
+```
+  ┊ 💻 preparing terminal…
+┌──────────────────────────────────────────┐
+│ ⚠ Dangerous Command                      │
+│                                          │
+│ rm -rf /tmp/hermes-scratch               │
+│                                          │
+│ ❯ 1. Allow once                          │
+│   2. Allow for this session              │
+│   3. Add to permanent allowlist          │
+│   4. Deny                                │
+│                                          │
+│ delete in root path                      │
+└──────────────────────────────────────────┘
+  💻 rm -rf /tmp/hermes-scratch  ( 17.4s)
+  ↑/↓ to select, Enter to confirm  (282s)
+⚕ <model> │ 19.2K/1M │ [░░░░░░░░░░] 2% │ 35s │ ⏱ 22s
+⚠ ❯
+```
+
+### Correction 1 — it is a numbered menu, not letter keys
+
+`[02]` §7 and `[05]` §2 both give the option set as **`[o]nce [s]ession [a]lways
+[d]eny`**, and the map's SIM-5 spec rated those letters VERBATIM. On a real v0.19.0 CLI
+the prompt is an **arrow-key menu with numbered items**:
+
+| Item | Label |
+|---|---|
+| 1 | Allow once |
+| 2 | Allow for this session |
+| 3 | Add to permanent allowlist |
+| 4 | Deny |
+
+Navigated with `↑/↓`, committed with `Enter`; `cli.py:14796` shows a variant hint reading
+`type 1/2/3, or ↑/↓ to select, Enter to confirm`, so digits work as a shortcut on at
+least one code path. The single-letter form appears nowhere in the captured UI. Either
+the docs describe an older release or a different surface; on this build they are wrong.
+
+**Everything the map marked VERBATIM about the option letters must be re-marked.** The
+replay must show the numbered menu.
+
+### Correction 2 — the prompt times out, and fails closed
+
+`(282s)` beside the hint is a **countdown**, not elapsed time. `_get_approval_timeout()`
+(`tools/approval.py:2493`) defaults to **300 seconds**, configurable as
+`approvals.timeout`. The docstring explains the value and states the failure direction:
+
+> Gateway approvals arrive as push notifications the user may not see for a couple of
+> minutes; 60s proved too tight in practice (Telegram taps landed after the wait had
+> already failed closed).
+
+So an unanswered prompt **denies**. That is the right default and it is undocumented.
+An operator who walks away does not come back to an executed command.
+
+### What else the frame settles
+
+- **Panel title is `⚠️ Dangerous Command`** (`cli.py:12026`).
+- **The matched pattern is displayed** — `delete in root path`, the description paired
+  with regex `\brm\s+(-[^\s]*\s+)*/` at `tools/approval.py:607`. So the prompt does tell
+  you *why*, which the corpus could not confirm. Note this also means `/tmp/anything`
+  classifies as a root-path delete: the pattern matches `rm` followed by a slash-rooted
+  path, not just `/` itself.
+- **The command is redacted before display.** `_prompt_for_approval` runs
+  `redact_sensitive_text` over both the command and the description, and the comment is
+  explicit that "the original `command` is still what executes after approval; only the
+  displayed copy is scrubbed." A command carrying a token shows masked in the prompt.
+  Worth a line in module 10.
+- **Two timers, different meanings**: `( 17.4s)` on the tool line is time spent so far;
+  `(282s)` on the hint is time remaining before the automatic deny.
+- **The input prompt becomes `⚠ ❯`** while an approval is pending.
+- Option 3's label is **"Add to permanent allowlist"**, which is franker than the docs'
+  "always" — it names the consequence rather than the convenience. It writes to
+  `command_allowlist` in `config.yaml`.
+
+### Curriculum consequences
+
+1. **SIM-5 is now fully buildable** at verbatim fidelity: the pending prompt, the denial
+   outcome (§12), and the default-mode silence (§11) are all captured. Three frames from
+   one command, and together they are `04/04`'s entire spine.
+2. **`04/04` must teach the timeout.** Five minutes, fails closed, configurable — none of
+   it documented.
+3. **`10/01`'s checklist gains `approvals.timeout`** alongside `approvals.mode`.
+4. The letter-key option set must be struck from every lesson that would have used it.
