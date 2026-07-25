@@ -1,0 +1,225 @@
+import type { ReactNode } from 'react'
+
+/**
+ * Primitives for the technical plates.
+ *
+ * SVG rather than canvas, deliberately: node counts are small, and SVG gives real
+ * text a screen reader can read, focusable elements, and CSS-variable theming from
+ * the design tokens. A canvas diagram is a picture of words.
+ *
+ * Every plate is informational, not decorative — unlike the background field — so
+ * each carries a title and description, and the surrounding lesson prose states the
+ * same facts in sentences. The plate is never the only place a claim appears.
+ *
+ * Depth here follows design.md: hairlines at 1px, no shadows, nearer things lighter
+ * and larger. The signal colour appears only where something changes.
+ */
+
+export function VizStage({
+  title,
+  description,
+  width = 720,
+  height = 420,
+  children,
+}: {
+  /** Names the plate. Read first by assistive tech. */
+  title: string
+  /** What the plate shows, in a sentence. Not a caption — an alternative. */
+  description: string
+  width?: number
+  height?: number
+  children: ReactNode
+}) {
+  // Deterministic ids from the title, so server and client markup agree.
+  const base = title.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+
+  return (
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      role="img"
+      aria-labelledby={`${base}-title ${base}-desc`}
+      className="h-auto w-full"
+      // Text scales with the plate rather than the root font size, which keeps
+      // labels inside their boxes at every width.
+      fontFamily="var(--font-mono)"
+    >
+      <title id={`${base}-title`}>{title}</title>
+      <desc id={`${base}-desc`}>{description}</desc>
+      {children}
+    </svg>
+  )
+}
+
+/** A bounded object: a file, a store, a process. The plate's nouns. */
+export function VizBox({
+  x,
+  y,
+  w,
+  h,
+  label,
+  sublabel,
+  tone = 'plain',
+}: {
+  x: number
+  y: number
+  w: number
+  h: number
+  label: string
+  sublabel?: string | undefined
+  /**
+   * `plain` — an ordinary object.
+   * `near` — nearer plane; lighter, for the thing under discussion.
+   * `ghost` — a superseded or inactive state, drawn but discounted.
+   * `signal` — something changing. Never decorative.
+   */
+  tone?: 'plain' | 'near' | 'ghost' | 'signal'
+}) {
+  const stroke = {
+    plain: 'var(--color-ice-faint)',
+    near: 'var(--color-ice-dim)',
+    ghost: 'var(--color-ice-faint)',
+    signal: 'var(--color-signal)',
+  }[tone]
+
+  const fill = tone === 'near' ? 'var(--color-deep)' : 'transparent'
+  const text = tone === 'ghost' ? 'var(--color-ice-faint)' : 'var(--color-ice)'
+
+  return (
+    <g opacity={tone === 'ghost' ? 0.45 : 1}>
+      <rect
+        x={x}
+        y={y}
+        width={w}
+        height={h}
+        fill={fill}
+        stroke={stroke}
+        strokeWidth={1}
+        strokeDasharray={tone === 'ghost' ? '3 3' : undefined}
+      />
+      <text x={x + 10} y={y + 20} fill={text} fontSize={12}>
+        {label}
+      </text>
+      {sublabel && (
+        <text x={x + 10} y={y + 36} fill="var(--color-ice-dim)" fontSize={10}>
+          {sublabel}
+        </text>
+      )}
+    </g>
+  )
+}
+
+/**
+ * A budget drawn as a budget.
+ *
+ * Where a plate states a cap, it shows the proportion rather than printing the
+ * number and asking the reader to imagine it.
+ */
+export function VizMeter({
+  x,
+  y,
+  w,
+  used,
+  total,
+  label,
+}: {
+  x: number
+  y: number
+  w: number
+  used: number
+  total: number
+  label: string
+}) {
+  const ratio = Math.max(0, Math.min(1, used / total))
+  return (
+    <g>
+      <rect x={x} y={y} width={w} height={6} fill="none" stroke="var(--color-ice-faint)" strokeWidth={1} />
+      <rect x={x} y={y} width={w * ratio} height={6} fill="var(--color-ice-dim)" />
+      <text x={x} y={y + 20} fill="var(--color-ice-dim)" fontSize={10}>
+        {label}
+      </text>
+    </g>
+  )
+}
+
+/** A relationship. Dashed means conditional or on-demand rather than always-on. */
+export function VizEdge({
+  from,
+  to,
+  label,
+  kind = 'solid',
+}: {
+  from: [number, number]
+  to: [number, number]
+  label?: string | undefined
+  kind?: 'solid' | 'ondemand' | 'absent'
+}) {
+  const [x1, y1] = from
+  const [x2, y2] = to
+  const stroke = kind === 'absent' ? 'var(--color-signal)' : 'var(--color-ice-faint)'
+
+  return (
+    <g>
+      <line
+        x1={x1}
+        y1={y1}
+        x2={x2}
+        y2={y2}
+        stroke={stroke}
+        strokeWidth={1}
+        strokeDasharray={kind === 'solid' ? undefined : '4 4'}
+        opacity={kind === 'absent' ? 0.7 : 1}
+      />
+      {label && (
+        <text
+          x={(x1 + x2) / 2}
+          y={(y1 + y2) / 2 - 6}
+          fill="var(--color-ice-dim)"
+          fontSize={10}
+          textAnchor="middle"
+        >
+          {label}
+        </text>
+      )}
+    </g>
+  )
+}
+
+/** A note pinned to part of the plate. The plate's own marginalia. */
+export function VizNote({
+  x,
+  y,
+  children,
+  width = 200,
+}: {
+  x: number
+  y: number
+  children: string
+  width?: number
+}) {
+  // SVG has no text flow, so wrapping is computed from the monospace advance
+  // width: at font-size 10 a character occupies very close to 6px, and rounding
+  // that down was clipping the last word of every right-hand note.
+  const words = children.split(' ')
+  const lines: string[] = []
+  let line = ''
+  const perLine = Math.floor(width / 6.1)
+  for (const word of words) {
+    if (line && (line + ' ' + word).length > perLine) {
+      lines.push(line)
+      line = word
+    } else {
+      line = line ? line + ' ' + word : word
+    }
+  }
+  if (line) lines.push(line)
+
+  return (
+    <text x={x} y={y} fill="var(--color-ice-dim)" fontSize={10}>
+      {lines.map((text, index) => (
+        <tspan key={index} x={x} dy={index === 0 ? 0 : 13}>
+          {text}
+        </tspan>
+      ))}
+    </text>
+  )
+}

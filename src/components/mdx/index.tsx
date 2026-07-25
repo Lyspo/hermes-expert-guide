@@ -3,6 +3,7 @@ import { Command, Transcript } from './transcript'
 import { MarginNote, Revised } from './revised'
 import { prose } from './prose'
 import { Simulation } from '@/components/simulation/simulation'
+import { Viz } from '@/components/viz'
 
 /**
  * The MDX component map.
@@ -21,4 +22,5 @@ export const mdxComponents = {
   Revised,
   MarginNote,
   Simulation,
+  Viz,
 }

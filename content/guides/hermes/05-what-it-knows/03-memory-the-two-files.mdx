@@ -1,23 +1,109 @@
 ---
-title: 'Memory is two capped files'
+title: 'Memory is two files and an index'
 description: >-
-  `MEMORY.md` and `USER.md` with their real character limits, the three
-  actions the agent has, the read action it does not have, and why your last
-  correction will not be in the prompt until tomorrow.
+  Not a three-layer system. Two capped markdown files injected as a frozen
+  snapshot, plus a searchable archive of every past session — and the caps are
+  the interesting part.
 order: 3
-duration: 14
+duration: 12
 tracks:
   newcomer: core
   operator: core
   architect: core
 prerequisites:
-  - hermes/05-what-it-knows/01-what-is-in-the-system-prompt
+  - hermes/01-first-contact/02-the-agent-loop
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Almost everything written about Hermes describes a "three-layer memory system." It is
+the single most repeated claim about the product, and it is wrong. Not
+oversimplified — wrong in a way that will make you expect the wrong things.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+<Revised
+  was="Hermes has a three-layer memory system: skill memory, conversational memory, and user modelling."
+  now="Hermes keeps two capped markdown files, plus a searchable index of past sessions. An external memory provider is optional and replaces nothing."
+  why="Checked against the memory documentation and a running v0.19.0. The three-layer framing appears in secondary sources, not in the docs, and not in the software"
+  when="2026-07-25"
+/>
+
+The difference matters because "layers" implies a stack, a stack implies precedence,
+and precedence implies that something overrides something else. None of that exists
+here. What exists is three unrelated mechanisms that happen to all be about
+remembering.
+
+<Viz
+  id="memory"
+  caption="Arrangement is the argument: the two files share a row because they are the same kind of thing, the index sits apart because it is searched rather than injected, and the optional provider stands beside rather than beneath."
+/>
+
+## Two files, and they are small
+
+<Command verified="v0.19.0">ls ~/.hermes/memories/</Command>
+
+`MEMORY.md` holds what the agent learned. `USER.md` holds what it concluded about
+you. Both are plain markdown you can open, edit, and delete.
+
+The caps are the part worth internalising: **2,200 characters** and **1,375
+characters**. Not tokens — characters. Together that is roughly 1,300 tokens, which
+is less than this lesson.
+
+<TrackCallout
+  newcomer="If Hermes seems to forget something you told it weeks ago, it has not failed — that fact was probably never small enough to earn a place in a 2,200-character file."
+  operator="Character caps, not token caps. Budget accordingly: the memory tool errors rather than silently truncating when a write would exceed the cap."
+  architect="A long-term memory of two inspectable text files at a known path, capped at roughly 1,300 tokens, is a fundamentally different governance proposition from an opaque vector store. You can read the entire thing in under a minute and diff it between sessions."
+/>
+
+## They are a snapshot, not a live view
+
+The files are read once, when the session starts, and injected into the system
+prompt. After that they are frozen for the life of the conversation.
+
+So if the agent writes something to memory at turn forty, **it does not see its own
+write** until you start a new session. That is not a defect. It follows directly from
+the one rule: the system prompt is assembled once, and rebuilding it to reflect a
+memory write would destroy the prefix cache for every remaining turn.
+
+<Depth min="operator">
+
+This also explains a behaviour that otherwise looks like a bug. Ask the agent what it
+remembers about you immediately after telling it something new, and it will describe
+the pre-write state — because that is genuinely what is in its context. Start a fresh
+session and it knows.
+
+</Depth>
+
+## The index is the part people miss
+
+Everything else lives in `~/.hermes/state.db` — a SQLite database holding every
+session you have ever run, with a full-text index over it.
+
+That is **not** in the prompt. The agent queries it when it decides it needs
+something, which is why recall can reach back weeks without costing tokens on every
+turn. The two small files are what it always knows; the index is what it can go and
+find out.
+
+<MarginNote>
+This is the actual answer to "how does it remember things from a month ago." Not a
+large memory — a small memory plus a search tool.
+</MarginNote>
+
+## Where the three-layer story came from
+
+It is not invented from nothing. There genuinely are three mechanisms, and the
+Honcho-style user-modelling that the phrase alludes to genuinely exists — as **one of
+about eight optional external providers**, not as a built-in layer.
+
+<ForTrack track="architect">
+
+The count itself is contested: the documentation gives eight external providers on one
+page and nine on another. The guide presents the conflict rather than picking a side,
+because a reader deciding whether to depend on one needs to know the documentation is
+inconsistent about what exists.
+
+</ForTrack>
+
+Three mechanisms, flattened into "three layers," and a stack invented to hold them.
+The lesson generalises: when a claim about Hermes sounds architecturally tidy, check
+it against the file system, because the file system is usually messier and smaller
+than the description.
