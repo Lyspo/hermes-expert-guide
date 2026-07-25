@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { CorrectionsScene } from '@/components/landing/corrections-scene'
 import { coreCountFor, durationFor, guides, lessons, modules } from '@/lib/content'
 import { jsonLd, websiteSchema } from '@/lib/schema'
 import { TRACKS, TRACK_LABELS, site } from '@/lib/site'
@@ -124,25 +125,9 @@ export default function HomePage() {
           superseded version stays on the page beside its replacement.
         </p>
 
-        <ul className="mt-[calc(var(--step)*1.5)]">
-          {CORRECTIONS.map((correction) => (
-            <li
-              key={correction.was}
-              className="border-t border-ice-faint py-[calc(var(--step)*1)] first:border-t-0 first:pt-0"
-            >
-              <del className="struck block text-[0.95rem] leading-[1.7]">{correction.was}</del>
-              <ins className="mt-[calc(var(--step)*0.3)] block text-[1.0625rem] leading-[1.7] no-underline">
-                {correction.now}
-              </ins>
-              <Link
-                href={correction.where}
-                className="mt-[calc(var(--step)*0.4)] inline-block font-mono text-[0.7rem] text-ice-dim underline"
-              >
-                the lesson that carries the source
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <div className="mt-[calc(var(--step)*1.5)]">
+          <CorrectionsScene corrections={CORRECTIONS} />
+        </div>
       </section>
 
       {/* What the guide is, stated as constraints rather than as benefits. */}
@@ -181,7 +166,7 @@ export default function HomePage() {
           {moduleCount} modules · {written} lessons · {guide?.subject} {guide?.verifiedAgainst}
         </p>
 
-        <ol className="mt-[calc(var(--step)*1.25)]">
+        <ol data-modules className="mt-[calc(var(--step)*1.25)]">
           {modules
             .filter((entry) => entry.guideSlug === guide?.slug)
             .map((entry) => (

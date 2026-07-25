@@ -20,16 +20,20 @@ test('the landing page carries its whole argument', async ({ page }) => {
   await expect(page.locator('h1 del')).toHaveText(/three-layer memory system/)
   await expect(page.locator('h1 ins')).toHaveText(/two capped files/)
 
-  // The corrections are the product. All four, with their links.
-  const corrections = page.locator('section ul li del')
-  await expect(corrections).toHaveCount(4)
+  // The corrections are the product. All four, with their links. Addressed by a
+  // stable hook rather than by tag: the landing page's scroll narrative renders the
+  // same four claims through different markup, and this asserts the guarantee — four
+  // struck claims with four replacements, present with no script — not the shape of
+  // the element that happens to hold them today.
+  await expect(page.locator('[data-corrections] li del')).toHaveCount(4)
+  await expect(page.locator('[data-corrections] li ins')).toHaveCount(4)
   await expect(page.getByRole('link', { name: /the lesson that carries the source/ })).toHaveCount(4)
 
   // Real computed numbers, not placeholders.
   await expect(page.getByText(/core lessons/).first()).toBeVisible()
 
   // Every module reachable without a script.
-  await expect(page.locator('ol li a')).toHaveCount(10)
+  await expect(page.locator('[data-modules] li a')).toHaveCount(10)
 })
 
 test('a lesson renders its prose, its transcripts and its plate', async ({ page }) => {
