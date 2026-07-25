@@ -35,22 +35,32 @@ smaller and more concrete than the writing around it suggests.
 When Hermes finishes something involved, it can write down how it did it. Not a
 log — a procedure, in a file, that it will find and follow next time.
 
-<Transcript label="~/.hermes/skills/deploy-staging/SKILL.md" fidelity="reconstructed" source="Format per the agentskills.io specification; contents illustrative">
+<Transcript label="~/.hermes/skills/github/github-repo-discovery/SKILL.md" fidelity="verbatim" source="An agent-authored skill, read from a real v0.19.0 install on 2026-07-25; workflow body elided">
 {`---
-name: deploy-staging
-description: Deploy the current branch to staging
-version: 3
+name: github-repo-discovery
+description: Discover under-the-radar GitHub repos via API search.
 ---
 
-## Steps
+# GitHub Repo Discovery
 
-1. Run the test suite. Do not proceed on failure.
-2. Tag the commit with the date.
-3. Push, then watch the deploy log until it reports ready.`}
+Use when the user wants to find quality open-source repos that aren't yet
+famous — hidden gems, underrated tools, niche frameworks, or emerging
+projects with real substance but modest star counts.
+
+## Workflow
+  …
+
+## Pitfalls
+
+- **\`language\` can be null.** Always use \`item.get('language') or '?'\` — a
+  bare \`{lang}\` format string crashes on \`None\`.`}
 </Transcript>
 
-Note the version number. That file is on its third revision, and the revisions are
-the interesting part.
+Two fields of frontmatter, a sentence saying when to use it, a workflow, and a list of
+things that went wrong. Nobody wrote that file. Hermes wrote it about itself, after a
+session where it hit exactly that `None` — you can watch it correct the bug mid-task and
+then record why. The Pitfalls section is the whole idea of a self-improving agent, and it
+is three bullet points long.
 
 ## It improves them by using them
 

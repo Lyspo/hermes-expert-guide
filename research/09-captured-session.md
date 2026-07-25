@@ -378,3 +378,92 @@ stated plainly, and `10/06-when-not-to-use-hermes` should quote it.
    not enforcement-level. The agent is *told* not to route around a denial. Only the
    hardline list and `approvals.deny` globs are enforced in code. A reviewer should know
    which of the three they are relying on.
+
+## 13. The agent-authored skill — the loop, end to end
+
+Read directly from the install, 2026-07-25. The skill created in §8 exists on disk and
+contains no personal data — it is generic technique, safe to quote in full.
+
+### Path, and a correction
+
+```
+~/.hermes/skills/github/github-repo-discovery/
+├── SKILL.md                                  (2,793 bytes, mode 0600)
+└── references/
+    └── github-api-query-patterns.md          (1,692 bytes, mode 0600)
+```
+
+`[02]` §2 gives the location as `~/.hermes/skills/<skill>/`. The real path is
+**namespaced**: `~/.hermes/skills/<namespace>/<skill>/`. The agent filed its new skill
+inside the pre-existing `github` namespace rather than creating a new one — which is
+`[07]` §2.3's stated editorial preference ("add a support file under an existing
+umbrella") observed in the wild.
+
+Both files are mode **0600**, owner-only. Worth stating in module 10.
+
+### Frontmatter — fewer fields than assumed
+
+```yaml
+---
+name: github-repo-discovery
+description: Discover under-the-radar GitHub repos via API search.
+---
+```
+
+Two fields. **No `version` key.** The agentskills.io spec and this guide's own seed
+lesson both showed a `version:` integer; the real agent-authored file has none, so skill
+revisions are not tracked in frontmatter. Lesson `01/01` must be corrected — it currently
+reconstructs a file with `version: 3`.
+
+### Structure — a real template
+
+`# Title` · a one-line **"Use when…"** trigger sentence · `## Workflow` as numbered
+steps, each with a heading and a fenced command · `## Pitfalls` · `## Reference`
+pointing at the sibling file.
+
+### It wrote itself a second file — progressive disclosure, self-applied
+
+`SKILL.md` ends: *"See `references/github-api-query-patterns.md` for common search query
+templates and star-distribution heuristics."* The agent split its own knowledge across
+two levels, putting the trigger and workflow in the always-loaded file and the lookup
+tables in a reference loaded on demand.
+
+That is the mechanism `06/02-progressive-disclosure` teaches, performed by the agent on
+its own output, unprompted. The corpus had it only as a documented feature.
+
+### The Pitfalls section is the learning loop, legibly
+
+The single most valuable paragraph in the corpus. Verbatim from the file:
+
+> - **`language` can be null.** Always use `item.get('language') or '?'` — a bare
+>   `{lang}` format string crashes on `None`.
+> - **GitHub rate-limits anonymous API calls.** If you hit a rate limit, wait 30 seconds
+>   and retry, or use a narrower query.
+> - **Browser search returns a snapshot, not a full list.** The API is the right tool for
+>   inventory-style discovery; the browser is for evaluating individual candidates.
+
+Cross-reference all three against the session transcript in §1–§8:
+
+1. The first script used `item.get('language', '?')`; a later one used
+   `item.get('language') or '?'`. The agent hit the `None` case, corrected it mid-session,
+   **and then wrote down why**.
+2. The transcript contains `Rate limited. Let me try a more targeted approach` in a
+   reasoning panel. The skill records the remedy.
+3. The transcript shows browser search abandoned for `curl` against the API. The skill
+   states that as a rule with the reasoning attached.
+
+Every pitfall is a mistake that actually happened, in that session, converted into an
+instruction for next time. This is what "self-improving" means concretely, and it is now
+evidenced rather than asserted — three failures, three lines, traceable to the frames
+that produced them.
+
+**This is the guide's centrepiece.** `06/05-the-nudge-and-the-review-fork` and
+`06/06-the-editorial-policy` should both be built around this artefact, and the
+side-by-side of transcript-failure to skill-line is the strongest teaching device the
+project has.
+
+### Still missing
+
+No revision was observed — this file is at its first write. A *diff* between two versions
+of a skill would need the loop to fire again on a related task. That is the last
+uncaptured piece of module 6.
