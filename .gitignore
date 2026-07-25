@@ -44,3 +44,4 @@ scratch/
 
 # machine-local permission grants written by the harness
 .claude/settings.local.json
+.env*

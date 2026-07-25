@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Archivo_Narrow, Bitter, Faculty_Glyphic, JetBrains_Mono, Public_Sans } from 'next/font/google'
 import { PrefaceScript } from '@/components/personalization/preface-script'
+import { SiteFooter } from '@/components/nav/site-footer'
 import { site } from '@/lib/site'
 import './globals.css'
 
@@ -55,7 +56,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <PrefaceScript />
       </head>
-      <body>{children}</body>
+      <body className="flex min-h-dvh flex-col">
+        <div className="flex-1">{children}</div>
+        <SiteFooter />
+      </body>
     </html>
   )
 }
