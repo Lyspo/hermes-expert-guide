@@ -1,8 +1,8 @@
 ---
 title: 'The loop, and the one rule it obeys'
 description: >-
-  Input → assemble one system prompt → call the model → dispatch tool calls
-  in parallel → persist → repeat, and why nothing may rebuild that prompt
+  Input → assemble one system prompt → call the model → dispatch tool calls in
+  parallel → persist → repeat, and why nothing may rebuild that prompt
   mid-conversation.
 order: 2
 duration: 10
@@ -14,10 +14,142 @@ prerequisites:
   - hermes/01-first-contact/01-what-hermes-is
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Hermes is one loop. Everything else in this guide — memory, skills, delegation,
+scheduling, the gateway — is a detail of it, and the loop is small enough to state
+in six steps.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+Receive input. Assemble one system prompt. Call the model. Dispatch whatever tool
+calls come back, in parallel. Persist the result. Repeat until the model stops
+asking for tools.
+
+That is the whole engine. Learn it now and every later chapter is a footnote to
+something you already understand.
+
+## The one rule
+
+Step two says *assemble one system prompt*, and the word doing the work is "one."
+Once a conversation has started, nothing may rebuild that prompt. The project's own
+contributor notes call prompt caching **sacred**, and the only sanctioned exception
+is context compression.
+
+This is not fastidiousness. It is arithmetic.
+
+<MarginNote>
+A cached prefix is roughly ten times cheaper to read than to write. Rebuilding the
+prompt does not cost a little extra — it re-pays the expensive half of the bill, on
+every turn, for the rest of the session.
+</MarginNote>
+
+Providers cache the stable prefix of a request. Send the same opening bytes again
+and you are billed a fraction of the original rate for them. Change one character
+near the top and the cache misses, the whole prefix is re-written at full price, and
+it stays that way until something re-establishes it.
+
+So the rule follows from the economics rather than from taste, and it explains a
+surprising amount of Hermes's design. It is why memory is a frozen snapshot taken at
+session start rather than a live view. It is why a skill installed mid-conversation
+does not appear until the next session. It is why the self-improvement machinery
+runs in a *forked* review rather than editing the running context. Each of those
+looks arbitrary until you know the rule, and obvious afterwards.
+
+<TrackCallout
+  newcomer="Practically: if you change a setting or add a skill and nothing happens, start a new session. You have not broken anything — the prompt was already sealed."
+  operator="The prompt is built once by the Prompt Builder and reused verbatim. Treat mid-session mutation of context as a bug rather than a feature request."
+  architect="Prompt stability is an auditable property: what the model was told at turn forty is what it was told at turn one, plus the conversation. That makes a session reconstructable from its start state."
+/>
+
+## What is actually in the prompt
+
+Three tiers, assembled in a fixed order: **stable**, then **context**, then
+**volatile**.
+
+The order is the point. Everything genuinely fixed goes first so it can be cached;
+anything that varies goes last, so a change to it invalidates as little as possible.
+The tier system is what lets "assemble once" and "include something
+session-specific" both be true at the same time.
+
+<Depth min="operator">
+
+Assembly is one of five subsystems the core `AIAgent` class coordinates: **Prompt
+Builder** (the tiers above), **Provider Resolution** (mapping a provider and model
+to an API mode, key and base URL), **Tool Dispatch** (executing calls through a
+central registry), **Compression and Caching** (context windows and prefix
+caching), and **Session Storage** (SQLite with full-text search). Five subsystems,
+one loop; `run_agent.py` is where they meet.
+
+</Depth>
+
+## Tools go out in parallel
+
+When the model asks for several tools at once, Hermes does not run them in
+sequence. They go to a thread pool and execute concurrently, which is why a task
+that reads six files feels like one operation rather than six.
+
+Concurrency needs a governor, and here it is an **iteration budget** — a
+thread-safe counter shared between a parent agent and every subagent it spawns. The
+justification is unglamorous and completely convincing:
+
+> Without an iteration budget, a model will happily call `list_dir` four hundred
+> times.
+
+Calls to `execute_code` refund iterations, which is a small detail with a real
+consequence: writing a short script is *cheaper* against the budget than doing the
+same work through twenty individual tool calls. The budget quietly teaches the agent
+to batch.
+
+## The narrow waist
+
+Here is the constraint that explains the shape of the entire ecosystem around
+Hermes, and it follows directly from the rule.
+
+Every core tool's definition is sent on **every** API call. A tool is not free
+because it went unused; it costs its own description, every turn, for the whole
+session. So the core is deliberately a narrow waist, and adding to it is the last
+resort rather than the first instinct. The project publishes the order of preference
+as a ladder:
+
+1. Extend code that already exists
+2. A CLI command plus a skill
+3. A service-gated tool
+4. A plugin
+5. An MCP server
+6. A new core tool
+
+Six rungs, and the one most people reach for first sits at the bottom. This is why
+the Hermes ecosystem is mostly skills and MCP servers rather than forks that bolt
+tools onto the core: the architecture makes the cheap path also the correct one.
+
+<ForTrack track="architect">
+
+The waist is also the review surface. If every model-visible tool passes through one
+narrow registry, enumerating what an agent can do is a bounded exercise rather than
+an open-ended audit — and because the ladder pushes capability outward, most of it
+arrives as skills in inspectable files and external servers in separately
+governable processes rather than inside the binary.
+
+</ForTrack>
+
+## One engine, several front doors
+
+The terminal is not the product. Three entry points converge on the same `AIAgent`:
+the CLI, the messaging gateway that serves chat platforms, and an ACP adapter for
+editors. Scheduled jobs and batch runs feed the same core.
+
+Consequences worth carrying forward: the agent you learn in the terminal is the one
+answering on Telegram, a capability configured once applies everywhere, and the
+platform-specific parts are thin adapters rather than parallel implementations.
+
+Two further stated principles matter later. Execution is **observable** — every tool
+call surfaces through callbacks rather than happening silently. And it is
+**interruptible** — both the model call and tool execution can be cancelled. Those
+are the hooks that make supervision possible at all, and the governance discussion
+in module 10 rests entirely on them.
+
+## What to take from this
+
+The rule is the thing to remember: **the prompt is assembled once, and the loop
+protects it.** When Hermes surprises you — a change that does not take effect, a
+subagent that seems to know nothing, memory that feels stale inside a long session —
+check that rule first. It is usually the answer, and it is usually not a bug.
