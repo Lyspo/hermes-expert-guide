@@ -13,10 +13,133 @@ prerequisites:
   - hermes/02-standing-it-up/02-choosing-a-provider
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+The wizard runs itself on a fresh install. This lesson is about choosing between its
+three modes, and about the more useful question afterwards: how do you know it actually
+worked, rather than merely started?
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+## Three modes, and the third is underrated
+
+<Transcript label="hermes setup, first run" fidelity="verbatim" source="Setup documentation, v0.19.0">
+{`Quick Setup (Nous Portal) — free OAuth login, no API keys; sets up a model
+  plus the Tool Gateway tools. The recommended fast path.
+
+Full Setup — walk through every provider, tool, and option yourself
+  (bring your own keys).
+
+Blank Slate — everything starts off except the bare minimum needed to run
+  an agent: provider & model, the File Operations toolset, and the Terminal
+  toolset.`}
+</Transcript>
+
+**Quick Setup** is the right default and takes about a minute.
+
+**Full Setup** walks every provider and option. Choose it if you have keys already and
+opinions about which.
+
+**Blank Slate** deserves more attention than its position suggests. It turns everything
+off: no web, browser, code execution, vision, memory, delegation, cron, skills, plugins
+or MCP — and compression, checkpoints, smart routing and memory capture all disabled
+too. What remains is a model, file operations and a terminal.
+
+That is a genuinely useful starting point for anyone who wants to enable capability
+deliberately rather than switch it off later, and it is the mode this guide would pick
+for a shared or production machine.
+
+<MarginNote>
+Returning users do not get the menu. `hermes setup` on a configured install drops
+straight into a full reconfigure wizard where every prompt shows your current value as
+its default — press Enter to keep it.
+</MarginNote>
+
+## Starting a session
+
+```bash
+hermes            # classic CLI
+hermes --tui      # modern TUI, recommended
+```
+
+You get a banner. On a real v0.19.0 install it is a Braille-block rendering of the
+Hermes emblem inside a bronze-and-gold box frame, with the version on the top border,
+a two-column panel of available tools and skills, and your model, working directory and
+session id beneath the emblem. It ends with a line you can check against:
+
+<Transcript fidelity="verbatim" source="Captured session, v0.19.0, 2026-07-25">
+{`Welcome to Hermes Agent! Type your message or /help for commands.`}
+</Transcript>
+
+Then a rotating tip prefixed `✦ Tip:`.
+
+## The four prompts worth typing first
+
+The quickstart publishes these, and they are well chosen because each exercises a
+different part of the loop:
+
+```text
+Summarize this repo in 5 bullets and tell me what the main entrypoint is.
+Check my current directory and tell me what looks like the main project file.
+Help me set up a clean GitHub PR workflow for this codebase.
+What's my disk usage? Show the top 5 largest directories.
+```
+
+The first two force file reads. The fourth forces a terminal call. The third is a
+multi-turn task that will not complete in one tool call — which is exactly the thing a
+too-small model fails at.
+
+## What success actually looks like
+
+The documentation's own checklist, and it is a good one:
+
+<Transcript fidelity="verbatim" source="Quickstart documentation, v0.19.0">
+{`What success looks like:
+- The banner shows your chosen model/provider
+- Hermes replies without error
+- It can use a tool if needed (terminal, file read, web search)
+- The conversation continues normally for more than one turn`}
+</Transcript>
+
+The fourth item is the one that matters and the one people skip. A single successful
+reply proves your API key works. It does not prove the model can hold a task together,
+and holding a task together is the entire product.
+
+<TrackCallout
+  newcomer="Type all four prompts before moving on. If the third one goes in circles, the problem is your model, not you — go back to the previous lesson."
+  operator="Treat the fourth checklist item as the acceptance test. Anything that passes the first three and fails the fourth is a context-window problem until proven otherwise."
+/>
+
+## A few commands to know from the start
+
+`/help` lists everything. `/tools` shows what is enabled, `/model` switches models
+mid-session, `/personality pirate` demonstrates the personality overlay in the most
+obvious possible way, and `/save` preserves the conversation.
+
+Multi-line input is `Alt+Enter`, `Ctrl+J` or `Shift+Enter` depending on what your
+terminal supports — there is a compatibility matrix, covered in `03/03`.
+
+## When it does not work
+
+The documentation publishes an ordered recovery sequence, and following it in order is
+faster than guessing:
+
+```bash
+hermes doctor           # diagnostics first, always
+hermes model            # re-check provider and model
+hermes setup            # re-run the wizard
+hermes sessions list    # is anything being recorded?
+hermes --continue       # resume the last session
+hermes gateway status   # only if you have a gateway configured
+```
+
+The order encodes a diagnosis: environment, then credentials, then configuration, then
+persistence, then the messaging layer. Most first-run problems resolve at step one or
+two.
+
+## What to take from this
+
+Pick Quick Setup unless you have a reason not to — and know that Blank Slate exists,
+because "enable deliberately" is a better posture than "disable later."
+
+Then run the fourth prompt, not just the first. A conversation that continues normally
+for more than one turn is the only checklist item that tests the thing you actually
+installed.

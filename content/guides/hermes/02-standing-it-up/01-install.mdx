@@ -14,10 +14,139 @@ prerequisites:
   - hermes/01-first-contact/01-what-hermes-is
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+The install is one command. The useful part of this lesson is everything around it:
+what it drags in, where it puts things, and which platform you are actually on
+according to the people who maintain it.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+## The command
+
+On Linux, macOS, WSL2 or Termux:
+
+<Command verified="v0.19.0">curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash</Command>
+
+On Windows, in PowerShell:
+
+<Command verified="v0.19.0">iex (irm https://hermes-agent.nousresearch.com/install.ps1)</Command>
+
+There is also a desktop installer for macOS and Windows that installs both the CLI and
+the desktop app; if you started CLI-only, `hermes desktop` adds it afterwards.
+
+Then reload your shell — `source ~/.bashrc` or `source ~/.zshrc` — because the binary
+lands in `~/.local/bin` and your current shell does not know about it yet.
+
+## What it brings with it
+
+You supply **Git** on every platform, plus `curl` and `xz-utils` on Linux. For the
+desktop app on Debian or Ubuntu you also need `g++` / `build-essential`.
+
+The installer supplies everything else, and the list is worth knowing because you
+should *not* install these yourself:
+
+- `uv`, the Python package manager
+- Python 3.11
+- Node.js v22
+- ripgrep
+- ffmpeg
+
+That is a substantial footprint for something described as a CLI, and it is the honest
+answer to "why is this taking a few minutes."
+
+## Where everything lands
+
+| Context | Code | Binary | Data |
+|---|---|---|---|
+| Per-user | `~/.hermes/hermes-agent/` | `~/.local/bin/hermes` (symlink) | `~/.hermes/` |
+| Root-mode | `/usr/local/lib/hermes-agent/` | `/usr/local/bin/hermes` | `/root/.hermes/` |
+
+`~/.hermes/` is the directory that matters. Everything Hermes knows about you lives
+there: config, credentials, memory files, skills, the session database. Learn the path
+now, because the rest of this guide refers to it constantly.
+
+`HERMES_HOME` relocates it, which is the mechanism behind profiles and the right answer
+for a service account with an unusual home directory.
+
+<MarginNote>
+Notice the code lives *inside* the data directory in a per-user install. That is why
+`~/.hermes/` is bigger than you expect, and why backing it up wholesale is a slightly
+odd thing to do.
+</MarginNote>
+
+## Which platform you are actually on
+
+The project publishes a support matrix with real teeth, and it is worth checking before
+you invest an afternoon.
+
+**Tier 1 — full support.** macOS on Apple Silicon; Windows 10/11 on x86_64 and aarch64
+("a few features are not available"); Linux and WSL2 on x86_64 and aarch64, tested on
+Ubuntu, requiring glibc and systemd; and the Docker container — with one caveat worth
+reading twice: **"Docker installs do not support `hermes update`."**
+
+**Tier 2 — best effort.** Android via Termux. And Nix, whose entry is unusually candid:
+"breaks often due to node.js packaging woes."
+
+**Explicitly unsupported**, which here means refused rather than merely unmaintained:
+AUR packages, macOS on Intel, PyPI installs via `pip` or `uv tool install`, and
+Homebrew.
+
+<TrackCallout
+  newcomer="Check your machine against Tier 1 before starting. If you are on an Intel Mac, this is not going to work, and finding that out now is cheaper than finding it out in an hour."
+  operator="The Docker no-update caveat is the one to plan around: a containerised deployment needs an image-rebuild pipeline rather than an in-place update path."
+  architect="The unsupported list is a maintenance-posture statement rather than a compatibility note. Anything you standardise on outside Tier 1 is something you have volunteered to maintain."
+/>
+
+The warning attached to that list is unusually direct, and worth quoting rather than
+paraphrasing:
+
+> PRs to fix them will _not_ be accepted, and any code that keeps compatibility with
+> them may be removed at any point.
+
+## Installing without root
+
+Supported, and documented. One admin step is needed once, for browser-automation
+dependencies:
+
+```bash
+sudo npx playwright install-deps chromium
+```
+
+After that the service user runs the normal installer. If you do not need browser
+automation at all, skip it entirely:
+
+```bash
+curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash -s -- --skip-browser
+```
+
+<Depth min="operator">
+
+Service accounts frequently have a minimal `PATH` that excludes `~/.local/bin`, which
+produces a `hermes: command not found` that looks like a failed install and is not.
+Configure `PATH` explicitly for the account rather than relying on an interactive
+shell's profile.
+
+</Depth>
+
+## When it does not work
+
+There is a diagnostic command, and it is the correct first move rather than a last
+resort:
+
+<Command verified="v0.19.0">hermes doctor</Command>
+
+Alongside it, `hermes config check` reports on your configuration's state, and `hermes
+config migrate` brings an older config forward after an update.
+
+The two most common first-run failures have boring causes. `hermes: command not found`
+almost always means the shell has not been reloaded, or `~/.local/bin` is not on
+`PATH`. And a Python below 3.11 needs upgrading — the installer supplies 3.11, but a
+pre-existing environment can shadow it.
+
+## What to take from this
+
+One command, a shell reload, and a directory at `~/.hermes/` holding everything. Check
+your support tier before committing, remember that Docker installs cannot self-update,
+and reach for `hermes doctor` first when something looks wrong.
+
+The next lesson is the decision the installer does not make for you, and the one that
+most often goes wrong: which model.

@@ -14,10 +14,129 @@ prerequisites:
   - hermes/03-running-a-session/01-the-status-bar-and-the-context-budget
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+The agent is three tool calls into something and you can see it is heading the wrong
+way. What happens if you type?
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+Three different things, depending on one setting. Knowing which one you have is the
+difference between redirecting a task and losing four minutes of work.
+
+## The three modes
+
+```yaml
+display:
+  busy_input_mode: "interrupt"   # or "queue", or "steer"
+```
+
+**`interrupt`** — the default. Your message redirects the active turn. Generation
+restarts, and work already done is preserved. You get attention immediately, at the
+cost of the model re-deciding what to do.
+
+**`queue`** — your message waits and is delivered at the start of the next turn. The
+agent finishes what it is doing, uninterrupted, then reads you.
+
+**`steer`** — your message is injected into the *running* turn, after the next tool
+call completes. The agent does not restart; it simply learns something new mid-task.
+
+`steer` is the one most people want once they know it exists. It is the difference
+between "stop, here is a correction" and "carry on, but note this."
+
+<MarginNote>
+`steer` falls back to `queue` if the agent has not started yet, or if you attached
+images. So it never silently does nothing — it just behaves like the safer neighbour.
+</MarginNote>
+
+You can switch per session rather than editing config: `/busy steer`, `/busy queue`,
+`/busy interrupt`, and `/busy status` to see which you are in.
+
+<TrackCallout
+  newcomer="Try steer. The default is interrupt, which restarts the agent's thinking every time you type — useful for a hard stop, frustrating for a small correction."
+  operator="For long tool-heavy runs, steer plus a named session is the combination that makes supervision cheap. /stop is still there for a real halt."
+/>
+
+## Stopping properly
+
+`/stop` halts the current work. `Ctrl+C` interrupts, and **pressing it twice within two
+seconds force-exits** — worth knowing before you discover it by reflex.
+
+`Ctrl+D` exits normally. `Ctrl+Z` suspends to the background on Unix.
+
+## The keybinding that does not work on your machine
+
+Multi-line input is `Alt+Enter`, `Ctrl+J`, or `Shift+Enter`. The third one is the
+comfortable one and it is the one with a compatibility problem, because it needs
+terminal support that not every terminal has.
+
+**Works by default:** Kitty, foot, WezTerm, Ghostty.
+
+**Works with the Kitty protocol enabled:** recent iTerm2, Alacritty, the VS Code
+terminal, Warp, Windows Terminal Preview 1.25+.
+
+**Does not work:** macOS Terminal.app, and stock Windows Terminal.
+
+There is also a conflict rather than a gap: **Windows Terminal captures `Alt+Enter`**
+for its own fullscreen toggle. On Windows, use `Ctrl+Enter` or `Ctrl+J`.
+
+If you would rather not think about it, a trailing backslash also continues a line — the
+shell convention, and it works everywhere.
+
+<Depth min="operator">
+
+Two bindings worth adopting deliberately. `Ctrl+G` opens the current input buffer in
+`$EDITOR`, which is the right way to compose anything longer than a couple of sentences
+— `Ctrl+X Ctrl+E` does the same for Emacs muscle memory. And `Tab` accepts an
+autosuggestion or completes a slash command.
+
+</Depth>
+
+## Quick commands
+
+Small feature, disproportionate payoff for anyone running Hermes on a machine they
+maintain. You can define your own slash commands in `config.yaml`:
+
+```yaml
+quick_commands:
+  status:
+    type: exec
+    command: systemctl status hermes-agent
+  gpu:
+    type: exec
+    command: nvidia-smi --query-gpu=utilization.gpu,memory.used --format=csv,noheader
+  restart:
+    type: alias
+    target: /gateway restart
+```
+
+`exec` runs a shell command directly — no model involved, no tokens, no agent turn.
+`alias` renames an existing slash command. Neither is negotiable with the model, which
+is exactly why they are useful for operational checks.
+
+## Personalities, and a count nobody agrees on
+
+`/personality concise` overlays a manner onto the session without touching `SOUL.md`.
+The overlay is session-level and temporary; identity stays where identity lives.
+
+How many are built in is a question with three answers.
+
+<Revised
+  was="Hermes ships twelve built-in personalities."
+  now="The CLI page names fourteen. The personality page states twelve and names eleven. Three figures, and nothing in the documentation resolves them."
+  why="Two documentation pages disagree, and one disagrees with itself"
+  when="2026-07-25"
+/>
+
+The guide reports the discrepancy rather than picking a number, because the honest
+answer to "how many personalities are there" is that the documentation does not know.
+The named ones common to both include `helpful`, `concise`, `technical`, `creative`,
+`teacher`, `pirate`, `shakespeare`, `noir` and `philosopher`, and you can define your own
+under `agent.personalities` regardless.
+
+## What to take from this
+
+Three behaviours behind one setting. `interrupt` restarts, `queue` waits, `steer`
+injects — and `steer` is the one that makes supervising a long run pleasant.
+
+Learn your terminal's multi-line key once, define two or three quick commands for the
+checks you run constantly, and do not trust any single source on how many personalities
+exist.

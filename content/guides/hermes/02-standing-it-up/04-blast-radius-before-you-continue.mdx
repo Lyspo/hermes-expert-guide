@@ -15,10 +15,136 @@ prerequisites:
   - hermes/02-standing-it-up/01-install
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+This is the last lesson before you can do real damage, and it exists for that reason.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+The documentation states the situation in one sentence, and it is the sentence to sit
+with:
+
+> The agent has the same filesystem access as your user account.
+
+Not a subset. Not a sandbox by default. The same access you have.
+
+## What is always blocked
+
+There is a hard list, and it is not a heuristic. Writes are refused to `~/.ssh/`,
+`~/.aws/`, `~/.kube/`, `/etc/sudoers` and `~/.netrc`; to Hermes's own credential stores
+including `auth.json` and its environment file; and to project secret files — `.env`,
+`.env.local`, `.env.production`, `.envrc` — anywhere at all.
+
+<Transcript fidelity="verbatim" source="Security documentation, v0.19.0">
+{`Write denied: '…' is a protected system/credential file.`}
+</Transcript>
+
+Note what that list covers: **credential locations, not your work.** Your source code,
+your documents and your projects directory are not on it.
+
+## What asks first, and what does not
+
+By default `approvals.mode` is `smart`, which means a model risk-assesses each
+dangerous-looking command and decides. Low risk is auto-approved, clearly dangerous is
+auto-denied, and only the uncertain middle reaches you.
+
+On a real default install, `rm -rf` on a host path ran with no prompt at all. That is
+documented behaviour rather than a bug, and `04/04` covers it in full with the captured
+transcript. For now the point is narrower: **the default does not ask you, it asks a
+model.**
+
+## The floor nothing moves
+
+The **hardline blocklist** is always on and cannot be disabled by any setting, flag or
+mode: `rm -rf /`, fork bombs, `mkfs` on mounted devices, `dd` to block devices, and
+piping untrusted URLs into a shell.
+
+YOLO mode — `hermes --yolo` — disables the approval checks and shows a red banner and a
+`⚠ YOLO` indicator while active. The documentation attaches the limit directly:
+"hardline blocklist still applies regardless of YOLO status."
+
+So the guarantee is real, and it is also narrow. It stops the handful of commands that
+destroy a machine outright. It does not stop the command that deletes your work.
+
+## What happened when people turned the asking off
+
+Two incidents, told here as stories because they are more instructive than any list of
+settings. `10/04` analyses them properly; this is the version you need before you
+continue.
+
+### The one where it was someone else's agent
+
+In July 2026 an attacker who already had access inside Thailand's Ministry of Finance
+network deployed open-source Hermes on a rented server and **enabled YOLO mode** to
+remove the approval requirement.
+
+The agent then ran reconnaissance autonomously: kernel vulnerability scanning,
+privilege-escalation enumeration, filesystem exploration, and access to personnel
+records going back to 2012. Researchers later recovered 585 files and around 575
+separate Hermes result folders from an exposed staging server.
+
+The intrusion itself had nothing to do with Hermes — the way in was an unauthenticated
+HiveServer2 instance. Hermes was the *post-exploitation automation layer*. And the
+analytical takeaway from the reporting is the part worth carrying: nothing in the
+recovered material shows it finding a new vulnerability. The significance is that
+automation let one operator scale routine work, not that the agent was clever.
+
+### The one where it was their own
+
+A user set a Kanban board's default working directory to their main projects folder
+during setup. A task created later inherited that path and was automatically tagged as
+a scratch workspace. When the agent completed the task, the cleanup routine called
+`shutil.rmtree()` on the inherited path — **no confirmation prompt, no warning log** —
+and permanently deleted the user's entire projects directory: code, scripts, outputs,
+configs.
+
+They found out by opening a project folder and finding it empty.
+
+The root cause was filed as critical: the cleanup function never checked whether the
+path was a temporary task directory or a real one. No YOLO mode was involved. No
+approval gate applied, because none was in the path.
+
+<TrackCallout
+  newcomer="Both stories have the same moral and it is not “be careful”. It is: point the agent at one project directory, not your home directory, until you have a feel for it."
+  operator="Neither incident required a vulnerability. One was a documented feature used as designed; the other was a default path inherited into a cleanup routine. Audit what your agent's working directory actually is, per surface."
+  architect="An independent audit found container deployments shipping with all approval checks disabled by default — so “we containerised it” is not automatically the safer posture. Verify the shipped configuration rather than assuming the image applies your policy."
+/>
+
+## What to do before continuing
+
+Four things, in order of how much they buy you.
+
+**Point it at one directory.** Set `terminal.cwd` to a single project rather than
+letting it start in your home directory. This is the highest-value ten seconds in the
+whole guide.
+
+**Know where YOLO is.** Not to use it — to recognise the red banner if you ever see one
+you did not intend.
+
+**Do not put secrets where it works.** The blocklist covers `.env` files by name; it
+does not cover a credential you pasted into `notes.md`.
+
+**Assume messaging surfaces are wider than the terminal.** Connecting WhatsApp, for
+instance, gives the agent your real phone number with no preview step. Each new surface
+is a new set of things it can reach and a new set of people who can reach it.
+
+<Depth min="operator">
+
+If any of this is going to production, the container backend is the right call — with
+the caveat from `04/03` that four of the six backends skip the dangerous-command check
+entirely, so isolation and approval are alternatives rather than layers.
+
+The mitigations recommended after the CVE research are worth writing down now and
+implementing in module 10: enable sandboxing explicitly, set `HERMES_WRITE_SAFE_ROOT`,
+disable YOLO, rotate credentials after any exposure, and isolate anything touching
+sensitive resources.
+
+</Depth>
+
+## What to take from this
+
+The agent has your access. A short hard list protects credential files and a shorter
+one protects the machine itself, and between those two lists sits everything you
+actually care about.
+
+The two documented disasters were not exploits. One was a feature working as
+designed with the safety switched off, and the other was a default path that nobody
+checked. Set `terminal.cwd`, and go on to module 3.

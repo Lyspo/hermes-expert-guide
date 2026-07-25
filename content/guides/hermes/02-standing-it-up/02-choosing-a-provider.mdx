@@ -14,10 +14,140 @@ prerequisites:
   - hermes/02-standing-it-up/01-install
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+This is the decision people get wrong, and the failure is miserable to diagnose because
+nothing errors. The agent just becomes stupid: it forgets what it was doing, calls one
+tool where it needed four, and gives up halfway through tasks it should manage.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+Almost always the model is too small.
+
+## The floor is 64,000 tokens
+
+Stated by the documentation as a hard requirement: models must have a context window of
+at least **64,000 tokens**, and smaller ones are **rejected at startup**.
+
+That rejection is the good case. The bad case is a model that clears the floor
+nominally but is served with a smaller effective window, which is the default situation
+for local models.
+
+<TrackCallout
+  newcomer="Use a frontier model to begin with. Trying to run this on a small local model as your first experience is the most common way people conclude Hermes does not work."
+  operator="64K is the floor, not the target. delegate_task fails silently below it, and a community write-up recommends 128K or more for real work."
+  architect="The floor is enforced at startup, which makes it an auditable precondition rather than a runtime failure mode. Effective context on self-hosted backends is not enforced, and that is where the gap is."
+/>
+
+The silent failure worth naming: **`delegate_task` fails quietly under 64K**. You do
+not get an error; you get a subagent that accomplished nothing.
+
+## Local models need explicit configuration
+
+Every self-hosted backend defaults to something smaller than it can do, and each has its
+own flag:
+
+```bash
+OLLAMA_CONTEXT_LENGTH=64000 ollama serve      # Ollama
+llama-server --jinja -c 64000                 # llama.cpp — --jinja enables tool calling
+lms load model-name --context-length 64000    # LM Studio
+```
+
+The documentation is blunt about the first one: *"Ollama does not use your model's full
+context window by default."* If you set up Ollama and did not set that variable, you are
+running below the floor regardless of what the model card says.
+
+vLLM, llama.cpp and SGLang also need explicit server flags before tool calling works at
+all. A model that cannot call tools is not a smaller Hermes — it is not Hermes.
+
+<Depth min="operator">
+
+`context_length` and `max_tokens` are different things and get confused constantly.
+`context_length` is the total conversation budget; `max_tokens` caps a single response.
+Raising the second does not help an agent that keeps losing its place.
+
+`config.yaml` is authoritative for model selection — the legacy `LLM_MODEL` environment
+variable was removed, so a config that still sets it is silently doing nothing.
+
+</Depth>
+
+## The one-command path
+
+If you would rather not assemble this yourself:
+
+<Command verified="v0.19.0">hermes setup --portal</Command>
+
+Nous Portal is a subscription gateway: one OAuth login covering 300-plus models, routed
+through OpenRouter underneath, with no per-provider API keys or separate bills. The
+command logs you in, picks a model, writes the provider config, and enables the Tool
+Gateway.
+
+The Tool Gateway is the part that is easy to miss — five integrated backends unlocked by
+the subscription:
+
+| Tool | Partner |
+|---|---|
+| Web search and extract | Firecrawl |
+| Image generation | FAL |
+| Text to speech | OpenAI TTS |
+| Browser automation | Browser Use |
+| Cloud terminal | Modal |
+
+Those are capabilities that otherwise need five separate accounts.
+
+<MarginNote>
+Credential storage is unusually clean here, and quoted: "The refresh token at
+`~/.hermes/auth.json` is the only credential on disk." Hermes mints short-lived tokens
+per request rather than storing long-lived API keys.
+</MarginNote>
+
+## Bring your own keys instead
+
+<Command verified="v0.19.0">hermes model</Command>
+
+Interactive, and it writes to the right place — which matters, because Hermes splits
+configuration deliberately: **secrets go to `~/.hermes/.env`, settings go to
+`~/.hermes/config.yaml`**. You can also set values directly and let the routing happen:
+
+```bash
+hermes config set model anthropic/claude-opus-4.6
+hermes config set OPENROUTER_API_KEY sk-or-...
+```
+
+The second of those lands in `.env` rather than `config.yaml`, because it is
+recognisably a secret. That routing is covered properly in `03/04`.
+
+## The recommendation that surprises people
+
+Nous makes Hermes Agent. Nous also makes the Hermes 4 model family. You would expect the
+first to recommend the second.
+
+<Revised
+  was="Use Nous's Hermes 4 models with Hermes Agent — same family, best fit."
+  now="Hermes 4 models are “not recommended for use inside Hermes Agent.” They are tuned for chat and reasoning rather than rapid tool calling; Portal recommends frontier agentic models instead."
+  why="Stated in the Nous Portal documentation"
+  when="2026-07-25"
+/>
+
+That is a genuinely creditable piece of documentation — a vendor telling you not to use
+its own model for this — and it points at the real selection criterion. You are not
+choosing a model to *talk* to. You are choosing one that will emit dozens of correct
+tool calls in sequence without losing the thread. Those are different skills, and
+benchmark leaderboards mostly measure the first.
+
+## A naming conflict worth knowing
+
+Two documentation pages disagree about how you check your Portal status. The
+integrations page documents `hermes portal info`; the CLI reference documents `hermes
+portal status`, `open` and `tools`.
+
+This guide reports both rather than picking, because one of them will fail on your
+machine and knowing there are two candidates is faster than assuming you typed it wrong.
+
+## What to take from this
+
+Sixty-four thousand tokens is the floor, not the goal. Local backends need explicit
+configuration to reach it, and `delegate_task` fails silently below it.
+
+If you want the short path, `hermes setup --portal` gets you a capable model and five
+tool backends in one command. If you bring your own keys, pick for tool-calling
+reliability rather than conversational quality — including over the model made by the
+same organisation.

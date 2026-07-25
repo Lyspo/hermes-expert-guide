@@ -14,10 +14,127 @@ prerequisites:
   - hermes/02-standing-it-up/01-install
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+There are more than 150 configuration fields. This lesson deliberately does not
+enumerate them, because a list of keys read before you have felt the pressures they
+relieve is not knowledge — it is a reference you will not remember consulting.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+What is worth learning is the **model**: two files, one rule about which goes where, and
+a precedence chain with four levels. Get those and any key you meet later files itself.
+
+## Two files, one rule
+
+`~/.hermes/` holds both:
+
+- **`config.yaml`** — settings. Model choice, toolsets, terminal backend, compression
+  thresholds, display preferences.
+- **`.env`** — secrets. API keys, tokens, platform credentials.
+
+The rule, stated by the documentation: **secrets and tokens go to `.env`; non-secret
+settings go to `config.yaml`.**
+
+The separation is not fussiness. `config.yaml` is the file you would paste into a
+support thread, commit to a dotfiles repository, or copy between machines. Keeping it
+free of credentials by construction is what makes that safe.
+
+## Precedence, highest to lowest
+
+1. **CLI arguments** — `hermes chat --model anthropic/claude-sonnet-4`
+2. **`~/.hermes/config.yaml`**
+3. **`~/.hermes/.env`** — fallback environment variables, and required for secrets
+4. **Built-in defaults**
+
+The one to internalise is that **`config.yaml` beats `.env`**. If a value is set in both,
+the YAML wins, and the environment variable sits there looking authoritative while doing
+nothing. That is the single most common configuration confusion, and it comes from the
+reasonable-but-wrong intuition that environment variables override files.
+
+<TrackCallout
+  newcomer="If a setting is not taking effect, check whether it is also set in config.yaml. That file wins over the environment file."
+  operator="CLI over YAML over env over defaults. Useful consequence: a flag on the command line is always a reliable override for a one-off, without editing anything."
+  architect="Four deterministic levels with no merge semantics — a value comes from exactly one place. That makes an effective configuration reconstructable, which matters when the same install serves CLI, gateway and cron."
+/>
+
+## Let the commands do the routing
+
+You do not have to decide which file a value belongs in:
+
+```bash
+hermes config set model anthropic/claude-opus-4.6
+hermes config set terminal.backend docker
+hermes config set OPENROUTER_API_KEY sk-or-...
+```
+
+The third one lands in `.env` because it is recognisably a secret; the first two land in
+`config.yaml`. Using `hermes config set` rather than editing files by hand is the
+easiest way to never get this wrong.
+
+The rest of the surface:
+
+<Command verified="v0.19.0">hermes config show</Command>
+
+Plus `edit`, `get`, `unset`, `check` and `migrate`. `check` reports on your config's
+health; `migrate` brings an older config forward after an update, which matters more
+than it sounds — see the schema note below.
+
+## Substitution works one way only
+
+`config.yaml` supports environment-variable substitution, and the syntax is exact:
+
+```yaml
+api_key: ${GOOGLE_API_KEY}
+url: "${HOST}:${PORT}"
+```
+
+**`${VAR}` is expanded. Bare `$VAR` is not.** An undefined variable stays literal — you
+get the characters `${UNDEFINED_VAR}` passed through as a value, which produces a
+confusing downstream failure rather than a helpful error.
+
+This is the right pattern for keeping a shareable `config.yaml` that references secrets
+living in `.env`, and it is the reason the two-file split does not force you to hard-code
+anything.
+
+<Depth min="operator">
+
+Substitution is a `config.yaml` feature only. It does not apply inside `.env`, where
+values are literal.
+
+If a provider is silently unauthenticated, check for a typo'd variable name before
+anything else: the failure mode of a misspelled `${VAR}` is a literal string being sent
+as your API key.
+
+</Depth>
+
+## "Config version 17" is not a product version
+
+You will encounter a `config version` number, and it is not what it looks like.
+
+<Revised
+  was="Hermes is at config version 17."
+  now="That is an internal config-schema version used to auto-migrate legacy keys on load. The product version is separate — v0.19.0 at the time of writing — and no documentation page states it on-page."
+  why="The configuration page uses the schema version for migration; the product version comes from the releases API"
+  when="2026-07-25"
+/>
+
+The migration it drives is real and useful — old `compression.summary_model` keys are
+moved to their `auxiliary.compression.*` homes on first load — but conflating the two
+numbers will make you think you are fifteen major versions behind.
+
+## The scale you are not being shown
+
+For honesty about what this lesson omits: the dashboard's configuration tab exposes more
+than **150 fields**.
+
+That is the real surface, and the reason this lesson teaches a model rather than a
+catalogue. When you need a specific key, `hermes config show` and the reference are
+faster than any prose could be. What prose is good for is knowing where a value should
+live and which one wins — and now you do.
+
+## What to take from this
+
+Two files: settings in `config.yaml`, secrets in `.env`. Four precedence levels, with
+CLI highest and `config.yaml` beating the environment file. Use `hermes config set` and
+let it route. Use `${VAR}`, never bare `$VAR`.
+
+That is the whole model. Everything else is a key you can look up when the need arrives.

@@ -13,10 +13,105 @@ prerequisites:
   - hermes/03-running-a-session/01-the-status-bar-and-the-context-budget
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Closing the terminal does not end anything. Every session is a row in a SQLite database
+at `~/.hermes/state.db`, with its full message history, and it is still there tomorrow.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+That single fact changes how you use the tool. You do not need to finish a task in one
+sitting, and you do not need to re-explain context you already gave.
+
+## Getting back
+
+The short form covers most cases:
+
+<Command verified="v0.19.0">hermes --continue</Command>
+
+`-c` is the same thing. It resumes the most recent session.
+
+When "most recent" is not what you want, there are three other handles:
+
+```bash
+hermes -c "my project"                     # by name — latest in that lineage
+hermes --resume 20260225_143052_a1b2c3     # by session id
+hermes --resume "refactoring auth"         # by title
+```
+
+Resuming by title is the one worth building a habit around, because it works only if
+you name things. `/title My Session Name` inside a session, or `hermes sessions rename`
+from outside.
+
+<MarginNote>
+A session id encodes its own timestamp — `20260225_143052` is a date and a time. Useful
+when you know roughly when you did something but not what you called it.
+</MarginNote>
+
+## Lineage, and why "latest in that lineage" is not pedantry
+
+When compression fires, the session does not continue in place. A new session is created
+with the summarised history, and it records the old one as its parent.
+
+So a long conversation that has compressed three times is four rows, chained. Lineage
+tracking is what makes that chain navigable — resuming "my project" gets you the newest
+link, not the original.
+
+This matters when you go looking for something you remember saying. The message is in
+the lineage, but it may not be in the session you land in. That is what `session_search`
+is for, and it is covered in `05/04`.
+
+## What the CLI gives you
+
+```bash
+hermes sessions list
+hermes sessions rename <id> <title>
+```
+
+The full subcommand set goes further — `browse`, `export`, `delete`, `prune`, `archive`
+and `stats` — which is more of a data-management surface than people expect from a chat
+tool, and appropriate for something accumulating every conversation you have.
+
+<TrackCallout
+  newcomer="Name your sessions. /title takes five seconds and turns “where was that thing” into one command later."
+  operator="hermes sessions prune and archive are the housekeeping you will eventually want. state.db grows monotonically, and it holds full message history rather than summaries."
+  architect="Sessions are per-platform isolated with atomic writes, and the store is a single local SQLite file. That makes both retention policy and deletion straightforward to specify — and worth specifying, because the default is to keep everything forever."
+/>
+
+## Background sessions
+
+Different thing, same neighbourhood. `/background <prompt>` starts a *separate* agent
+session in a daemon thread:
+
+<Transcript fidelity="reconstructed" source="CLI documentation, v0.19.0">
+{`🔄 Background task #1 started: "..."
+Task ID: bg_143022_a1b2c3`}
+</Transcript>
+
+It inherits your model, provider, toolsets and reasoning settings, runs without blocking
+you, and surfaces its result as a panel when it finishes. You can have several going at
+once.
+
+The property that defines it: **it is isolated from your foreground history and does not
+appear in it.** The background agent cannot see what you are doing and you will not find
+its work in your conversation. It is a second worker, not a delegated subtask — and the
+distinction from `delegate_task` is real, since that one reports back into the
+conversation that spawned it.
+
+Use it for the thing you want done while you keep thinking. Do not use it for anything
+whose output needs to inform the conversation you are in.
+
+<Depth min="operator">
+
+`Ctrl+Z` suspends the whole session to the background on Unix, which is a different
+mechanism again — shell job control rather than a Hermes feature. It is the fastest way
+to get your terminal back without losing state, and `fg` returns you.
+
+</Depth>
+
+## What to take from this
+
+Sessions are durable objects, not scrollback. Resume with `-c`, name them so you can
+resume by title later, and remember that compression forks a session rather than editing
+it — so "the conversation" is often a chain rather than a row.
+
+Background sessions are a separate worker with a separate history. Useful, and not the
+same as delegation.
