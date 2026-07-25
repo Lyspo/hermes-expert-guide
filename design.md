@@ -101,6 +101,23 @@ A single house curve is registered once as a GSAP `CustomEase` and shared verbat
 
 The division of labour is enforced by lint: Motion animates components, GSAP animates scenes, and GSAP cannot be imported outside the landing and scroll-scene directories.
 
+## Built, and what it looks like
+
+The devices below exist in the lesson template. Anything in this document not on this list is specified but not yet built.
+
+| Device | What it is |
+|---|---|
+| `page-substrate` | Quadrille ruling drawn with gradients — horizontal every module, vertical every four. Body leading is exactly one module, so every line of prose lands on a rule. The moment content stops sitting on it, remove the ruling rather than keep it for atmosphere |
+| `bound-edge` | A real reserved gutter with stitch marks, not a decorative stripe |
+| Page stamp | Counts the lesson's true position in the record |
+| `Plate` | A terminal transcript as a dark specimen pasted into the light page, carrying its own provenance and an explicit verbatim-or-reconstructed label |
+| `Command` | A real command stamped with the release it was verified against |
+| `Revised` | Superseded text struck through, replacement above it, reason in the margin. Renders as `<del>`/`<ins>`, so the device and the correct semantics are one thing |
+| `MarginNote` | A note in the real margin above 1024px; falls into the flow beside its referent below that, never behind a toggle |
+| `stamp` | An impression with fixed uneven ink and a fixed slight rotation — designed irregularity, never randomised |
+
+Still to build: index tabs as module navigation, the exploded technical plates, and the negative mode's control.
+
 ## Texture
 
 **The default is no surface texture at all.** The world is carried by structure and palette — the grid, the page furniture, the ink relationships. That is the decision, not a placeholder for a texture pass later.
