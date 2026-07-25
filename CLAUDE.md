@@ -72,9 +72,15 @@ All **six plates** from the map are built: VIZ-1 `prompt`, VIZ-2 `memory`, VIZ-3
 `skill-loop`, VIZ-4 `orchestration`, VIZ-5 `egress`, VIZ-6 `authorization`. Regenerate
 the per-module counts with the loop in "Picking up" rather than trusting this line.
 
+**Also built since.** The landing page. Search (Pagefind, 80 pages), sitemap, robots,
+JSON-LD, 53 OG cards. The **glossary** — 59 terms, each carrying the distinction it
+exists to resolve, at `/glossary/`. **Cheatsheets** — 9 sheets at `/cheatsheets/`, which
+are load-bearing rather than supplementary: the lessons are short *because* the
+reference lives there.
+
 **Not built.** The simulations beyond SIM-1's engine — the map specifies eight and one
-flagship replay exists. Glossary, cheatsheets, colophon. The landing page's GSAP scroll
-narrative. Lighthouse CI.
+flagship replay exists. A colophon. The landing page's GSAP scroll narrative. Lighthouse
+CI.
 
 **Verification, and what it does and does not cover.** `pnpm verify` runs typecheck,
 lint, unit tests, OG image generation, the static export, the search index and a link
@@ -154,6 +160,10 @@ orchestration did not arrive in v0.6.0.
   means the first frame after a stall arrives with a large delta and lands on the
   finished text. Caught by looking at the page, not by any test — the build, the types
   and the link check were all green.
+- **`Page` gives a second column only to pages that pass an `aside`.** It used to
+  reserve the 17rem margin unconditionally, which left the glossary, the cheatsheets and
+  search at a 44rem measure with a void beside them — that is how a reference table ends
+  up cramped on a wide screen. A page earns the margin by having something to put in it.
 - **Do not animate the largest text on a page.** The landing hero performs the strike
   half of the `rewrite` gesture in pure CSS and deliberately not the character-resolve.
   It is the LCP element and the argument; one stalled clock away from rendering as

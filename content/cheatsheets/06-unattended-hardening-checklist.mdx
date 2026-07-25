@@ -1,0 +1,73 @@
+---
+title: 'Unattended hardening checklist'
+description: >-
+  The documented ten and the community's five, each with the command or key that
+  implements it, and a column to sign.
+order: 6
+hermesVersion: v0.19.0
+updated: '2026-07-25'
+---
+
+Designed to be printed and signed. Three of these are places where the documented control
+has a documented hole — those are marked, and they are the ones to record as accepted risk
+rather than tick.
+
+## The documented ten
+
+| # | Item | How | Verified on |
+|---|---|---|---|
+| 1 | Explicit allowlists | `TELEGRAM_ALLOWED_USERS`, `GATEWAY_ALLOWED_USERS`. Never `GATEWAY_ALLOW_ALL_USERS` | ______ |
+| 2 | Container backend ⚠ | `terminal.backend: docker` — **removes the dangerous-command check** | ______ |
+| 3 | Resource caps | `container_cpu`, `container_memory`, `container_disk` | ______ |
+| 4 | Secure the env file | `chmod 600 ~/.hermes/.env`; never paste a key into a chat | ______ |
+| 5 | Pairing over hardcoded ids | `unauthorized_dm_behavior: pair`, then `hermes pairing approve` | ______ |
+| 6 | Review allowlists periodically | They only ever grow | ______ |
+| 7 | Scope the working directory | `terminal.cwd` — the highest-value line in the file | ______ |
+| 8 | Gateway as non-root | Service user, `PATH` configured explicitly | ______ |
+| 9 | Monitor logs | `~/.hermes/logs/` | ______ |
+| 10 | Keep updated | `hermes update` — **not supported on Docker installs** | ______ |
+
+## The community's five
+
+| # | Item | How | Verified on |
+|---|---|---|---|
+| 11 | Read-only before write | Run the workflow read-only first and watch what it tries | ______ |
+| 12 | Deny approvals in cron | `approvals.cron_mode: deny` | ______ |
+| 13 | Cap the loop | `agent.max_turns`, and `hard_stop_enabled: true` for gateway, cron and Kanban workers | ______ |
+| 14 | Dashboard on loopback ⚠ | Default `127.0.0.1`. Its auth **skips `/api/plugins/`**, so a public bind exposes the Kanban API | ______ |
+| 15 | Document credentials per agent | Which key belongs to which profile | ______ |
+
+## Set these deliberately rather than by default
+
+```yaml
+approvals:
+  mode: manual          # the default asks a model, not you
+  timeout: 300          # fails closed
+  cron_mode: deny
+  deny:
+    - "git push --force*"
+
+agent:
+  max_turns: 90
+  disabled_toolsets: [browser, image_gen]
+
+terminal:
+  cwd: /srv/agent/project
+```
+
+`approvals.deny` is the only control here that is deterministic *and* yours. Keep a short
+list per deployment.
+
+## The three holes, stated
+
+**The container backend removes the approval gate.** Four of six backends skip the
+dangerous-command check, and your deny rules are enforced only on host-reaching backends.
+
+**The dashboard's plugin routes bypass its authentication**, by design, on the assumption
+of a localhost bind.
+
+**The egress proxy does not cover every provider.** Bedrock SigV4 and Vertex service
+accounts keep real credentials inside the sandbox, and the proxy does not stop exfiltration
+to an allowlisted host.
+
+Signed ______________________  Date ____________

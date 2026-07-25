@@ -1,4 +1,4 @@
-import { allGlossaries, allLessons } from 'content-collections'
+import { allCheatsheets, allGlossaries, allLessons } from 'content-collections'
 import type { Track } from './site'
 
 export type Lesson = (typeof allLessons)[number]
@@ -165,3 +165,10 @@ export const glossary = [...allGlossaries].sort((a, b) =>
     sensitivity: 'base',
   }),
 )
+
+/** Cheatsheets, in their stated order. Reference material, kept out of lessons. */
+export const cheatsheets = [...allCheatsheets].sort((a, b) => a.order - b.order)
+
+export function getCheatsheet(slug: string) {
+  return cheatsheets.find((sheet) => sheet.slug === slug)
+}

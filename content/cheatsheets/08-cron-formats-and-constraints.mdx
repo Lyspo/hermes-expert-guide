@@ -1,0 +1,107 @@
+---
+title: 'Cron formats and constraints'
+description: >-
+  Four schedule formats with worked examples, every delivery target, and the five
+  constraints that will surprise you.
+order: 8
+hermesVersion: v0.19.0
+updated: '2026-07-25'
+---
+
+## Four formats
+
+| Form | Example | Behaviour |
+|---|---|---|
+| Relative | `30m`, `2h`, `1d` | Once, that far from now |
+| Interval | `every 30m`, `every 2h` | Recurring, indefinitely |
+| Cron expression | `0 9 * * *`, `0 */6 * * *` | Standard five-field |
+| ISO timestamp | `2026-03-15T09:00:00` | Once, at that moment |
+
+Relative and ISO are one-shots. Interval and cron expressions recur.
+
+## Creating one
+
+```bash
+hermes cron create "every 2h" "Check server status"
+hermes cron create "0 9 * * *" "Summarise overnight alerts" --skill triage
+```
+
+```text
+/cron add 30m "Reminder text"
+/cron add "every 2h" "Task" --skill blogwatcher
+```
+
+Natural language works too, and it is not a separate path — it calls the same `cronjob`
+tool.
+
+## Managing them
+
+`hermes cron list | pause <id> | resume <id> | run <id> | remove <id> | status | tick`
+
+`hermes cron edit <id> --schedule "every 4h" | --skill <name> | --add-skill | --clear-skills`
+
+`hermes cron runs [job-id] --limit 20`
+
+## Delivery targets
+
+`origin` · `local` · `telegram` · `discord` · `slack` · `whatsapp` · `signal` · `matrix` ·
+`email` · `sms` · `homeassistant` · `all` — or any comma-separated combination.
+
+`origin` returns to wherever the job was created. A platform target uses that platform's
+home channel unless a chat id is given.
+
+## The five constraints
+
+**A cron session cannot create cron jobs.** Cron-management tools are disabled inside cron
+executions. No self-replicating schedules.
+
+**Prompts must be self-contained.** Every run is a fresh agent session. There is no memory
+of yesterday's run and no "as we discussed".
+
+**Workdir jobs run sequentially.** `--workdir` scopes file and terminal tools to a path and
+injects that project's context file; such jobs are kept out of the parallel pool to avoid
+terminal-state corruption.
+
+**Unpinned jobs snapshot the default model and fail closed.** A job that did not pin a
+provider and model captured your default at creation. If that default later changes, the
+job fails rather than silently running on something else.
+
+**Failed jobs always deliver.** A `[SILENT]` marker in a response suppresses delivery while
+still saving output locally — but not for failures. You cannot accidentally silence your
+own alerting.
+
+## The cheap mode
+
+```bash
+hermes cron create "every 5m" --no-agent --script watchdog.sh \
+  --deliver telegram --name "memory-watchdog"
+```
+
+Scripts live in `~/.hermes/scripts/` and run under bash or Python by extension. Empty
+output means a silent tick; a non-zero exit raises an alert. The final line of stdout can
+emit a `wakeAgent` of `false` to suppress waking the model — which makes a one-minute
+polling loop essentially free.
+
+## Chaining and continuing
+
+`context_from` prepends job A's most recent output to job B's prompt.
+
+`cron.mirror_delivery: true`, or `attach_to_session` per job, makes a result continuable —
+threaded where the platform supports it. Without it, the delivered message carries a note
+saying the agent cannot see it: the job finished, and you are reading a report.
+
+## Before scheduling anything that touches your machine
+
+```yaml
+approvals:
+  cron_mode: deny
+```
+
+Combined with the 300-second fail-closed approval timeout, that guarantees an unattended
+job cannot approve its own dangerous command by waiting for nobody to answer.
+
+## Where it lives
+
+`~/.hermes/cron/jobs.json` · `cron/output/<job_id>/<timestamp>.md` · `cron/executions.db`
+
+Direct `patch` edits to `jobs.json` are blocked. Jobs go through the tool or the CLI.

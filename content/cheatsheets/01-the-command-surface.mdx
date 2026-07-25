@@ -1,0 +1,108 @@
+---
+title: 'The command surface'
+description: >-
+  Every `hermes` command, grouped as the reference groups them, with the
+  deprecations and the one naming conflict the documentation has not resolved.
+order: 1
+hermesVersion: v0.19.0
+updated: '2026-07-25'
+---
+
+Grouped by what you are trying to do rather than alphabetically. Where the
+documentation disagrees with itself, both forms are given.
+
+## Getting started
+
+| Command | What it does |
+|---|---|
+| `hermes` | Start an interactive session |
+| `hermes --tui` | The modern terminal interface |
+| `hermes chat -q "…"` | One query, non-interactive |
+| `hermes setup` | The full wizard. First run offers Quick, Full and Blank Slate |
+| `hermes setup --portal` | Nous Portal OAuth, the one-command path |
+| `hermes model` | Choose provider and model interactively |
+| `hermes tools` | List and configure tools per platform |
+| `hermes doctor` | Diagnostics. Always the first thing to run |
+
+## Sessions
+
+| Command | What it does |
+|---|---|
+| `hermes --continue` / `-c` | Resume the most recent session |
+| `hermes -c "name"` | Resume by name — the newest in that lineage |
+| `hermes --resume <id>` / `-r` | Resume by session id or title |
+| `hermes sessions list` | List sessions |
+| `hermes sessions browse\|export\|delete\|prune\|archive\|stats` | Manage the store |
+| `hermes sessions rename <id> <title>` | Name one after the fact |
+| `hermes insights --days N` | Token, cost and activity analytics |
+
+## Skills
+
+| Command | What it does |
+|---|---|
+| `hermes skills list\|browse\|search` | See what is installed or available |
+| `hermes skills install <skill> [--force]` | Install. `--force` overrides a non-dangerous finding only |
+| `hermes skills inspect\|check\|audit` | Look before installing |
+| `hermes skills update [skill]` | Update; user-modified bundled skills are skipped |
+| `hermes skills uninstall\|reset` | Remove or restore |
+| `hermes skills tap add\|list\|remove` | Manage installation sources |
+| `hermes curator status\|run\|pause\|resume` | The maintenance pass |
+| `hermes curator pin\|unpin\|restore\|list-archived` | Protect or recover a skill |
+| `hermes curator backup\|rollback` | Snapshot and revert a pass |
+
+## Gateway and automation
+
+| Command | What it does |
+|---|---|
+| `hermes gateway setup` | Configure platforms |
+| `hermes gateway run` | Foreground — the right way to develop |
+| `hermes gateway start\|stop\|restart\|status` | Background lifecycle |
+| `hermes gateway install\|uninstall` | Register as a system service |
+| `hermes cron create "<schedule>" "<task>"` | Schedule work |
+| `hermes cron list\|pause\|resume\|run\|remove\|status` | Manage jobs |
+| `hermes cron runs [job] --limit N` | Execution history |
+| `hermes pairing list\|approve\|revoke\|clear-pending` | Approve unknown users |
+| `hermes webhook subscribe\|list\|remove\|test` | Inbound routes |
+| `hermes hooks list\|test\|revoke\|doctor` | Shell hooks. `doctor` catches edited scripts |
+
+## More than one agent
+
+| Command | What it does |
+|---|---|
+| `hermes kanban init\|list\|show\|create\|complete\|block\|unblock` | The board |
+| `hermes kanban dispatch\|claim\|decompose\|specify\|swarm` | Orchestration verbs |
+| `hermes kanban boards create\|list\|switch\|rename\|rm` | Multiple boards |
+| `hermes project create\|list\|use\|bind-board` | Folder workspaces. No documentation page exists |
+| `hermes profile create\|list\|use\|export\|import` | Isolated instances |
+
+## Operations
+
+| Command | What it does |
+|---|---|
+| `hermes config show\|get\|set\|unset\|check\|migrate` | Configuration, routed to the right file |
+| `hermes status [--all\|--deep]` | Health, beyond "running" |
+| `hermes logs` | Named logs with level and component filters |
+| `hermes dump` | Full resolved setup — **can contain credentials** |
+| `hermes debug share` | The redacted bundle. Use this one for issues |
+| `hermes backup` / `hermes import` | **Includes credentials** |
+| `hermes checkpoints` / `/rollback` | Snapshots, opt-in by default |
+| `hermes security audit` | Dependency advisories |
+| `hermes prompt-size [--platform] [--json]` | Measure the fixed overhead |
+| `hermes update` | Not supported on Docker installs |
+| `hermes egress install\|setup\|start\|stop\|status\|disable` | The credential firewall |
+| `hermes mcp\|catalog\|install\|configure\|remove\|list\|test\|login` | MCP servers |
+| `hermes mcp serve` | Expose Hermes itself as an MCP server |
+
+## Two things the documentation has not settled
+
+**`hermes portal info` versus `hermes portal status|open|tools`.** The integrations page
+documents the first; the CLI reference documents the second set. One of them will fail on
+your machine, and knowing there are two candidates is faster than assuming a typo.
+
+**`hermes login` / `logout` are superseded** by `hermes auth <provider>`.
+
+## From the API server, because it is easy to miss
+
+Bearer authentication is required on **all** deployments including loopback — there is no
+localhost exemption. Server-side response storage is capped at **100 responses with LRU
+eviction**, and file uploads are not supported.

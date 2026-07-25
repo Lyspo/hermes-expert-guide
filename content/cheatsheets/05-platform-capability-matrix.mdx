@@ -1,0 +1,77 @@
+---
+title: 'Platform capability matrix'
+description: >-
+  What varies between messaging platforms and what does not, the delivery targets
+  cron accepts, and the three that catch people.
+order: 5
+hermesVersion: v0.19.0
+updated: '2026-07-25'
+---
+
+The gateway is one process with one authorization chain and identical mechanics per
+adapter, so the second platform you connect is a lookup rather than a lesson. This is the
+lookup.
+
+## The platforms
+
+Twenty pages are linked from the messaging index and the enumerated list contains
+twenty-one rows; the architecture page says twenty adapters and the integrations index says
+"27+". The guide reports the disagreement rather than picking a number.
+
+Telegram · Discord · Slack · Google Chat · WhatsApp · WhatsApp Cloud API · Signal ·
+SMS (Twilio) · Email · Home Assistant · Mattermost · Matrix · DingTalk · Feishu/Lark ·
+WeCom · Weixin · BlueBubbles (iMessage) · QQBot · Yuanbao · Microsoft Teams · IRC
+
+## Delivery targets cron accepts
+
+`origin` · `local` · `telegram` · `discord` · `slack` · `whatsapp` · `signal` · `matrix` ·
+`email` · `sms` · `homeassistant` · `all`
+
+A platform not on this list cannot receive scheduled output, whatever else its adapter
+supports.
+
+## What varies, and what does not
+
+**Does not vary.** The authorization chain, the agent core, your toolsets, approval
+configuration, per-chat session isolation, and slash-command dispatch. A capability
+configured once applies everywhere — and so does a misconfiguration.
+
+**Varies by platform.** Threading, voice, file size limits, reactions, inline keyboards,
+streaming updates, and whether a group chat needs an explicit mention.
+
+## Telegram, as the worked example
+
+| Capability | Support |
+|---|---|
+| Voice in and out | Yes, needs `ffmpeg` |
+| Images | Send and receive |
+| Large files | A separate transport path; the ordinary bot API caps lower than expected |
+| Threads | Forum topics, bindable to a skill |
+| Reactions | Yes |
+| Streaming | Edits one message bubble rather than posting many |
+| Progress indicator | Pins your message at turn start, unpins on completion |
+| Inline choices | `clarify` renders a keyboard, 600-second timeout |
+| Group behaviour | Replies only when mentioned, by default |
+| Webhook mode | Available, and **requires a secret** |
+
+## Three that catch people
+
+**Telegram privacy mode is on by default**, and after changing it you **must remove and
+re-add the bot to every group**. The setting is cached per membership, so changing it does
+nothing to groups the bot has already joined.
+
+**Group chat ids are negative numbers.** A hand-written delivery target that lost the minus
+sign silently goes nowhere.
+
+**Connecting WhatsApp gives the agent your real phone number**, with no preview step.
+
+## Notification volume
+
+`important` restricts alerts to final responses and approval prompts, leaving tool progress
+silent. On a phone that is almost always what you want, and it is not the default.
+
+## Approvals, on a messaging surface
+
+The gate becomes a message rather than a menu: the bot posts the command and you reply
+`yes` or `no`. The 300-second timeout still applies and still fails closed, so a push
+notification you do not see for six minutes is a denial.

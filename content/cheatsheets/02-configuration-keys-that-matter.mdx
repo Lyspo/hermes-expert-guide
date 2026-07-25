@@ -1,0 +1,103 @@
+---
+title: 'Configuration keys that matter'
+description: >-
+  The keys a real deployment touches, with defaults, which file they belong in,
+  and the lesson that explains each. Explicitly a subset of 150-plus.
+order: 2
+hermesVersion: v0.19.0
+updated: '2026-07-25'
+---
+
+The dashboard exposes more than 150 fields. Saying which ones matter is the editorial act,
+and it is why `03/04` is a twelve-minute lesson rather than a thirty-minute reference.
+
+**Two files, one rule.** Settings go in `config.yaml`; secrets go in `.env`. Precedence,
+highest first: CLI arguments, `config.yaml`, `.env`, built-in defaults — so **`config.yaml`
+beats the environment file**, which is the opposite of most people's intuition.
+
+`${VAR}` is expanded in `config.yaml`; bare `$VAR` is not, and an undefined variable stays
+literal.
+
+## Model and routing
+
+| Key | Default | Notes |
+|---|---|---|
+| `model` | — | `provider/model`. 64,000-token context minimum, enforced at startup |
+| `context_length` | provider | Total conversation budget, not per-response |
+| `auxiliary.<task>.provider` / `.model` | main model | Per-task slots: compression, background_review, curator, decomposer, triage_specifier |
+| `prompt_caching.cache_ttl` | `5m` | Or `1h`. Breakpoints on the system prompt and skill blocks |
+| `agent.max_turns` | 90 | One grace call at the limit |
+| `agent.disabled_toolsets` | `[]` | Applied **after** per-platform config, so it is a floor |
+
+Main-agent provider routing does **not** propagate to auxiliary tasks.
+
+## Context and memory
+
+| Key | Default | Notes |
+|---|---|---|
+| `context_file_max_chars` | 20000 | Injection only; `read_file` is unaffected |
+| `compression.enabled` | `true` | |
+| `compression.threshold` | `0.50` | Fraction of the context limit |
+| `compression.protect_first_n` / `protect_last_n` | 3 / 20 | Below their sum, `/compress` is a no-op |
+| `memory.nudge_interval` | 10 | Tool-loop iterations. `0` disables |
+| `memory.provider` | unset | One external provider at a time, alongside the built-in files |
+| `display.memory_notifications` | `on` | `off`, `on`, `verbose` |
+
+## Skills and the loop
+
+| Key | Default | Notes |
+|---|---|---|
+| `skills.creation_nudge_interval` | 10 | Iterations, not turns. `0` disables |
+| `skills.write_approval` | `false` | Stages writes to `pending/skills/` for review |
+| `skills.inline_shell` | `false` | **Executes on the host with no approval prompt** |
+| `skills.template_vars` | `true` | `${HERMES_SKILL_DIR}`, `${HERMES_SESSION_ID}` |
+| `skills.external_dirs` | `[]` | Local skills shadow external ones of the same name |
+| `skills.guard_agent_created` | `false` | Content scanner for agent-authored skills |
+| `curator.enabled` | `true` | |
+| `curator.interval_hours` / `min_idle_hours` | 168 / 2 | **Both** must be satisfied |
+| `curator.stale_after_days` / `archive_after_days` | 30 / 90 | |
+| `curator.consolidate` | `false` | The LLM pass. Off by default |
+| `curator.prune_builtins` | `true` | Bundled skills are only ever archived |
+
+## Tools, terminal and containment
+
+| Key | Default | Notes |
+|---|---|---|
+| `terminal.backend` | `local` | Four of six backends skip the dangerous-command check |
+| `terminal.cwd` | `.` | The highest-value setting here |
+| `terminal.timeout` | 180 | Background long jobs rather than raising it |
+| `terminal.shell_init_files` | `[]` | Fixes `node: command not found` under nvm or asdf |
+| `terminal.docker_forward_env` | `[]` | Empty is the right default |
+| `terminal.docker_network` | `true` | `false` is a real air-gap; toggling rebuilds |
+| `terminal.container_persistent` | `false` | `true` makes the sandbox a machine |
+| `tool_output.max_bytes` | 50000 | Truncates 40% head / 60% tail |
+| `file_read_max_chars` | 100000 | Over-limit reads are rejected, not shortened |
+| `approvals.mode` | `smart` | A model triages. `manual` to be asked |
+| `approvals.timeout` | 300 | **Fails closed** |
+| `approvals.cron_mode` | — | Set `deny` for unattended work |
+| `approvals.deny` | `[]` | Globs, applied before mode and YOLO. Host-reaching backends only |
+| `checkpoints.enabled` | `false` | Opt-in. The undo nobody has turned on |
+| `security.allow_lazy_installs` | `true` | Dependency installs on demand |
+
+## Gateway, cron and webhooks
+
+| Key / variable | File | Notes |
+|---|---|---|
+| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ALLOWED_USERS` | `.env` | Per-platform; checked before the global list |
+| `GATEWAY_ALLOWED_USERS` | `.env` | Global allowlist |
+| `GATEWAY_ALLOW_ALL_USERS` | `.env` | **Never** |
+| `unauthorized_dm_behavior` | `config.yaml` | `pair` or `ignore` |
+| `cron.dispatch_interval_seconds` | `config.yaml` | 60. Your minimum resolution |
+| `cron.mirror_delivery` | `config.yaml` | Makes job output continuable |
+| `WEBHOOK_ENABLED`, `WEBHOOK_PORT`, `WEBHOOK_SECRET` | `.env` | Every route needs a secret or startup fails |
+| `kanban.dispatch_interval_seconds` | `config.yaml` | 60 |
+| `kanban.auto_decompose` | `config.yaml` | `true`, capped per tick |
+| `kanban.failure_limit` | `config.yaml` | 2 consecutive failures auto-blocks |
+
+## Display
+
+| Key | Default | Notes |
+|---|---|---|
+| `display.busy_input_mode` | `interrupt` | `queue` or `steer`. `steer` is the one people want |
+| `display.tool_preview_length` | 80 | `0` for no limit |
+| `agent.personalities` | — | Your own, alongside the built-ins |

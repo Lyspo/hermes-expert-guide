@@ -1,0 +1,77 @@
+---
+title: 'Map of ~/.hermes/'
+description: >-
+  Every path the corpus names, what writes it, whether deleting it is safe, and
+  what you lose if you do.
+order: 3
+hermesVersion: v0.19.0
+updated: '2026-07-25'
+---
+
+One directory holds everything Hermes knows about you. `HERMES_HOME` relocates it, which
+is the mechanism behind profiles.
+
+## Configuration and credentials
+
+| Path | Written by | Safe to delete? | What you lose |
+|---|---|---|---|
+| `config.yaml` | You, `hermes config set`, the wizard | Yes | Every setting; defaults return |
+| `.env` | You, `hermes config set` for secrets | **No** | Every API key and platform token |
+| `auth.json` | Portal OAuth | **No** | Your Portal session. On Portal this is the only credential on disk |
+| `mcp-tokens/` | MCP OAuth flows | Yes | Re-authentication per server |
+| `pairing/` | The pairing flow | Yes | Approved messaging users, stored `0600` |
+| `SOUL.md` | You; auto-created once, never overwritten | Yes | Agent identity; a built-in default takes over |
+
+## What it knows
+
+| Path | Written by | Safe to delete? | What you lose |
+|---|---|---|---|
+| `memories/MEMORY.md` | The `memory` tool, the review fork | Yes | What the agent learned. Capped at 2,200 chars |
+| `memories/USER.md` | The same | Yes | What it concluded about you. Capped at 1,375 chars |
+| `state.db` | Every session | Yes, with care | Every conversation, and session search with it |
+
+## Skills
+
+| Path | Written by | Safe to delete? | What you lose |
+|---|---|---|---|
+| `skills/<namespace>/<skill>/` | You, `/learn`, the review fork | Yes | That skill. Files are mode `0600` |
+| `skills/.usage.json` | Skill loads, views, patches | Yes | Telemetry the curator reads to decide state |
+| `skills/.bundled_manifest` | `hermes update` | Yes | Bundled-skill sync state |
+| `skills/.hub/lock.json` | Hub installs | Yes | Which skills came from the hub |
+| `skills/.archive/` | The curator | Yes | Archived skills, recoverable until deleted |
+| `skills/.curator_backups/` | The curator, before every real pass | Yes | The ability to roll a curator pass back |
+| `skill-bundles/` | You | Yes | Bundle slash commands |
+| `pending/skills/` | Write-approval staging | Yes | Skill writes awaiting your approval |
+
+## Automation
+
+| Path | Written by | Safe to delete? | What you lose |
+|---|---|---|---|
+| `cron/jobs.json` | The `cronjob` tool, `hermes cron` | Yes | Every scheduled job. Do not edit by hand — `patch` is blocked |
+| `cron/output/<job>/<ts>.md` | Each run | Yes | Past job output |
+| `cron/executions.db` | Each run | Yes | The execution ledger |
+| `cron/.tick.lock` | The scheduler | Yes | Nothing; recreated |
+| `scripts/` | You | Yes | No-agent cron scripts and hook scripts |
+| `kanban.db` | The board | Yes, with care | Every task, run and event — the strongest audit trail here |
+| `kanban/boards/<slug>/` | Non-default boards | Yes, with care | That board entirely |
+| `webhook_subscriptions.json` | `hermes webhook subscribe` | Yes | Dynamic routes; static ones live in `config.yaml` |
+| `shell-hooks-allowlist.json` | First use of each hook | Yes | Hook consent; you will be asked again |
+
+## Everything else
+
+| Path | Written by | Safe to delete? | What you lose |
+|---|---|---|---|
+| `hermes-agent/` | The installer | **No** | The application itself |
+| `logs/` | The gateway, curator, dashboard auth | Yes | Diagnostics and the auth audit trail |
+| `logs/curator/<ts>/` | Each curator pass | Yes | `run.json` and `REPORT.md`, including the rename map |
+| `cache/delegation/live/<id>/` | `delegate_task` | Yes | Per-subagent live transcripts |
+| `cache/remote-syncs/<session>/` | Remote backends | Yes | Files synced back from a sandbox |
+| `checkpoints/store/` | Checkpoints, if enabled | Yes | Every rollback point. Never touches your project's `.git` |
+| `proxy/` | `hermes egress` | Yes | Proxy state, the local CA, and `iron-proxy.log` |
+| `browser_auth/camofox/` | Browser automation | Yes | Persistent browser sessions |
+| `sandboxes/singularity/` | The Singularity backend | Yes | Cached container images |
+
+## The two that are not the same
+
+`hermes backup` writes **everything, credentials included**. `hermes profile export` writes
+a **shareable** distribution. Check which one you ran before pushing it anywhere.

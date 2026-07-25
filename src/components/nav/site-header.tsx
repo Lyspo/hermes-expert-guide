@@ -33,6 +33,12 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-5">
           <Link
+            href="/cheatsheets/"
+            className="hidden font-mono text-[0.65rem] tracking-[0.08em] text-ice-dim uppercase no-underline transition-colors duration-200 hover:text-ice md:inline"
+          >
+            Sheets
+          </Link>
+          <Link
             href="/glossary/"
             className="hidden font-mono text-[0.65rem] tracking-[0.08em] text-ice-dim uppercase no-underline transition-colors duration-200 hover:text-ice sm:inline"
           >

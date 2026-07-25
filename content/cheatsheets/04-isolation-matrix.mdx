@@ -1,0 +1,67 @@
+---
+title: 'Isolation matrix'
+description: >-
+  Six execution backends against what each isolates, what it checks, and what
+  secrets it holds — including the four that skip the dangerous-command check.
+order: 4
+hermesVersion: v0.19.0
+updated: '2026-07-25'
+---
+
+This is a cheatsheet rather than a paragraph because of one column.
+
+## The matrix
+
+| Backend | Isolation | Dangerous-command check | Your deny rules | Secrets present by default | For |
+|---|---|---|---|---|---|
+| `local` | None | **Yes** | Enforced | All of them | Development, trusted users |
+| `ssh` | A remote machine | **Yes** | Enforced | Those you forward | A separate server |
+| `docker` | Container | **Skipped** | Only with a host mount | **None** — `docker_forward_env` is empty | Production gateway |
+| `singularity` | Container | **Skipped** | Not enforced | None | HPC environments |
+| `modal` | Cloud sandbox | **Skipped** | Not enforced | Credential files are mounted | Scalable cloud isolation |
+| `daytona` | Cloud sandbox | **Skipped** | Not enforced | Those you forward | Persistent cloud workspaces |
+
+**Four of six skip the check.** Isolation and approval are alternatives here, not layers,
+so choosing a container backend for safety silently trades one control for the other.
+
+`ssh` is the only backend that adds isolation *without* removing a control.
+
+## The trap
+
+`docker` plus `docker_mount_cwd_to_workspace` is a container that reaches your real files
+with no dangerous-command check in front of it — the strictest-looking configuration in the
+table producing the weakest guarantee. Add `docker_run_as_host_user` and it also runs as you.
+
+## What Docker actually applies
+
+Every container gets these, and they are a strong default:
+
+```text
+--cap-drop ALL
+--cap-add DAC_OVERRIDE,CHOWN,FOWNER
+--security-opt no-new-privileges
+--pids-limit 256
+--tmpfs /tmp:rw,nosuid,size=512m
+--tmpfs /var/tmp:rw,noexec,nosuid,size=256m
+```
+
+Plus a read-only root filesystem and full namespace isolation.
+
+## Behaviours worth knowing before you rely on it
+
+**One container, not one per call.** A single long-lived container is shared across the
+whole process, so package installs persist — and **parallel subagents share it**.
+
+**`container_persistent: true`** keeps changes across restarts, which turns the sandbox
+into something closer to a machine.
+
+**`docker_network: false`** is a real air-gap. Toggling it rebuilds the container.
+
+**Remote backends sync files back** to the host on session close, `/new`, `/reset`,
+gateway message timeout, and delegation completion.
+
+## Egress, which is a different axis
+
+The egress proxy removes real API keys from a sandbox by substituting an opaque token. It
+is **Docker only** — Modal, Daytona, SSH and Singularity receive no proxy configuration, so
+a sandbox on those backends holds the real keys.

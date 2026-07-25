@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { guides, lessons, modules } from '@/lib/content'
+import { cheatsheets, guides, lessons, modules } from '@/lib/content'
 import { site } from '@/lib/site'
 
 /**
@@ -22,6 +22,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: url('/'), changeFrequency: 'monthly', priority: 1 },
     { url: url('/begin/'), changeFrequency: 'yearly', priority: 0.5 },
     { url: url('/glossary/'), changeFrequency: 'monthly', priority: 0.6 },
+    { url: url('/cheatsheets/'), changeFrequency: 'monthly', priority: 0.6 },
     { url: url('/about/'), changeFrequency: 'yearly', priority: 0.3 },
   ]
 
@@ -46,5 +47,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }))
 
-  return [...staticPages, ...guidePages, ...modulePages, ...lessonPages]
+  const sheetPages: MetadataRoute.Sitemap = cheatsheets.map((sheet) => ({
+    url: url(sheet.url),
+    lastModified: new Date(sheet.updated),
+    changeFrequency: 'monthly',
+    priority: 0.6,
+  }))
+
+  return [...staticPages, ...guidePages, ...modulePages, ...lessonPages, ...sheetPages]
 }

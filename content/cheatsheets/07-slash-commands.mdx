@@ -1,0 +1,89 @@
+---
+title: 'Slash commands in session'
+description: >-
+  The set worth knowing, and which surfaces each works on — several are CLI-only
+  in ways the documentation mentions only in passing.
+order: 7
+hermesVersion: v0.19.0
+updated: '2026-07-25'
+---
+
+Every installed skill also becomes a slash command, and up to five skill tokens stack at
+the head of one message.
+
+## Session
+
+| Command | Surfaces | What it does |
+|---|---|---|
+| `/help` | all | The full list, on your install |
+| `/model` | all | Switch model mid-session |
+| `/tools` | all | What is enabled right now |
+| `/status` | all | Session state |
+| `/title <name>` | all | Name the session so you can resume by title |
+| `/sessions` | CLI, TUI | Browse past sessions |
+| `/save` | CLI, TUI | Preserve the conversation |
+| `/compress` | all | A guaranteed no-op below the protected message count |
+| `/stop` | all | Halt current work |
+| `/new`, `/reset` | all | Fresh session. Discards active subagents |
+
+## Steering
+
+| Command | Surfaces | What it does |
+|---|---|---|
+| `/busy steer` | CLI, TUI | Inject into the running turn after the next tool call |
+| `/busy queue` | CLI, TUI | Deliver at the start of the next turn |
+| `/busy interrupt` | CLI, TUI | The default — redirects, restarting generation |
+| `/busy status` | CLI, TUI | Which mode you are in |
+| `/background <prompt>` | CLI, TUI | A separate agent session, isolated from this history |
+| `/reasoning <level>` | all | Eight levels of effort |
+| `/personality <name>` | all | A session overlay. `SOUL.md` is untouched |
+
+## Skills and memory
+
+| Command | Surfaces | What it does |
+|---|---|---|
+| `/learn <source>` | all | Author a skill from a directory, URL, conversation or text |
+| `/skills browse` | all | The hub |
+| `/skills pending`, `/skills diff <id>` | CLI, TUI | Review staged writes |
+| `/skills approve <id>`, `/skills reject <id>` | CLI, TUI | Apply or drop one, or `all` |
+| `/skills approval on` / `off` | CLI, TUI | Toggle the gate and persist it |
+| `/curator` | all | The maintenance pass, in session |
+| `/suggestions` | all | `accept`, `dismiss`, `catalog` — where blueprints land |
+
+## Automation and agents
+
+| Command | Surfaces | What it does |
+|---|---|---|
+| `/cron add …`, `/cron list` | all | Scheduled work |
+| `/kanban list`, `/kanban create`, `/kanban unblock` | all | The board, with completion notices back to the chat |
+| `/agents` | CLI, TUI | Live subagent tree with cost rollups and kill controls |
+| `/moa` | all | One-shot Mixture of Agents. Deliberately not a model switch |
+
+## Surface-specific, and easy to miss
+
+| Command | Surfaces | Note |
+|---|---|---|
+| `/browser connect` | **CLI only** | Attaches to your running Chrome. Not dispatched through gateways |
+| `/voice on`, `/voice tts`, `/voice off` | CLI, TUI, messaging | On Discord, also `/voice join` and `/voice leave` |
+| `/yolo` | CLI, TUI | Toggles per invocation. Red banner while active |
+| `/verbose` | CLI, TUI | Debug output |
+| `/skin` | TUI | Appearance |
+| `/whoami` | messaging | The fastest way for someone to tell you their user id |
+| `/sethome` | messaging | Makes this chat the default delivery target |
+| `/reload-mcp` | CLI, TUI | Re-read MCP servers without restarting |
+| `/rollback` | CLI, TUI | Restore a checkpoint. Also `diff` and single-file restore |
+
+## Your own
+
+```yaml
+quick_commands:
+  status:
+    type: exec
+    command: systemctl status hermes-agent
+  restart:
+    type: alias
+    target: /gateway restart
+```
+
+`exec` runs a shell command directly — no model, no tokens, no agent turn. That is exactly
+why it is the right shape for an operational check, and why it cannot be argued with.

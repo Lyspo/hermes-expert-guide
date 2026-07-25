@@ -1,0 +1,61 @@
+---
+title: 'When it does not work'
+description: >-
+  An ordered diagnostic path, then the symptoms worth recognising with their
+  documented cause. Ordered, not alphabetical — that is the point.
+order: 9
+hermesVersion: v0.19.0
+updated: '2026-07-25'
+---
+
+## Run these in this order
+
+The order encodes a diagnosis: environment, then credentials, then configuration, then
+persistence, then the messaging layer. Most problems resolve in the first two.
+
+```bash
+hermes doctor            # 1. environment and dependencies
+hermes model             # 2. provider and model
+hermes config check      # 3. configuration state
+hermes sessions list     # 4. is anything being recorded?
+hermes gateway status    # 5. only if you have a gateway
+```
+
+Then `hermes logs` for detail, and `hermes dump` last — it can print credential material,
+so use `hermes debug share` if you are sending it to anyone.
+
+## Symptoms
+
+| Symptom | Cause |
+|---|---|
+| `hermes: command not found` | Shell not reloaded, or `~/.local/bin` not on `PATH`. Common for service accounts |
+| Install fails on Python | 3.11 or newer required; a pre-existing environment may shadow the bundled one |
+| Rejected at startup for context size | The model is under the hard 64,000-token floor |
+| Agent loses the thread on multi-step work | Context window too small. `delegate_task` fails silently under 64K |
+| `node: command not found` for a Node you have | Version-manager shims. Add them to `terminal.shell_init_files` |
+| The bot never replies | The gateway is not running. `hermes setup` configures it and does not start it |
+| The bot ignores you specifically | Default deny. Your user id is not in an allowlist |
+| The bot ignores most messages in a group | Telegram privacy mode — and you must remove and re-add the bot after changing it |
+| Cron jobs never fire | No gateway. Nothing is ticking the scheduler, and nothing errors |
+| A cron job fails after a model change | Unpinned jobs snapshot the default model at creation and fail closed |
+| A dangerous command ran with no prompt | `approvals.mode: smart` is the default; a model triaged it. Set `manual` |
+| Approvals never appear on a container backend | Four of six backends skip the check entirely |
+| A setting has no effect | `config.yaml` beats `.env`. Check whether it is set in both |
+| A `${VAR}` reference is sent literally | Undefined variables stay literal. Bare `$VAR` is never expanded |
+| A new skill does not appear this session | The skill index is assembled once, at session start |
+| A memory write is not visible to the agent | Memory is a frozen snapshot. It lands next session |
+| A bundled skill stopped getting updates | You edited it. Modified bundled skills are permanently skipped |
+| An MCP tool vanished | Check `enabled`, the include/exclude filter, and whether the server's capability probe failed |
+| Search returns nothing | The index is built from the export; it does not exist in development |
+| A hook silently does not run | Non-TTY contexts need `--accept-hooks`, `HERMES_ACCEPT_HOOKS=1`, or `hooks_auto_accept` |
+| A hook runs an old script | Consent is keyed on the command string, so edits are trusted silently. `hermes hooks doctor` |
+| A subagent returned nothing after a restart | Running children are marked `unknown` and are not resumed |
+| A Kanban task will not start | Check dependencies, the block-loop breaker, and `respawn_guarded` reasons |
+
+## Two that are not failures
+
+**A dangerous command executing with no prompt** on a default install is documented
+smart-mode behaviour, not a defect.
+
+**`/compress` doing nothing** below roughly 23 messages is a guaranteed no-op, not a
+broken command.
