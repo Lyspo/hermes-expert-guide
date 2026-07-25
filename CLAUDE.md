@@ -47,3 +47,91 @@ Performance budgets are Lighthouse CI assertions, not aspirations: lesson pages 
 ## Tone and legal
 
 This is an **unofficial community project**, not affiliated with or endorsed by Nous Research. That line appears in the footer of every page, the README, the about page, and the meta description. "Hermes Agent" is used nominatively only. The visual identity draws on Greek antiquity as geometry — it must never evoke Hermès, the luxury brand.
+
+---
+
+# State of play
+
+Updated 2026-07-25. This section exists so a session on a different machine picks up
+without re-deriving anything — the assistant's own memory is machine-local and does not
+travel with the repo.
+
+## Where things stand
+
+Live at [hermes-expert-guide.vercel.app](https://hermes-expert-guide.vercel.app). CI green.
+
+**Done.** Research corpus (`research/01`–`09` plus `curriculum-map.md`). Design direction
+locked — "Substrate", see `decisions.md` 009 and `design.md`. Next 16 scaffold, static
+export, content pipeline. Full 51-lesson skeleton generated from the map by
+`scripts/scaffold-curriculum.mjs`. Personalization: placement flow at `/begin`, track
+switcher, progress marks. Simulation engine with a pure timeline core and one flagship
+replay.
+
+**Written lessons: 5 of 51.** All of module 1, plus `03/01`.
+
+**Not built.** System visualizations (P7, next). Remaining 46 lessons. Search, OG images,
+JSON-LD, sitemap. The landing page — currently a labelled placeholder. Glossary and
+cheatsheets. Colophon.
+
+**Verification is thinner than it looks.** `pnpm verify` runs typecheck, lint, unit tests,
+the static export and a link check. There is **no** Playwright, no axe sweep and no
+Lighthouse CI yet, so the performance budgets and accessibility gates in `design.md` are
+intentions rather than gates. Do not describe them as enforced.
+
+## Facts that override the documentation
+
+`research/08` (installed binary) and `research/09` (captured session) are primary sources
+and outrank the docs wherever they disagree. The docs are wrong on seven points that are
+easy to reintroduce by accident:
+
+- The status bar has **no cost field**. Docs show `$0.06` and promise `n/a` for unpriced
+  models; the field is absent entirely. An undocumented `✓ Ns` badge is always present
+  after a turn.
+- The skill-creation notice is `💾 Self-improvement review: Skill '<name>' created.` — not
+  the docs' `💾 Skill 'foo' patched`.
+- The approval prompt is a **numbered arrow-key menu** (`1. Allow once` / `2. Allow for
+  this session` / `3. Add to permanent allowlist` / `4. Deny`), not `[o]nce [s]ession
+  [a]lways [d]eny`.
+- That prompt has a **300-second countdown that fails closed** (`approvals.timeout`),
+  documented nowhere.
+- Under the default `approvals.mode: smart` an LLM risk-assesses and may auto-approve a
+  recursive delete on a host path **with no prompt at all**. The docs' "dangerous-pattern
+  categories triggering approval" list describes what gets *assessed*, not what gets
+  *asked about*.
+- The banner is **Braille block art** in a bronze-and-gold frame; spinner frames are a
+  12-face × 16-verb matrix (the product ships the typo `contemlating`); the tool feed is
+  two-phase with padded human verbs, no backticks, no parentheses.
+- Agent-authored skills live at `~/.hermes/skills/<namespace>/<skill>/` — namespaced — and
+  their frontmatter has exactly `name` and `description`, **no `version` key**.
+
+And two behaviours worth not rediscovering: `/compress` is a guaranteed no-op below
+`protect_first_n + protect_last_n` (23 by default) messages, and there is no `hermes
+daemon` subcommand — third-party guides publishing `hermes daemon start` are wrong against
+the software.
+
+Never repeat the popular-blog claims either: memory is **not** three-layer, and multi-agent
+orchestration did not arrive in v0.6.0.
+
+## Recurring traps in this codebase
+
+- **Every animation needs a visible resting state.** Three separate bugs came from
+  animating opacity from zero or gating content on an animation completing; a throttled
+  clock then leaves the page blank. Transform-only, enter-only, no `AnimatePresence`
+  `mode="wait"` on a flow.
+- **Track adaptivity is membership, not exclusion.** `tk-block` plus `tk-<track>` for each
+  track a block *belongs to*; CSS hides blocks not claiming the current track. It was once
+  inverted and silently broke the whole feature — `for-track.test.tsx` guards it.
+- **Never size a canvas from its own bounding box.** That produced a 3-gigapixel buffer.
+  Size from the viewport.
+- Read stored state with `useSyncExternalStore`, never an effect plus `setState`.
+
+## Picking up
+
+Next is **P7, system visualizations** — `VizStage`/`VizNode`/`VizEdge` primitives plus
+three plates: memory, skill lifecycle, orchestration. Then the remaining lessons, module by
+module, against `research/curriculum-map.md`, which carries per-lesson sources and four
+amendment sections at the end recording what the captures changed.
+
+Still uncaptured, so still reconstructed and labelled as such: a skill **revision** diff
+(needs the loop to fire twice on related work), and the `🗜️` badge in situ (needs a
+conversation longer than 23 messages).
