@@ -113,6 +113,23 @@ const lessons = defineCollection({
     return {
       ...doc,
       mdx,
+      /**
+       * The lesson's own section headings, in order.
+       *
+       * Read from the source rather than scraped from the DOM after hydration, so
+       * the margin's section index is server-rendered and works with no JavaScript
+       * — it is a second route through the document, not a decoration on top of it.
+       * The slugs match `rehype-slug`'s output for the same text, which is what
+       * makes the anchors line up.
+       */
+      headings: [...doc.content.matchAll(/^##\s+(.+?)\s*$/gm)].map(([, text]) => ({
+        text: text!,
+        slug: text!
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '')
+          .trim()
+          .replace(/\s+/g, '-'),
+      })),
       id: path,
       slug: lessonSlug,
       guideSlug,

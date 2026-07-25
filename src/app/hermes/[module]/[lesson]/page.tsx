@@ -8,6 +8,9 @@ import { Page } from '@/components/ui/page'
 import { getModule } from '@/lib/content'
 import { jsonLd, lessonSchema } from '@/lib/schema'
 import { LessonProgress } from '@/components/personalization/lesson-progress'
+import { SectionIndex } from '@/components/lesson/section-index'
+import { curriculumGraph } from '@/lib/curriculum-graph'
+import { ancestorsOf, descendantsOf } from '@/lib/graph'
 
 // This route tree serves one guide. A second guide gets its own directory, which
 // keeps its URLs short and its static params independent. Every lesson URL is
@@ -53,6 +56,15 @@ export default async function LessonPage({ params }: { params: Params }) {
   const prerequisites = prerequisitesOf(lesson)
   const parentModule = getModule(GUIDE, moduleSlug)
 
+  // Where this lesson sits in the real dependency graph, not in a flat count.
+  const at = curriculumGraph.nodes.findIndex((node) => node.id === lesson.id)
+  const place = {
+    index: at + 1,
+    total: curriculumGraph.nodes.length,
+    behind: at === -1 ? 0 : ancestorsOf(curriculumGraph, at).size,
+    ahead: at === -1 ? 0 : descendantsOf(curriculumGraph, at).size,
+  }
+
   return (
     <>
       <script
@@ -61,16 +73,57 @@ export default async function LessonPage({ params }: { params: Params }) {
       />
     <Page
       aside={
-        /* Provenance lives in the margin, where a corrector would have written
-           it: what this was checked against, and when. */
-        <div className="lg:sticky lg:top-[calc(var(--step)*3)]">
-          <dl className="font-mono text-ice-dim space-y-[calc(var(--step)*0.5)] text-[0.7rem]">
+        /*
+         * The margin, doing work.
+         *
+         * It used to hold four short facts and then several hundred pixels of
+         * nothing, which is how a reading layout ends up looking like a document
+         * with a parking space beside it. It now carries the three things a reader
+         * mid-lesson actually wants and cannot get from the prose: where they are
+         * inside this lesson, where this lesson sits in the course, and what it was
+         * checked against. Sticky, so all of that stays with them.
+         */
+        <div className="lg:sticky lg:top-[calc(var(--step)*3)] lg:max-h-[calc(100dvh-var(--step)*5)] lg:overflow-y-auto">
+          <SectionIndex headings={lesson.headings} />
+
+          <div className="mt-[var(--step)] border-t border-ice-faint pt-[calc(var(--step)*0.6)]">
+            <LessonProgress id={lesson.id} />
+          </div>
+
+          {/*
+            Position in the course, from the prerequisite graph rather than from a
+            counter. "Eight lessons come before this" is what it costs to be here;
+            "twenty-two build on it" is what it is worth having read — a claim a
+            table of contents cannot make and this curriculum can, because the
+            dependencies are real data.
+          */}
+          <dl className="mt-[var(--step)] space-y-[calc(var(--step)*0.45)] border-t border-ice-faint pt-[calc(var(--step)*0.6)] font-mono text-[0.7rem] text-ice-dim">
+            <div>
+              <dt>Position</dt>
+              <dd className="text-ice">
+                {place.index} of {place.total} · module {lesson.moduleNumber}
+              </dd>
+            </div>
+            {place.behind > 0 && (
+              <div>
+                <dt>Comes after</dt>
+                <dd className="text-ice">
+                  {place.behind} {place.behind === 1 ? 'lesson' : 'lessons'}
+                </dd>
+              </div>
+            )}
+            {place.ahead > 0 && (
+              <div>
+                <dt>Built on by</dt>
+                <dd className="text-ice">
+                  {place.ahead} later {place.ahead === 1 ? 'lesson' : 'lessons'}
+                </dd>
+              </div>
+            )}
             <div>
               <dt>Verified against</dt>
-              <dd className="mt-[calc(var(--step)*0.25)]">
-                <span className="inline-block font-mono text-ice">
-                  {lesson.guide.subject} {lesson.hermesVersion}
-                </span>
+              <dd className="text-ice">
+                {lesson.guide.subject} {lesson.hermesVersion}
               </dd>
             </div>
             <div>
@@ -79,15 +132,7 @@ export default async function LessonPage({ params }: { params: Params }) {
                 <time dateTime={lesson.updated}>{lesson.updated}</time>
               </dd>
             </div>
-            <div>
-              <dt>Reading</dt>
-              <dd>{lesson.duration} min</dd>
-            </div>
           </dl>
-
-          <div className="mt-[var(--step)] border-t border-ice-faint pt-[calc(var(--step)*0.5)]">
-            <LessonProgress id={lesson.id} />
-          </div>
 
           {prerequisites.length > 0 && (
             <div className="border-ice-faint mt-[var(--step)] border-t pt-[calc(var(--step)*0.6)]">
@@ -136,12 +181,36 @@ export default async function LessonPage({ params }: { params: Params }) {
             {lesson.description}
           </p>
 
-          {/* On narrow screens the margin has nowhere to go, so provenance falls
-              into the flow rather than disappearing. */}
-          <p className="font-mono text-ice-dim mt-[var(--step)] text-[0.7rem] lg:hidden">
-            Verified against {lesson.guide.subject} {lesson.hermesVersion} ·{' '}
-            <time dateTime={lesson.updated}>{lesson.updated}</time> · {lesson.duration} min
-          </p>
+          {/* Below the margin's breakpoint it has nowhere to go, so the parts of it
+              that are genuinely load-bearing fall into the flow rather than
+              vanishing: what this was checked against, where it sits in the course,
+              and the sections it contains. A phone reader is a meaningful minority
+              of this audience, not an afterthought. */}
+          <div className="mt-[var(--step)] border-t border-ice-faint pt-[calc(var(--step)*0.6)] lg:hidden">
+            <p className="font-mono text-ice-dim text-[0.7rem]">
+              {place.index} of {place.total} · {lesson.duration} min · verified against{' '}
+              {lesson.guide.subject} {lesson.hermesVersion} ·{' '}
+              <time dateTime={lesson.updated}>{lesson.updated}</time>
+              {place.ahead > 0 && ` · ${place.ahead} later lessons build on it`}
+            </p>
+            <details className="mt-[calc(var(--step)*0.5)]">
+              <summary className="cursor-pointer font-mono text-[0.7rem] text-ice-dim">
+                In this lesson ({lesson.headings.length})
+              </summary>
+              <ol className="mt-[calc(var(--step)*0.35)] space-y-[calc(var(--step)*0.2)]">
+                {lesson.headings.map(({ text, slug }, index) => (
+                  <li key={slug} className="text-[0.875rem]">
+                    <span className="font-mono text-[0.65rem] text-ice-dim">
+                      {String(index + 1).padStart(2, '0')}{' '}
+                    </span>
+                    <a href={`#${slug}`} className="text-ice-dim">
+                      {text}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </details>
+          </div>
         </header>
 
         <div className="mt-[calc(var(--step)*0.75)] lg:hidden">

@@ -209,6 +209,34 @@ export function ancestorsOf(graph: CurriculumGraph, start: number): Set<number> 
   return found
 }
 
+/**
+ * Everything that depends on a lesson, transitively.
+ *
+ * The mirror of `ancestorsOf`, and the more surprising number of the two. "Eight
+ * lessons come before this" tells a reader what it costs to get here; "twenty-two
+ * later lessons build on this" tells them what it is worth having read, which is
+ * the thing a curriculum can say and a table of contents cannot.
+ */
+export function descendantsOf(graph: CurriculumGraph, start: number): Set<number> {
+  const children = new Map<number, number[]>()
+  for (const [from, to] of graph.edges) {
+    const existing = children.get(from)
+    if (existing) existing.push(to)
+    else children.set(from, [to])
+  }
+
+  const found = new Set<number>()
+  const queue = [start]
+  while (queue.length > 0) {
+    for (const child of children.get(queue.shift()!) ?? []) {
+      if (found.has(child)) continue
+      found.add(child)
+      queue.push(child)
+    }
+  }
+  return found
+}
+
 export type Readiness = 'known' | 'ready' | 'far'
 
 /**

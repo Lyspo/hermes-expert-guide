@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   ancestorsOf,
+  descendantsOf,
   jitter,
   layout,
   prerequisiteDepths,
@@ -140,6 +141,37 @@ describe('ancestors', () => {
     const cyclic = layout([lesson('x', 1, 1, ['y']), lesson('y', 1, 2, ['x'])])
     expect(() => ancestorsOf(cyclic, 0)).not.toThrow()
     expect(ancestorsOf(cyclic, 0).size).toBe(2)
+  })
+})
+
+describe('descendants', () => {
+  const graph = layout(fixture)
+  const index = (id: string) => graph.nodes.findIndex((node) => node.id === id)
+  const ids = (start: string) =>
+    [...descendantsOf(graph, index(start))].map((at) => graph.nodes[at]!.id).sort()
+
+  it('is empty for a leaf', () => {
+    expect(ids('e')).toEqual([])
+  })
+
+  it('reaches everything downstream, not just direct children', () => {
+    // `a` is the root of the chain; `d` is in another module and depends on nothing.
+    expect(ids('a')).toEqual(['b', 'c', 'e'])
+  })
+
+  it('mirrors ancestors', () => {
+    // If x is an ancestor of y, y is a descendant of x. Cheap property, and it is
+    // the one that would break first if either walk followed the wrong edge end.
+    for (const node of graph.nodes) {
+      for (const up of ancestorsOf(graph, index(node.id))) {
+        expect(descendantsOf(graph, up)).toContain(index(node.id))
+      }
+    }
+  })
+
+  it('terminates on a cycle', () => {
+    const cyclic = layout([lesson('x', 1, 1, ['y']), lesson('y', 1, 2, ['x'])])
+    expect(() => descendantsOf(cyclic, 0)).not.toThrow()
   })
 })
 

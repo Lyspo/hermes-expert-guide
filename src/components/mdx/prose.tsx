@@ -8,9 +8,20 @@ import type { ReactNode } from 'react'
  * is meant to be. More space above a heading than below it, everywhere.
  */
 export const prose = {
+  /**
+   * A section boundary that reads as one.
+   *
+   * These used to be body-coloured text a few points larger than the paragraphs
+   * around them, so a lesson arrived as an undifferentiated column and a reader
+   * could not see its shape while scrolling. A section now opens with a hairline
+   * across the measure — the same rule the rest of the system uses, no new device —
+   * and the heading sits tight under it with real space above. `scroll-mt` keeps
+   * the rule visible when the margin index jumps here rather than parking the
+   * heading against the top edge.
+   */
   h2: ({ children, ...rest }: { children?: ReactNode; id?: string }) => (
     <h2
-      className="font-display mt-[calc(var(--step)*2.2)] mb-[calc(var(--step)*0.7)] text-[1.75rem] leading-[1.15] tracking-[-0.025em]"
+      className="font-display mt-[calc(var(--step)*2.6)] mb-[calc(var(--step)*0.7)] scroll-mt-[calc(var(--step)*2)] border-t border-ice-faint pt-[calc(var(--step)*0.8)] text-[1.875rem] leading-[1.12] tracking-[-0.028em]"
       {...rest}
     >
       {children}
