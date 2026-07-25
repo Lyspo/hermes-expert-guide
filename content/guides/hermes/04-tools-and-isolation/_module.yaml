@@ -1,0 +1,10 @@
+title: 'Tools and isolation'
+order: 4
+arc: 'capability'
+summary: >-
+  What the agent can do and where it does it. Toolsets, the terminal, the six
+  execution backends, and the approval flow — including the one asymmetry in the
+  security model that matters more than the rest.
+outcome: >-
+  enable exactly the toolsets a task needs, pick a backend for a given trust
+  level, and explain why the dangerous-command check is skipped in containers.

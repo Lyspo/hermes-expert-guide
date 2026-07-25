@@ -4,14 +4,28 @@ import type { Track } from './site'
 export type Lesson = (typeof allLessons)[number]
 export type Relevance = 'core' | 'skim' | 'skip'
 
-const published = allLessons.filter((lesson) => !lesson.draft)
-
 function byOrder(a: Lesson, b: Lesson) {
   return a.moduleNumber - b.moduleNumber || a.order - b.order
 }
 
-/** Every published lesson in curriculum order. */
-export const lessons: Lesson[] = [...published].sort(byOrder)
+/**
+ * Every lesson the curriculum plans, written or not, in reading order.
+ *
+ * Used for structural views — the guide index, module pages, progress totals —
+ * because a reader deciding whether to start deserves to see the real shape
+ * rather than only the finished fraction of it.
+ */
+export const plannedLessons: Lesson[] = [...allLessons].sort(byOrder)
+
+/**
+ * Only lessons with real prose. These are what get pages, links, and search
+ * entries: an unwritten lesson is announced, never served as a thin page.
+ */
+export const lessons: Lesson[] = plannedLessons.filter((lesson) => !lesson.draft)
+
+export function isWritten(lesson: Lesson): boolean {
+  return !lesson.draft
+}
 
 export interface CurriculumModule {
   guideSlug: string
@@ -19,14 +33,18 @@ export interface CurriculumModule {
   number: number
   title: string
   summary: string
+  outcome?: string | undefined
   arc?: string | undefined
+  /** Every planned lesson, in order. Check `isWritten` before linking. */
   lessons: Lesson[]
+  written: number
+  minutes: number
   url: string
 }
 
 export const modules: CurriculumModule[] = (() => {
   const grouped = new Map<string, Lesson[]>()
-  for (const lesson of lessons) {
+  for (const lesson of plannedLessons) {
     // Keyed by guide too: two guides may legitimately both have "01-first-contact".
     const key = `${lesson.guideSlug}/${lesson.moduleSlug}`
     const existing = grouped.get(key)
@@ -34,9 +52,9 @@ export const modules: CurriculumModule[] = (() => {
     else grouped.set(key, [lesson])
   }
 
-  return [...grouped.entries()]
-    .map(([, moduleLessons]) => {
-      // Safe: a map entry only exists because at least one lesson created it.
+  return [...grouped.values()]
+    .map((moduleLessons) => {
+      // Safe: an entry only exists because at least one lesson created it.
       const first = moduleLessons[0]!
       return {
         guideSlug: first.guideSlug,
@@ -44,8 +62,11 @@ export const modules: CurriculumModule[] = (() => {
         number: first.moduleNumber,
         title: first.module.title,
         summary: first.module.summary,
+        outcome: first.module.outcome,
         arc: first.module.arc,
         lessons: moduleLessons,
+        written: moduleLessons.filter(isWritten).length,
+        minutes: moduleLessons.reduce((total, lesson) => total + lesson.duration, 0),
         url: `/${first.guideSlug}/${first.moduleSlug}/`,
       }
     })
@@ -56,6 +77,7 @@ export function getModule(guideSlug: string, moduleSlug: string) {
   return modules.find((mod) => mod.guideSlug === guideSlug && mod.slug === moduleSlug)
 }
 
+/** Written lessons only — this backs the routes, so drafts must not resolve. */
 export function getLesson(
   guideSlug: string,
   moduleSlug: string,
@@ -69,10 +91,9 @@ export function getLesson(
   )
 }
 
-/** The guides the platform currently publishes, in the order lessons declare. */
-export const guides = [...new Map(lessons.map((l) => [l.guideSlug, l.guide])).entries()].map(
-  ([slug, meta]) => ({ slug, ...meta, url: `/${slug}/` }),
-)
+export const guides = [
+  ...new Map(plannedLessons.map((lesson) => [lesson.guideSlug, lesson.guide])).entries(),
+].map(([slug, meta]) => ({ slug, ...meta, url: `/${slug}/` }))
 
 export function relevanceFor(lesson: Lesson, track: Track): Relevance {
   return lesson.tracks[track]
@@ -80,19 +101,32 @@ export function relevanceFor(lesson: Lesson, track: Track): Relevance {
 
 /**
  * The ordered path a track is asked to follow: its core and skim lessons, with
- * skips left out. Skipped lessons stay reachable — the track is a route through
- * the material, not a wall around it.
+ * skips left out. Skipped lessons stay reachable — a track is a route through the
+ * material, not a wall around it.
  */
 export function pathFor(track: Track): Lesson[] {
-  return lessons.filter((lesson) => lesson.tracks[track] !== 'skip')
+  return plannedLessons.filter((lesson) => lesson.tracks[track] !== 'skip')
 }
 
-/** Honest total reading time, in minutes, for a track's path. */
+/**
+ * Honest reading time for a track, in minutes.
+ *
+ * `core` counts in full and `skim` at 40%, because the condensed variant really is
+ * shorter rather than merely optional. The convention matters: without it a "total
+ * minutes" figure means nothing.
+ */
 export function durationFor(track: Track): number {
-  return pathFor(track).reduce((total, lesson) => total + lesson.duration, 0)
+  return Math.round(
+    plannedLessons.reduce((total, lesson) => {
+      const relevance = lesson.tracks[track]
+      if (relevance === 'core') return total + lesson.duration
+      if (relevance === 'skim') return total + lesson.duration * 0.4
+      return total
+    }, 0),
+  )
 }
 
-/** Previous and next in flat curriculum order — the reading order, not a track's. */
+/** Previous and next among written lessons — you cannot navigate to a stub. */
 export function neighbours(lesson: Lesson): {
   previous: Lesson | undefined
   next: Lesson | undefined
@@ -103,6 +137,6 @@ export function neighbours(lesson: Lesson): {
 
 export function prerequisitesOf(lesson: Lesson): Lesson[] {
   return lesson.prerequisites
-    .map((id) => lessons.find((candidate) => candidate.id === id))
+    .map((id) => plannedLessons.find((candidate) => candidate.id === id))
     .filter((candidate): candidate is Lesson => candidate !== undefined)
 }

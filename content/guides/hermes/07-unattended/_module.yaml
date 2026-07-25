@@ -1,0 +1,10 @@
+title: 'Unattended operation'
+order: 7
+arc: 'autonomy'
+summary: >-
+  Work that happens without you watching: scheduled jobs, the messaging gateway
+  and who is allowed to talk to it, event-driven triggers, and what running an
+  agent continuously actually costs.
+outcome: >-
+  schedule work that survives a restart, expose an agent to a chat platform
+  without exposing it to everyone, and reason about the bill.

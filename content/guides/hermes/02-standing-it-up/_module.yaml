@@ -1,0 +1,10 @@
+title: 'Standing it up'
+order: 2
+arc: 'installation'
+summary: >-
+  Getting a working agent: install, a provider that can actually call tools, a
+  first session, and an honest account of what it can reach on your machine
+  before you point it at anything.
+outcome: >-
+  run Hermes, hold a multi-turn conversation with working tools, find every file
+  it owns, and state its default blast radius accurately.

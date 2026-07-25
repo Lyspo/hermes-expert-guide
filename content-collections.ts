@@ -30,7 +30,10 @@ const mdxOptions: Parameters<typeof compileMDX>[2] = {
 const moduleMetaSchema = z.object({
   title: z.string(),
   order: z.number().int().positive(),
+  /** Shop-window prose: what this module is. Authored, never generated. */
   summary: z.string(),
+  /** What the reader can do afterwards that they could not before. */
+  outcome: z.string().optional(),
   arc: z.string().optional(),
 })
 

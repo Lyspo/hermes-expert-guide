@@ -1,0 +1,10 @@
+title: 'Extension and routing'
+order: 9
+arc: 'extension'
+summary: >-
+  Reaching outside the agent and choosing what answers: MCP servers, plugins and
+  hooks, model selection and routing, the other front doors onto the same engine,
+  and the input modes beyond text.
+outcome: >-
+  connect an external tool server safely, route a task to an appropriate model,
+  and pick the right entry point for a given job.

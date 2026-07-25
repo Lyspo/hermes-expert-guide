@@ -1,0 +1,10 @@
+title: 'What it knows'
+order: 5
+arc: 'context'
+summary: >-
+  Everything the agent carries into a session and everything it can go and find:
+  the system prompt's real contents, identity and project files, the two memory
+  files and their caps, and the searchable record of past sessions.
+outcome: >-
+  say precisely what is in context and why, curate memory rather than hoping,
+  and correct the widely-repeated account of how Hermes remembers.

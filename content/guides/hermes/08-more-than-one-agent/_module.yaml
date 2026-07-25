@@ -1,0 +1,10 @@
+title: 'More than one agent'
+order: 8
+arc: 'multiplicity'
+summary: >-
+  Two different orchestration models that are easy to confuse: transient
+  subagents that fork and join, and a durable board where work is claimed and
+  survives a restart. When each is right, and when neither is.
+outcome: >-
+  choose between delegation and a board on the merits, decompose work that
+  genuinely needs it, and recognise the point where scaling stops helping.

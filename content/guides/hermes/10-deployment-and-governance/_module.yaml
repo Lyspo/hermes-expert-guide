@@ -1,0 +1,10 @@
+title: 'Deployment and governance'
+order: 10
+arc: 'judgement'
+summary: >-
+  What you must decide before this runs anywhere that matters: credentials and
+  outbound traffic, what is genuinely auditable, the documented failure modes and
+  a real incident, and the cases where the honest answer is not to use it.
+outcome: >-
+  deploy with a defensible control story, say what you can and cannot promise a
+  reviewer, and name the situations where Hermes is the wrong tool.

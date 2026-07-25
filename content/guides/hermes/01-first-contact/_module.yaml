@@ -1,6 +1,10 @@
-title: First contact
+title: 'First contact'
 order: 1
+arc: 'orientation'
 summary: >-
-  What Hermes actually is, what makes it different from the agents you have
-  already tried, and getting it running on your own machine.
-arc: orientation
+  The mechanical model before the install: one system prompt assembled per
+  session, a tool-dispatch loop, a record on disk. Also what this guide will not
+  teach you, and how to tell when it has gone stale.
+outcome: >-
+  describe what Hermes is without repeating marketing, locate any subsystem on a
+  map, and know which release you are reading about.
