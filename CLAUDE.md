@@ -78,6 +78,15 @@ exists to resolve, at `/glossary/`. **Cheatsheets** — 9 sheets at `/cheatsheet
 are load-bearing rather than supplementary: the lessons are short *because* the
 reference lives there.
 
+**There is no ambient background canvas, deliberately.** One existed behind every page
+and was removed on 2026-07-26 by the author's decision, with `decisions.md` 009 and
+`design.md` amended rather than left contradicting the build. It drew clustered noise
+rather than any real structure, and it looked exactly like the one place a genuine graph
+appears — so the curriculum map was unfindable, reported verbatim as "no clue where that
+graph is supposed to be; the only node graph I see is the background." **The graph is
+drawn where it means something and nowhere else.** Exactly one `<canvas>` exists on the
+site now, on `/hermes/`. Do not reintroduce a decorative field.
+
 **The curriculum is a real graph, and `/hermes/` is a view of it.** `src/lib/graph.ts`
 lays the 51 lessons out as a DAG from their own frontmatter — 79 prerequisite edges,
 depth 11, one root — with depth taken as the *longest* prerequisite chain, because a

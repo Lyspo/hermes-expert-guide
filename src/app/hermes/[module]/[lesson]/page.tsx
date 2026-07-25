@@ -66,7 +66,7 @@ export default async function LessonPage({ params }: { params: Params }) {
         <div className="lg:sticky lg:top-[calc(var(--step)*3)]">
           <dl className="font-mono text-ice-dim space-y-[calc(var(--step)*0.5)] text-[0.7rem]">
             <div>
-              <dt className="opacity-70">Verified against</dt>
+              <dt>Verified against</dt>
               <dd className="mt-[calc(var(--step)*0.25)]">
                 <span className="inline-block font-mono text-ice">
                   {lesson.guide.subject} {lesson.hermesVersion}
@@ -74,13 +74,13 @@ export default async function LessonPage({ params }: { params: Params }) {
               </dd>
             </div>
             <div>
-              <dt className="opacity-70">Last checked</dt>
+              <dt>Last checked</dt>
               <dd>
                 <time dateTime={lesson.updated}>{lesson.updated}</time>
               </dd>
             </div>
             <div>
-              <dt className="opacity-70">Reading</dt>
+              <dt>Reading</dt>
               <dd>{lesson.duration} min</dd>
             </div>
           </dl>
@@ -91,7 +91,7 @@ export default async function LessonPage({ params }: { params: Params }) {
 
           {prerequisites.length > 0 && (
             <div className="border-ice-faint mt-[var(--step)] border-t pt-[calc(var(--step)*0.6)]">
-              <p className="font-mono text-ice-dim text-[0.7rem] opacity-70">Assumes</p>
+              <p className="font-mono text-ice-dim text-[0.7rem]">Assumes</p>
               <ul className="mt-[calc(var(--step)*0.3)] space-y-[calc(var(--step)*0.2)] text-[0.8125rem]">
                 {/* A prerequisite that is still a stub is named but not linked —
                     the dependency is real and worth stating, and a link to a page

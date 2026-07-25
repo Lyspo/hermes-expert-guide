@@ -4,7 +4,6 @@ import { PrefaceScript } from '@/components/personalization/preface-script'
 import { TrackProvider } from '@/components/personalization/track-provider'
 import { SiteFooter } from '@/components/nav/site-footer'
 import { SiteHeader } from '@/components/nav/site-header'
-import { Field } from '@/components/ui/field'
 import { site } from '@/lib/site'
 import './globals.css'
 
@@ -50,7 +49,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <PrefaceScript />
       </head>
       <body className="flex min-h-dvh flex-col">
-        <Field />
         <TrackProvider>
           <SiteHeader />
           <div className="plane flex-1">{children}</div>

@@ -10,11 +10,13 @@ The nine candidate directions and how they were derived are recorded in [`resear
 
 **Substrate — depth as the medium, with type that rewrites itself.**
 
-A dark, dimensional field in which the agent's interior is actually rendered: skills, memory, sessions and workers as points and edges at real depth, drifting slowly, responding to the pointer. Content sits on a plane above it. Moving through the curriculum means moving through the structure rather than scrolling past pictures of it.
+A dark, dimensional world in which the agent's interior is actually rendered: skills, memory, sessions and workers as points and edges at real depth. Moving through the curriculum means moving through the structure rather than scrolling past pictures of it.
+
+> **Amended 2026-07-26.** That rendering is a *component*, not the page ground. An ambient node canvas behind every page was built and removed: it carried no real data, and it made the one place a genuine graph appears — the curriculum map — impossible to distinguish from decoration. The graph is drawn where it means something. Pages sit on plain `--void`; depth is carried by the plane system and the transcript surface. `drift` is gone from the motion vocabulary with it.
 
 Its signature motion is borrowed deliberately from a second direction: **display type that strikes its own line out and re-enters it**, characters resolving in sequence. That gesture is the product's thesis performed rather than described — an agent that rewrites its own instructions — and it is the one motion the site owns.
 
-Two candidate worlds, fused: the field is what the agent *is*, and the type is what it *does*.
+Two candidate worlds, fused: the graph is what the agent *is*, and the type is what it *does*.
 
 | The product's mechanism | How this world carries it |
 |---|---|
@@ -44,13 +46,13 @@ Two candidate worlds, fused: the field is what the agent *is*, and the type is w
 
 Under 80% saturation on the signal, deliberately. Prohibited outright: gradients as surface, any outer glow or zero-offset halo, glassmorphism, gradient text, pure `#000`, purple or blue-violet accents, neon cyan, acid green, and vermilion-on-black — the last four being the specific families both rulebooks flag.
 
-**Depth instead of elevation.** No card shadows. A thing is nearer because it is lighter, larger, and less transparent, and because the field behind it parallaxes at a different rate. Declare depth once per element.
+**Depth instead of elevation.** No card shadows. A thing is nearer because it is lighter, larger, and less transparent. Declare depth once per element.
 
 ## Light and dark
 
 **Dark only, as a commitment rather than an omission.** The world is a luminous field; inverting it does not produce a light theme, it destroys the medium. Both design rulesets permit a deliberate single-theme world, and this is one.
 
-Two obligations follow. Contrast is verified rather than assumed — body text at 4.5:1 or better against `--void` *and* against `--deep`, since transcript panels sit on their own plane. And `prefers-contrast: more` raises `--ice-dim` toward `--ice` and drops the field's opacity, because a reader who needs contrast should not have to give up the page to get it.
+Two obligations follow. Contrast is verified rather than assumed — body text at 4.5:1 or better against `--void` *and* against `--deep`, since transcript panels sit on their own plane. And `prefers-contrast: more` raises `--ice-dim` toward `--ice`, because a reader who needs contrast should not have to give up the page to get it.
 
 ## Type
 
@@ -73,7 +75,6 @@ The named vocabulary. Nothing outside this list ships without being added here. 
 | Name | What happens | Ease | Duration |
 |---|---|---|---|
 | `rewrite` | A line strikes itself through; the replacement resolves character by character above it | `cubic-bezier(.16, 1, .3, 1)` | 300ms strike, then ~1.2s resolve |
-| `drift` | The field moves continuously and slowly. Never idle, never fast | linear | perpetual |
 | `parallax` | Pointer and scroll displace planes at different rates | damped follow, ~0.045 | continuous |
 | `resolve` | Content arrives from depth: scale and opacity only, never position | `cubic-bezier(.16, 1, .3, 1)` | 480ms |
 | `settle` | Micro-interaction feedback, with a small tactile press on `:active` | `cubic-bezier(.25, 1, .5, 1)` | 240ms |
@@ -82,13 +83,13 @@ The named vocabulary. Nothing outside this list ships without being added here. 
 
 ## Structure
 
-**Planes, not boxes.** Three depths: the field behind, content on the plane, and a small nearest layer for navigation and the few controls that must float. An element earns the nearest plane by needing to persist across scroll, not by being important.
+**Planes, not boxes.** Three depths: the page ground, content on the plane, and a small nearest layer for navigation and the few controls that must float. An element earns the nearest plane by needing to persist across scroll, not by being important.
 
-**The transcript plane.** Terminal output sits on `--deep` — a nearer, flatter surface than the field, with a hairline edge rather than a shadow. Code is the one content type that is genuinely dark in life, so it needs no special pleading here; it simply sits closer.
+**The transcript plane.** Terminal output sits on `--deep` — a nearer, flatter surface than the page ground, with a hairline edge rather than a shadow. The curriculum map is drawn on it too, which is what marks it as a component rather than a backdrop. Code is the one content type that is genuinely dark in life, so it needs no special pleading here; it simply sits closer.
 
 **Hairlines only.** Rules and edges are `--ice-faint` at 1px. No borders above 1px, no side stripes, no card grids as page structure, and no nested containers.
 
-**Sequence is spatial.** Module and lesson order maps to depth and position in the field, so the curriculum map is a view of the structure rather than a table of contents drawn to look like one.
+**Sequence is spatial.** Module and lesson order maps to depth and position in the curriculum map, so it is a view of the structure rather than a table of contents drawn to look like one. Depth there is prerequisite depth, computed from the lessons themselves.
 
 ## The refusals
 
@@ -100,4 +101,4 @@ And the whole-look conventions to stay clear of: warm cream with a serif display
 
 ## Accessibility as a design constraint
 
-A build gate, not an audit. Contrast verified against both `--void` and `--deep`. `prefers-reduced-motion` stops the field and the rewrite at their resting states, both of which are complete and legible. `prefers-contrast: more` is honoured. The field is decorative and carries `aria-hidden`, so nothing in it is load-bearing information — every structure it depicts also exists as real text. Session replays ship as complete transcripts a screen reader can read straight through, with playback as the enhancement. Focus is always visible against a dark ground, which means a light ring, not a subtle one. Terminal content stays legible at 200% zoom.
+A build gate, not an audit. Contrast verified against both `--void` and `--deep`. `prefers-reduced-motion` stops the rewrite and the scrubbed plates at their resting states, all of which are complete and legible. `prefers-contrast: more` is honoured. The curriculum map's canvas is decorative and carries `aria-hidden`, so nothing in it is load-bearing information — every lesson and prerequisite it depicts is also a real link in the index beneath it. Session replays ship as complete transcripts a screen reader can read straight through, with playback as the enhancement. Focus is always visible against a dark ground, which means a light ring, not a subtle one. Terminal content stays legible at 200% zoom.

@@ -99,3 +99,19 @@ The fusion is not a compromise. A skill library, a memory index and a delegation
 **Cost.** A committed dark world offers no light theme, because inverting a luminous field destroys the medium rather than translating it; that is stated as a choice and paid for with verified contrast against both surface planes and an honoured `prefers-contrast`. The field is canvas, so it must stay decorative and `aria-hidden`, with every structure it depicts also present as real text. And the whole token layer, page shell and component set were rebuilt — roughly a day, which is the price of having discovered the mistake at forty-three pages rather than four hundred.
 
 **What the previous world contributed.** One idea survived intact and is now the centrepiece: revision made visible, superseded content kept on the page beside its replacement and its reason, rendered as real `<del>` and `<ins>`. It was the best thing about the abandoned direction and it was never paper-specific.
+
+**Amended 2026-07-26 — the field is a feature, not the ground.** The ambient canvas
+behind every page is removed. The reasoning that put it there still holds in the
+abstract: the agent's interior genuinely is a graph, and drawing it is description
+rather than decoration. What did not hold is drawing it *everywhere*. Rendered as
+wallpaper it carried no information — the ambient field was clustered noise, never the
+real curriculum — while looking exactly like the one place a real graph does appear.
+The author's report was the proof: shown the curriculum map, the response was "no clue
+where that graph is supposed to be; the only node graph I see is the background." A
+decoration that makes the genuine article unfindable is worse than no decoration.
+
+So the graph survives where it means something and nowhere else: the curriculum map on
+the guide index, drawn from real lessons and real prerequisites, in a titled frame on
+the `--deep` plane. Pages otherwise sit on plain `--void`. "Depth as the medium" now
+lives in the plane system and the transcript surface rather than in a canvas behind
+the text, and `drift` leaves the motion vocabulary with it.

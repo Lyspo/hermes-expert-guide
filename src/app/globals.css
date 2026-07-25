@@ -79,52 +79,7 @@
 }
 
 @layer components {
-  /* The field: the agent's interior, drifting behind everything. Decorative by
-     definition — every structure it depicts also exists as real text nearby. */
-  .field {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    opacity: 0.85;
-
-    /* The field is masked away from the middle of the screen, and that is what lets
-       it have any presence at all. Content sits on the plane above it with no
-       surface of its own, so an unmasked field has to stay near-invisible to keep
-       prose legible — which is how the medium ends up looking like scattered dust.
-       Cleared out of the reading column, it can carry real depth at the periphery
-       and still leave text on clean ground. */
-    -webkit-mask-image: radial-gradient(
-      ellipse 46% 52% at 50% 42%,
-      transparent 0%,
-      transparent 42%,
-      rgb(0 0 0 / 0.55) 68%,
-      rgb(0 0 0 / 1) 88%
-    );
-    mask-image: radial-gradient(
-      ellipse 46% 52% at 50% 42%,
-      transparent 0%,
-      transparent 42%,
-      rgb(0 0 0 / 0.55) 68%,
-      rgb(0 0 0 / 1) 88%
-    );
-    /* Explicit CSS size is essential: a canvas is a replaced element, so without
-       it the width/height attributes can influence layout, and any code that
-       measures the element in order to set those attributes will feed back on
-       itself and double the buffer on every pass. */
-    width: 100%;
-    height: 100%;
-  }
-
-  /* The curriculum map draws the same structure, interactively and in the foreground.
-     Two views of one graph on screen at once reads as noise, so the ambient field
-     yields to it. `:has()` rather than a route check because the field lives in the
-     root layout and knows nothing about which page it is behind. */
-  body:has([data-curriculum-map]) .field {
-    opacity: 0;
-  }
-
-  /* The plane content sits on, above the field. */
+  /* The plane content sits on. */
   .plane {
     position: relative;
     z-index: 1;
@@ -167,16 +122,11 @@
   display: none;
 }
 
-/* A reader who needs contrast should not have to give up the page to get it:
-   secondary text moves toward primary and the field recedes. */
+/* A reader who needs contrast should not have to give up the page to get it. */
 @media (prefers-contrast: more) {
   :root {
     --color-ice-dim: #cfe0e6;
     --color-ice-faint: #7e929b;
-  }
-
-  .field {
-    opacity: 0.3;
   }
 }
 
