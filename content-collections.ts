@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { parse as parseYaml } from 'yaml'
+import { posixPath } from './src/lib/path'
 
 /**
  * Per-track relevance. A lesson declares what it is *for* each reader rather
@@ -78,7 +79,7 @@ const lessons = defineCollection({
     content: z.string(),
   }),
   transform: async (doc, ctx) => {
-    const path = doc._meta.path // "hermes/01-first-contact/02-install"
+    const path = posixPath(doc._meta.path) // "hermes/01-first-contact/02-install"
     const [guideSlug, moduleSlug, lessonSlug] = path.split('/')
 
     if (!guideSlug || !moduleSlug || !lessonSlug) {
@@ -181,7 +182,7 @@ const glossary = defineCollection({
   transform: async (doc, ctx) => ({
     ...doc,
     mdx: await compileMDX(ctx, doc, mdxOptions),
-    slug: doc._meta.path,
+    slug: posixPath(doc._meta.path),
   }),
 })
 
@@ -200,8 +201,8 @@ const cheatsheets = defineCollection({
   transform: async (doc, ctx) => ({
     ...doc,
     mdx: await compileMDX(ctx, doc, mdxOptions),
-    slug: doc._meta.path,
-    url: `/cheatsheets/${doc._meta.path}/` as const,
+    slug: posixPath(doc._meta.path),
+    url: `/cheatsheets/${posixPath(doc._meta.path)}/` as const,
   }),
 })
 

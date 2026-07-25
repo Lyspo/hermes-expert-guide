@@ -1,0 +1,15 @@
+# Normalise line endings so the repo is byte-identical on macOS, Linux and Windows.
+#
+# Without this, a Windows checkout gets CRLF, and the first `prettier --write .`
+# rewrites every file in the repository — an enormous diff that hides real changes.
+# Prettier's default endOfLine is "lf", so LF everywhere is the setting that agrees
+# with the formatter already in use.
+* text=auto eol=lf
+
+# Binary, never touched.
+*.png binary
+*.jpg binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ico binary
