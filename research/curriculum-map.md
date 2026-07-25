@@ -1575,3 +1575,41 @@ third-party command is wrong against the software, not merely absent from the do
 reconstructions. `hermes dump` was deliberately not captured because it can contain
 credential material, so the docs' stale `0.8.0` block is still the only published
 example of that command's output.
+
+---
+
+## 22. Amendments from the captured session (2026-07-25)
+
+`research/09-captured-session.md` records the corpus's only real recording. It
+supersedes `[05]` on every format it touches, and it changes four map decisions.
+
+**SIM-1 is unblocked and can be built verbatim.** The banner is Braille block art
+inside a bronze-and-gold box frame, with a two-column tools/skills panel, a welcome
+line, and a rotating `✦ Tip:`. The map's prohibition on "literal banner ASCII art" was
+correct about the documentation and wrong about the software; the prohibition is lifted
+for structure and strings, with the emblem reproduced as a static block rather than
+typed out. §1 of `[09]` has the shape.
+
+**SIM-4's notification is verbatim now, and the docs' version was wrong.** The real
+string is `💾 Self-improvement review: Skill '<name>' created.` — prefixed, and
+`created` rather than `patched`. Observed firing unprompted after the answer on the
+first substantial session of a fresh install, which also settles the conflict `[04]`
+recorded as unresolved about whether autonomous skill creation reliably fires. The
+SKILL.md diff remains unavailable; the file was not opened.
+
+**Lesson `03/01` had a factual error, now corrected in place.** The documented status
+bar carries a cost field. Across three hundred captured bars it never appeared, and the
+undocumented `✓` badge is always present after a turn. The lesson now presents the
+conflict via `Revised` rather than repeating either source, and SIM-2 is rebased on the
+captured formats with its compression frames explicitly downgraded to reconstructed —
+no compression occurred in the capture.
+
+**`06/02-progressive-disclosure` gains an observation.** Two consecutive feed lines show
+a skill's reference file loading on demand (`┊ 📚 skill hermes-agent` then
+`→ references/cli-reference.md`). The lesson previously taught this from documentation
+only.
+
+**Still uncaptured**, and therefore still reconstructed: the approval gate
+(`[o]nce [s]ession [a]lways [d]eny`), the `🗜️` compression badge in situ, and any
+SKILL.md diff. A second capture that triggers a dangerous command and fills a context
+window would close all three.

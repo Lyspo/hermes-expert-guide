@@ -24,13 +24,45 @@ to make.
 
 Once a session is running, that line looks like this:
 
-<Transcript label="Status bar" fidelity="verbatim" source="CLI documentation, user-guide/cli">
-{` ⚕ claude-sonnet-4-20250514 │ 12.4K/200K │ [██████░░░░] 6% │ $0.06 │ 15m`}
+<Transcript label="Status bar, captured from a running v0.19.0" fidelity="verbatim" source="Captured session, 2026-07-25; model name replaced">
+{`⚕ <model> │ 21.1K/1M │ [░░░░░░░░░░] 2% │ 42s │ ⏱ 7s`}
 </Transcript>
 
-Model, tokens used against the window, the context bar, cost so far, elapsed time.
-The model name truncates past 26 characters, and cost reads `n/a` for models with
-no published price rather than pretending to a number it cannot compute.
+Model, tokens against the window, the context bar, session elapsed, and turn elapsed.
+The model name truncates past 26 characters.
+
+Here the documentation and the software disagree, and it is worth knowing which to
+trust:
+
+<Revised
+  was="⚕ claude-sonnet-4-20250514 │ 12.4K/200K │ [██████░░░░] 6% │ $0.06 │ 15m"
+  now="⚕ <model> │ 21.1K/1M │ [░░░░░░░░░░] 2% │ 42s │ ⏱ 7s"
+  why="The docs show a cost field. Across three hundred captured status bars from a real v0.19.0 session it never appeared — the field is omitted, not filled with a placeholder. The docs also omit the turn-elapsed badge, which is always present"
+  when="2026-07-25"
+/>
+
+The docs say cost reads `n/a` for models with no published price. What a real session
+shows is the field missing altogether. Whether a priced provider restores it is
+untested, so treat the cost figure as something to verify on your own install rather
+than something to expect.
+
+Two more states the documentation does not show. Before your first message, the
+counters are placeholders:
+
+<Transcript label="A fresh session, before the first turn" fidelity="verbatim" source="Captured session, 2026-07-25; model name replaced">
+{`⚕ <model> │ ctx -- │ [░░░░░░░░░░] -- │ 1s │ ⏲ 0s`}
+</Transcript>
+
+And once a turn finishes, the live `⏱` freezes into `⏲` and a third badge appears,
+counting up from the moment the answer landed:
+
+<Transcript label="After a turn completes" fidelity="verbatim" source="Captured session, 2026-07-25; model name replaced">
+{`⚕ <model> │ 76.9K/1M │ [█░░░░░░░░░] 7% │ 4m │ ⏲ 3m 52s │ ✓ 0s`}
+</Transcript>
+
+The `✓` badge is in no documentation page. Its value climbs after completion, so it
+reads as time since the turn ended — useful for telling a finished agent from a stalled
+one at a glance.
 
 ## The bar is a warning system with four states
 
@@ -64,13 +96,14 @@ then what the numbers do afterwards.
 
 ## Compression costs money to save money
 
-Here is the part that surprises people, and it is visible in the replay above: the
-cost figure goes **up** across a compression, not down.
+Compressing means sending the conversation to a model to be summarised, which is
+tokens spent now to buy headroom later. What you are buying is the ability to continue
+at all — and, because the summary re-establishes a stable prefix, cheaper turns from
+that point on.
 
-That is correct behaviour. Compressing means sending the conversation to a model to
-be summarised, which is tokens spent now to buy headroom later. What you are buying
-is the ability to continue at all — and, because the summary re-establishes a stable
-prefix, cheaper turns from that point on.
+So a compression is not free, and if your install shows a cost field you should expect
+it to rise across one. The captured session never compressed, which is why the replay's
+compression frames are marked as the reconstructed part.
 
 <Depth min="operator">
 
@@ -99,13 +132,13 @@ effect on the next message with no restart.
 
 After the first compression a counter appears, and it stays for the session:
 
-<Transcript label="After compressing" fidelity="verbatim" source="CLI and TUI documentation; badge glyphs quoted exactly">
-{` ⚕ claude-sonnet-4-20250514 │ 38.2K/200K │ [██░░░░░░░░] 19% │ $0.44 │ 10m  🗜️ 1`}
+<Transcript label="After compressing" fidelity="reconstructed" source="Badge glyph quoted from the TUI documentation; no compression occurred in the captured session">
+{`⚕ <model> │ 38.2K/200K │ [██░░░░░░░░] 19% │ 10m │ ⏲ 52s │ 🗜️ 1`}
 </Transcript>
 
-The others you will meet: `▶ N` for active background tasks, `⏱ 12s/3m 45s` for
-live elapsed time within a turn, `⏲ 32s / 3m 45s` for the frozen figure once a turn
-ends, and `⚠ YOLO` when auto-approval is enabled.
+The others you will meet: `▶ N` for active background tasks, `⏱` for live elapsed time
+within a turn, `⏲` for the frozen figure once it ends, `✓` for time since the answer
+landed, and `⚠ YOLO` when auto-approval is enabled.
 
 That last badge is the only one that is a warning about you rather than about the
 session, and module 4 is where it earns a lesson of its own.

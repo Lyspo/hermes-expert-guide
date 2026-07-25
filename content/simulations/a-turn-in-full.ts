@@ -20,7 +20,7 @@ export const script: SimScript = {
     'Watch the context bar cross from green into yellow, then watch what compression actually does to it.',
   fidelity: 'verbatim',
   source:
-    'Status bar, spinner frames, tool feed, status states and badges quoted from the CLI and TUI documentation; the sequence is assembled, not captured.',
+    'Status bar, spinner frames and tool-feed lines taken from a captured v0.19.0 session (2026-07-25). The compression frames are reconstructed — no compression occurred in the capture — and the sequence is assembled.',
   hermesVersion: 'v0.19.0',
   events: [
     { t: 'marker', id: 'prompt', label: 'The prompt' },
@@ -29,7 +29,7 @@ export const script: SimScript = {
       text: 'find every place we log a raw request body, and tell me which ones could leak a token',
     },
 
-    { t: 'think', text: '◜ (｡•́︿•̀｡) pondering... (1.2s)' },
+    { t: 'think', text: '(｡•́︿•̀｡) pondering...' },
     {
       t: 'note',
       text: 'The spinner is not decoration — its elapsed counter is the only signal that a slow API call is still alive.',
@@ -40,18 +40,18 @@ export const script: SimScript = {
     {
       t: 'result',
       name: 'terminal',
-      output: '  ┊ 💻 terminal `grep -rn "log.*body" --include=*.ts` (0.3s)\n\n14 matches across 6 files',
+      output: '┊ 💻 $         grep -rn "log.*body" --include=*.ts  0.3s\n\n14 matches across 6 files',
       ms: 300,
     },
     { t: 'tool', name: 'read_file', args: 'src/server/middleware/audit.ts' },
     {
       t: 'result',
       name: 'read_file',
-      output: '  ┊ 📄 read_file (0.4s)\n\n120 lines',
+      output: '┊ 📖 read      src/server/middleware/audit.ts  0.4s\n\n120 lines',
       ms: 400,
       truncated: 108,
     },
-    { t: 'think', text: '◠ (⊙_⊙) contemplating... (2.4s)' },
+    { t: 'think', text: '(⌐■_■) contemplating...' },
 
     {
       t: 'say',
@@ -66,7 +66,7 @@ export const script: SimScript = {
     {
       t: 'result',
       name: 'status',
-      output: ' ⚕ claude-sonnet-4-20250514 │ 104.8K/200K │ [█████░░░░░] 52% │ $0.41 │ 9m',
+      output: '⚕ <model> │ 104.8K/200K │ [█████░░░░░] 52% │ 9m │ ⏱ 41s',
       ms: 600,
     },
 
@@ -79,12 +79,12 @@ export const script: SimScript = {
     {
       t: 'result',
       name: 'status',
-      output: ' ⚕ claude-sonnet-4-20250514 │ 38.2K/200K │ [██░░░░░░░░] 19% │ $0.44 │ 10m  🗜️ 1',
+      output: '⚕ <model> │ 38.2K/200K │ [██░░░░░░░░] 19% │ 10m │ ⏲ 52s │ 🗜️ 1',
       ms: 600,
     },
     {
       t: 'note',
-      text: 'The 🗜️ badge counts compressions. Note the cost went up, not down: compression spends tokens to buy headroom.',
+      text: 'The 🗜️ badge counts compressions. These two frames are the reconstructed part of this replay — no compression happened in the captured session, so the badge is documented rather than observed.',
     },
 
     { t: 'marker', id: 'answer', label: 'The answer' },
