@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { MemoryPlate } from './memory-plate'
+import { SkillLoopPlate } from './skill-loop-plate'
 
 /**
  * The plate registry.
@@ -9,9 +10,17 @@ import { MemoryPlate } from './memory-plate'
  * A plate is complete and readable as static SVG, which is also what makes it work in
  * print and under reduced motion.
  */
-const PLATES: Record<string, () => ReactNode> = {
+export const PLATES: Record<string, () => ReactNode> = {
   memory: MemoryPlate,
+  'skill-loop': SkillLoopPlate,
 }
+
+/**
+ * Below this, a plate's 10px labels shrink faster than they stay legible, so the
+ * figure scrolls instead of scaling. Wide content scrolls in its own container —
+ * the page itself never does.
+ */
+const LEGIBLE_WIDTH = '38rem'
 
 export function Viz({ id, caption }: { id: string; caption?: string }) {
   const Plate = PLATES[id]
@@ -26,8 +35,10 @@ export function Viz({ id, caption }: { id: string; caption?: string }) {
 
   return (
     <figure className="my-[calc(var(--step)*1.6)]">
-      <div className="transcript px-[calc(var(--step)*0.9)] py-[calc(var(--step)*0.9)]">
-        <Plate />
+      <div className="transcript overflow-x-auto px-[calc(var(--step)*0.9)] py-[calc(var(--step)*0.9)]">
+        <div style={{ minWidth: LEGIBLE_WIDTH }}>
+          <Plate />
+        </div>
       </div>
       {caption && (
         <figcaption className="mt-[calc(var(--step)*0.4)] max-w-[68ch] font-mono text-[0.65rem] leading-[1.7] text-ice-dim">

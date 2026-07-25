@@ -141,21 +141,98 @@ export function VizMeter({
   )
 }
 
-/** A relationship. Dashed means conditional or on-demand rather than always-on. */
+/**
+ * A relationship.
+ *
+ * The four kinds are semantic, not stylistic, and `absent` is the reason this is a
+ * closed set: a plate whose payload is *an arrow that does not exist* cannot share a
+ * name with an arrow that merely carries a correction. So `change` is the signal
+ * colour used for something happening, and `absent` is reserved for a path the
+ * software deliberately does not have — drawn, then visibly stopped.
+ */
 export function VizEdge({
   from,
   to,
   label,
   kind = 'solid',
+  arrow = false,
+  breakAt,
 }: {
   from: [number, number]
   to: [number, number]
   label?: string | undefined
-  kind?: 'solid' | 'ondemand' | 'absent'
+  /**
+   * `solid` — always, unconditionally.
+   * `ondemand` — conditional: it happens sometimes, on a trigger.
+   * `change` — something is written or corrected. Signal.
+   * `absent` — the path that does not exist. Signal, and stopped.
+   */
+  kind?: 'solid' | 'ondemand' | 'change' | 'absent'
+  arrow?: boolean
+  /** Where an `absent` edge is stopped. Defaults to the midpoint. */
+  breakAt?: [number, number] | undefined
 }) {
   const [x1, y1] = from
   const [x2, y2] = to
-  const stroke = kind === 'absent' ? 'var(--color-signal)' : 'var(--color-ice-faint)'
+  const signal = kind === 'change' || kind === 'absent'
+  const stroke = signal ? 'var(--color-signal)' : 'var(--color-ice-faint)'
+  const dashed = kind === 'ondemand' || kind === 'absent'
+
+  // The arrowhead is drawn rather than declared as a marker: markers need document
+  // ids, and plates share a page.
+  const angle = Math.atan2(y2 - y1, x2 - x1)
+  const head = (length: number, spread: number) =>
+    [
+      `${x2},${y2}`,
+      `${x2 - length * Math.cos(angle - spread)},${y2 - length * Math.sin(angle - spread)}`,
+      `${x2 - length * Math.cos(angle + spread)},${y2 - length * Math.sin(angle + spread)}`,
+    ].join(' ')
+
+  const [bx, by] = breakAt ?? [(x1 + x2) / 2, (y1 + y2) / 2]
+
+  if (kind === 'absent') {
+    // Drawn in two halves. Up to the stop it is a real intention, at full weight;
+    // past the stop it is only where the arrow *would* have gone, so it drops to a
+    // ghost. Without that fall-off the line reads as a path that got through.
+    return (
+      <g>
+        <line
+          x1={x1}
+          y1={y1}
+          x2={bx}
+          y2={by}
+          stroke={stroke}
+          strokeWidth={1}
+          strokeDasharray="4 4"
+        />
+        <g opacity={0.28}>
+          <line
+            x1={bx}
+            y1={by}
+            x2={x2}
+            y2={y2}
+            stroke={stroke}
+            strokeWidth={1}
+            strokeDasharray="4 4"
+          />
+          {arrow && <polygon points={head(7, 0.42)} fill={stroke} />}
+        </g>
+        {/* The stop is an ×, not a bar: a bar laid across a line that is being
+            stopped *by a wall* is indistinguishable from another wall. */}
+        {[Math.PI / 4, -Math.PI / 4].map((offset) => (
+          <line
+            key={offset}
+            x1={bx - 7 * Math.cos(angle + offset)}
+            y1={by - 7 * Math.sin(angle + offset)}
+            x2={bx + 7 * Math.cos(angle + offset)}
+            y2={by + 7 * Math.sin(angle + offset)}
+            stroke="var(--color-signal)"
+            strokeWidth={2}
+          />
+        ))}
+      </g>
+    )
+  }
 
   return (
     <g>
@@ -166,9 +243,9 @@ export function VizEdge({
         y2={y2}
         stroke={stroke}
         strokeWidth={1}
-        strokeDasharray={kind === 'solid' ? undefined : '4 4'}
-        opacity={kind === 'absent' ? 0.7 : 1}
+        strokeDasharray={dashed ? '4 4' : undefined}
       />
+      {arrow && <polygon points={head(7, 0.42)} fill={stroke} />}
       {label && (
         <text
           x={(x1 + x2) / 2}
@@ -180,6 +257,49 @@ export function VizEdge({
           {label}
         </text>
       )}
+    </g>
+  )
+}
+
+/**
+ * A wall. Something the software will not let across.
+ *
+ * `door` cuts an opening at an absolute x range, which is how a barrier that permits
+ * exactly one thing — a whitelist — is drawn honestly: a wall with one gap in it,
+ * rather than a wall the permitted arrow simply ignores.
+ */
+export function VizBarrier({
+  x,
+  y,
+  w,
+  door,
+}: {
+  x: number
+  y: number
+  w: number
+  door?: [number, number] | undefined
+}) {
+  const spans: Array<[number, number]> = door
+    ? [
+        [x, door[0]],
+        [door[1], x + w],
+      ]
+    : [[x, x + w]]
+
+  return (
+    <g>
+      {spans
+        .filter(([start, end]) => end > start)
+        .map(([start, end]) => (
+          <rect
+            key={start}
+            x={start}
+            y={y}
+            width={end - start}
+            height={3}
+            fill="var(--color-ice-dim)"
+          />
+        ))}
     </g>
   )
 }

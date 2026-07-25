@@ -15,10 +15,199 @@ prerequisites:
   - hermes/06-skills-and-the-loop/04-writing-a-skill-deliberately
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Self-improvement is the thing Hermes is sold on, and it is usually described as a
+disposition: the agent notices what worked and gets better at it. What actually ships
+is three mechanical parts — a counter, a threshold, and a second agent that is
+forbidden from speaking to you.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+All three are small enough to hold in your head, and holding them is the difference
+between an agent that quietly improves and one that quietly gets strange.
+
+<MarginNote>
+Almost everything in this lesson about the counter and the fork is read from the
+source at a pinned commit rather than from the documentation. Where the two disagree,
+this lesson says so.
+</MarginNote>
+
+## The counter counts iterations, not turns
+
+Two configuration keys, both defaulting to ten:
+
+```yaml
+memory:
+  nudge_interval: 10
+skills:
+  creation_nudge_interval: 10
+```
+
+The skill counter increments inside the tool-calling loop — once per API-call
+iteration, every time round. Not once per message you send.
+
+That distinction is the whole behaviour of the loop.
+
+<Revised
+  was="The background review runs roughly every ten agent turns."
+  now="It runs every ten tool-calling iterations. One request that takes five tool round-trips advances the counter by five, so a long piece of real work can trip it twice."
+  why="The increment sits inside the per-turn tool-calling loop and fires per API-call iteration; the curator documentation's “~every 10 agent turns” is an approximation of that count"
+  when="2026-07-25"
+/>
+
+So the loop is not on a conversational clock. It is on a *work* clock. Ask three
+casual questions and it may never fire; ask the agent to trace a bug across six files
+and it will fire during that single request. This is the right design — the sessions
+worth learning from are exactly the tool-heavy ones — but it means the feature is
+close to invisible if you only ever chat.
+
+Two more conditions gate the increment. The counter only advances while the
+`skill_manage` tool is actually available to the agent, and it **resets whenever
+`skill_manage` is used**. Edit a skill yourself and the clock starts again from zero.
+
+<Depth min="operator">
+
+Both the increment and the trigger are guarded on the interval being greater than
+zero, so setting either key to `0` switches that half of the loop off entirely — the
+memory nudge and the skill nudge are independently disablable, and nothing else
+changes.
+
+</Depth>
+
+## Your answer goes out first
+
+At the end of the turn a finalizer checks three things: the counter has reached the
+interval, a final response exists, and the turn was not interrupted. Only then does it
+spawn the review.
+
+The ordering is not incidental. The review never competes with your task for the
+model's attention and never delays your reply, because by the time it exists your
+reply has already been delivered. And because an interrupted turn produces no final
+response, hitting `Ctrl-C` on a run means nothing is learned from it.
+
+<Viz
+  id="skill-loop"
+  caption="Two things prose cannot hold in one frame: the ordering — your answer is complete before the fork exists — and the arrow that does not exist, which is the loop's most governance-relevant fact."
+/>
+
+## What you actually see
+
+One line, after the answer, unprompted:
+
+<Transcript fidelity="verbatim" source="Captured session, v0.19.0, 2026-07-25">
+{"💾 Self-improvement review: Skill '<name>' created."}
+</Transcript>
+
+The published documentation shows this notice as `💾 Skill 'foo' patched`. The real
+string is prefixed with **`Self-improvement review:`**, and on a fresh profile the
+observed verb was `created` rather than `patched` — which is what the review's own
+editorial policy predicts, since there was nothing yet to patch.
+
+That single line is the only trace the loop leaves in your terminal. The counter is
+internal state and is never printed.
+
+## The fork, and its four walls
+
+The review is a daemon thread running a forked agent over a snapshot of your
+conversation. The module that implements it opens by describing itself:
+
+> Writes go straight to the memory + skill stores. Main conversation and prompt cache
+> are never touched.
+
+Four restrictions are set on that fork, and each one closes a specific door.
+
+**A tool whitelist.** Its toolset is cut to the skills tools plus memory, if memory is
+enabled on the profile. Any other call is refused at runtime with a fixed message:
+`Background review denied non-whitelisted tool: {tool_name}. Only memory/skill tools
+are allowed.` It cannot read your files or reach the network, because it cannot call
+the tools that would.
+
+**`_persist_disabled = True`** and **`_session_db = None`.** The fork shares your
+session id — deliberately, so it hits the same warm prompt-cache prefix — but it holds
+no handle to the session database and is barred from writing to it.
+
+**Approval auto-deny.** Any dangerous-command approval callback the fork triggers is
+answered *no* on its behalf, and logged. There is no configuration that makes an
+unattended background review able to run a command that would have asked you first.
+
+<Depth min="operator">
+
+Two further switches are set that are not walls so much as sanity: compression is
+disabled inside the fork, because compressing mid-review could rotate the shared
+session id into a sibling the gateway never adopts; and both nudge intervals are
+zeroed inside the fork, so a review cannot spawn a review.
+
+</Depth>
+
+## The arrow that does not exist
+
+Now the part worth the price of the lesson.
+
+Nothing returns from the fork to your live session. Not its output, not its reasoning,
+not the harness prompt that told it what to do. The two isolation flags exist
+specifically to guarantee that, and the source names the failure they prevent: **the
+curator-takeover root cause.**
+
+Without them, the fork's instruction — *review the conversation above and update the
+skill library* — plus its own reply would be written into your real session. On your
+next turn the agent would re-read that injected message as a standing instruction,
+decide it was now a curator, and start refusing the work you actually asked for.
+
+<TrackCallout
+  newcomer="You will never see this happen, and that is the point. The one line about a skill being created is the entire visible surface of a system that is otherwise sealed off from your conversation."
+  operator="If an agent ever does start behaving like a maintenance pass mid-session, the cause is something injecting into session history — not the review fork, which cannot. Look at hooks and at anything writing to state.db."
+  architect="This is an isolation boundary you can state in a review: the background reviewer shares a session id for cache economics and nothing else. It has no session-store handle, a two-tool allowlist, and a hard-coded deny on approval prompts. Its only egress is the skills directory."
+/>
+
+## Where the write lands
+
+Agent-authored skills are written to a **namespaced** path, owner-only:
+
+<Command verified="v0.19.0" note="read from an install, 2026-07-25">ls ~/.hermes/skills/</Command>
+
+The directories you see are namespaces, not skills. A skill created by the review fork
+lands at `~/.hermes/skills/<namespace>/<skill>/`, with `SKILL.md` and any support
+files at mode `0600`. Documentation that gives the path as `~/.hermes/skills/<skill>/`
+is a level short.
+
+And because the skill library is read when the system prompt is assembled, a skill the
+fork writes during your session **does not exist for that session**. It is available
+in the next one. That is the same rule as everywhere else in Hermes: the prompt is
+assembled once, and nothing rebuilds it.
+
+## Which model pays for it
+
+By default the fork runs on the parent's live runtime — same provider, same model,
+same credentials — so it reuses the warm cached prefix and costs far less than a cold
+call. You can route it somewhere cheaper:
+
+```yaml
+auxiliary:
+  background_review:
+    provider: openrouter
+    model: google/gemini-3-flash-preview
+```
+
+There is a consequence to that, and the source states it in one line: *same model →
+full replay; different model → digest.* A routed review cannot reuse the parent's
+cache key, so instead of replaying the whole conversation it replays a compact digest
+— the last twenty-four messages verbatim, everything older collapsed into a single
+synthetic summary.
+
+<ForTrack track="architect">
+
+That is a real quality trade, not just a billing one. A review routed to a cheap model
+sees a truncated view of the session it is meant to learn from, so the cost saving is
+paid for in the fidelity of what gets written to your skill library. Route it if the
+volume demands it, and expect shallower captures when you do.
+
+</ForTrack>
+
+## What to take from this
+
+The loop is legible, and it is bounded. It fires on a work clock rather than a
+conversational one, always after your answer, into a fork that can touch two tool
+families and nothing else, and it writes to a directory you can read.
+
+If you remember one thing, make it the absence: **no path leads from the review back
+into your running conversation.** Every other property of this system is a
+convenience. That one is the reason it is safe to leave switched on.

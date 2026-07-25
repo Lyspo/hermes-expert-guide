@@ -67,11 +67,13 @@ export, content pipeline. Full 51-lesson skeleton generated from the map by
 switcher, progress marks. Simulation engine with a pure timeline core and one flagship
 replay.
 
-**Written lessons: 5 of 51.** All of module 1, plus `03/01`.
+**Written lessons: 7 of 51.** All of module 1, plus `03/01`, `05/03` and `06/05`. The last
+two were written to host plates; the count was stale at 5 before this was checked against
+the files, so count them rather than trusting this line.
 
-**Not built.** System visualizations (P7, next). Remaining 46 lessons. Search, OG images,
-JSON-LD, sitemap. The landing page — currently a labelled placeholder. Glossary and
-cheatsheets. Colophon.
+**Not built.** The orchestration plate, VIZ-4 (P7's third and last). Remaining 44 lessons.
+SIM-4. Search, OG images, JSON-LD, sitemap. The landing page — currently a labelled
+placeholder. Glossary and cheatsheets. Colophon.
 
 **Verification is thinner than it looks.** `pnpm verify` runs typecheck, lint, unit tests,
 the static export and a link check. There is **no** Playwright, no axe sweep and no
@@ -124,13 +126,27 @@ orchestration did not arrive in v0.6.0.
 - **Never size a canvas from its own bounding box.** That produced a 3-gigapixel buffer.
   Size from the viewport.
 - Read stored state with `useSyncExternalStore`, never an effect plus `setState`.
+- **SVG has no text flow and no overflow**, so a plate label that runs long is silently
+  clipped and two that collide silently overprint. Both happened. `plates.test.tsx` now
+  measures every text run in every registered plate against the viewBox and against every
+  other run — do not eyeball plate geometry.
+- **Publishing a lesson whose prerequisites are still stubs** produces links to pages that
+  were never generated, and only the link check catches it. `isWritten` gates that: a
+  stub prerequisite is named but not linked. The same applies anywhere else lessons are
+  linked.
 
 ## Picking up
 
-Next is **P7, system visualizations** — `VizStage`/`VizNode`/`VizEdge` primitives plus
-three plates: memory, skill lifecycle, orchestration. Then the remaining lessons, module by
-module, against `research/curriculum-map.md`, which carries per-lesson sources and four
+**P7 is two plates in of three.** VIZ-2 (memory, hosting lesson `05/03`) and VIZ-3 (the
+improvement loop, hosting `06/05`) are built. Next is the orchestration plate, VIZ-4, at
+`08/01` — the map's spec is the two handoff models with the *same* restart event drawn
+twice, as a loss on one side and a reclaim on the other. Then the remaining lessons, module
+by module, against `research/curriculum-map.md`, which carries per-lesson sources and four
 amendment sections at the end recording what the captures changed.
+
+`06/05` still owes SIM-4, the flagship replay. It is deliberately not stubbed in the MDX:
+the SKILL.md diff it needs to stop on has never been captured, so the replay cannot be
+built faithfully yet.
 
 Still uncaptured, so still reconstructed and labelled as such: a skill **revision** diff
 (needs the loop to fire twice on related work), and the `🗜️` badge in situ (needs a

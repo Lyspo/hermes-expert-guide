@@ -45,7 +45,7 @@ export function MemoryPlate() {
         </VizNote>
       </g>
 
-      <VizEdge from={[168, 68]} to={[212, 68]} kind="absent" />
+      <VizEdge from={[168, 68]} to={[212, 68]} kind="change" arrow />
 
       {/* What is actually there. */}
       <text x={228} y={12} fill="var(--color-ice-dim)" fontSize={10}>

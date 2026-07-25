@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { MDXContent } from '@content-collections/mdx/react'
-import { getLesson, lessons, neighbours, prerequisitesOf } from '@/lib/content'
+import { getLesson, isWritten, lessons, neighbours, prerequisitesOf } from '@/lib/content'
 import { mdxComponents } from '@/components/mdx'
 import { Page } from '@/components/ui/page'
 import { LessonProgress } from '@/components/personalization/lesson-progress'
@@ -77,16 +77,27 @@ export default async function LessonPage({ params }: { params: Params }) {
             <div className="border-ice-faint mt-[var(--step)] border-t pt-[calc(var(--step)*0.6)]">
               <p className="font-mono text-ice-dim text-[0.7rem] opacity-70">Assumes</p>
               <ul className="mt-[calc(var(--step)*0.3)] space-y-[calc(var(--step)*0.2)] text-[0.8125rem]">
-                {prerequisites.map((prerequisite) => (
-                  <li key={prerequisite.id}>
-                    <Link
-                      href={prerequisite.url}
-                      className="underline decoration-[var(--color-rule)]"
-                    >
-                      {prerequisite.title}
-                    </Link>
-                  </li>
-                ))}
+                {/* A prerequisite that is still a stub is named but not linked —
+                    the dependency is real and worth stating, and a link to a page
+                    that does not exist is worse than no link. Same treatment, and
+                    the same word, as the module index. */}
+                {prerequisites.map((prerequisite) =>
+                  isWritten(prerequisite) ? (
+                    <li key={prerequisite.id}>
+                      <Link
+                        href={prerequisite.url}
+                        className="underline decoration-[var(--color-rule)]"
+                      >
+                        {prerequisite.title}
+                      </Link>
+                    </li>
+                  ) : (
+                    <li key={prerequisite.id} className="text-ice-dim">
+                      {prerequisite.title}{' '}
+                      <span className="font-mono text-[0.7rem] text-ice-faint">planned</span>
+                    </li>
+                  ),
+                )}
               </ul>
             </div>
           )}
