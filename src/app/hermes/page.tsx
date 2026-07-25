@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { coreCountFor, durationFor, guides, modules } from '@/lib/content'
 import { Page } from '@/components/ui/page'
+import { courseSchema, jsonLd } from '@/lib/schema'
 import { TRACKS, TRACK_LABELS } from '@/lib/site'
 
 const GUIDE = 'hermes'
@@ -21,6 +22,8 @@ export default function GuidePage() {
   const written = guideModules.reduce((total, mod) => total + mod.written, 0)
 
   return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(courseSchema(guide))} />
     <Page
       aside={
         <div className="lg:sticky lg:top-[calc(var(--step)*3)]">
@@ -88,5 +91,6 @@ export default function GuidePage() {
         </ol>
       </main>
     </Page>
+    </>
   )
 }

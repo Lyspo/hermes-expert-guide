@@ -5,6 +5,8 @@ import { MDXContent } from '@content-collections/mdx/react'
 import { getLesson, isWritten, lessons, neighbours, prerequisitesOf } from '@/lib/content'
 import { mdxComponents } from '@/components/mdx'
 import { Page } from '@/components/ui/page'
+import { getModule } from '@/lib/content'
+import { jsonLd, lessonSchema } from '@/lib/schema'
 import { LessonProgress } from '@/components/personalization/lesson-progress'
 
 // This route tree serves one guide. A second guide gets its own directory, which
@@ -41,8 +43,14 @@ export default async function LessonPage({ params }: { params: Params }) {
 
   const { previous, next } = neighbours(lesson)
   const prerequisites = prerequisitesOf(lesson)
+  const parentModule = getModule(GUIDE, moduleSlug)
 
   return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={jsonLd(lessonSchema(lesson, parentModule))}
+      />
     <Page
       aside={
         /* Provenance lives in the margin, where a corrector would have written
@@ -154,5 +162,6 @@ export default async function LessonPage({ params }: { params: Params }) {
         </nav>
       </article>
     </Page>
+    </>
   )
 }

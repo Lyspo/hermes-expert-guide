@@ -33,6 +33,12 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-5">
           <Link
+            href="/search/"
+            className="font-mono text-[0.65rem] tracking-[0.08em] text-ice-dim uppercase no-underline transition-colors duration-200 hover:text-ice"
+          >
+            Search
+          </Link>
+          <Link
             href="/about/"
             className="hidden font-mono text-[0.65rem] tracking-[0.08em] text-ice-dim uppercase no-underline transition-colors duration-200 hover:text-ice sm:inline"
           >

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { coreCountFor, durationFor, guides, lessons, modules } from '@/lib/content'
+import { jsonLd, websiteSchema } from '@/lib/schema'
 import { TRACKS, TRACK_LABELS, site } from '@/lib/site'
 
 /**
@@ -47,6 +48,8 @@ export default function HomePage() {
 
   return (
     <main className="mx-auto max-w-[52rem] px-6 py-[calc(var(--step)*4)]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(websiteSchema())} />
+
       <p className="font-mono text-[0.7rem] tracking-[0.09em] text-ice-faint uppercase">
         {site.name} · {guide?.subject} · verified against {guide?.verifiedAgainst}
       </p>

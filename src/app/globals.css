@@ -53,6 +53,18 @@
     color: var(--color-ice);
   }
 
+  /* Search excerpts arrive from Pagefind with matches wrapped in <mark>, whose
+     browser default is a bright yellow — a second hue, which the palette does not
+     have. Emphasis here is a lift in luminance instead, which is how depth is
+     declared everywhere else. Not the signal colour: a search match is not a
+     change, and the signal means one thing. */
+  mark {
+    background-color: color-mix(in srgb, var(--color-ice) 16%, transparent);
+    color: var(--color-ice);
+    border-radius: 1px;
+    padding-inline: 0.15em;
+  }
+
   /* rehype-autolink-headings wraps each heading in a self-link. Useful; its
      default underline on display type is not. */
   .heading-anchor {

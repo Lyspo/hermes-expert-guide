@@ -17,8 +17,9 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "links": "node scripts/check-links.mjs",
-    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm links",
-    "content": "content-collections build"
+    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm search-index && pnpm links",
+    "content": "content-collections build",
+    "search-index": "node scripts/build-search.mjs"
   },
   "dependencies": {
     "@gsap/react": "2.1.2",
