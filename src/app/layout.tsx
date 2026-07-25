@@ -38,7 +38,9 @@ const fontVariables = [faculty, bitter, publicSans, archivoNarrow, jetbrains]
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: `${site.name} — learn Hermes Agent properly`,
+    default: `${site.name} — ${site.tagline}`,
+    // Lesson and module pages append their guide's title, so the words a reader
+    // would actually search for ("Hermes Agent") land in the tab and the SERP.
     template: `%s · ${site.name}`,
   },
   description: `${site.description} ${site.disclaimer}`,

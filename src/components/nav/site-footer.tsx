@@ -36,10 +36,7 @@ export function SiteFooter() {
           ))}
         </p>
 
-        <p className="font-mono mt-4 text-xs">
-          Curriculum verified against Hermes {site.verifiedAgainst}. Code MIT, prose CC BY
-          4.0.
-        </p>
+        <p className="font-mono mt-4 text-xs">Code MIT, prose CC BY 4.0.</p>
       </div>
     </footer>
   )

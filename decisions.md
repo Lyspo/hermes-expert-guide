@@ -61,3 +61,27 @@ A running log of the choices that shaped this project, and what each one cost. N
 **Why.** A playground would demand the visitor's API key, which is both a security surface and a barrier at exactly the wrong moment. Replays are deterministic, art-directable, instant, free, and can pause to explain the moment Hermes writes a skill for itself — which live output can't be relied on to do. The trade is honesty, so every recorded session carries its provenance, and the format tracks fidelity explicitly: what's verbatim from a source versus paraphrased.
 
 **Cost.** Not the real thing. Addressed by keeping every real command copy-pasteable inline, so the reader runs Hermes for themselves while reading.
+
+---
+
+### 007 — The laboratory notebook, not the messenger god
+
+**Decision.** The visual world is a bound laboratory notebook and its protocols: paginated, dated, stamped; printed procedures corrected in the margins across successive runs; results tipped in as pasted specimen slips; nothing erased, only struck through and re-entered. System diagrams are exploded axonometric technical plates. Terminal transcripts appear as dark plates pasted into the light page.
+
+**Why.** The obvious direction — Hermes, therefore Greek antiquity, therefore dark ground and engraved capitals — is the literal reading of a product's name, which is the least interesting thing about it. Rendered as a comp it also failed on its own terms: inscribed letters on a stoichedon grid are beautiful at hero scale and unreadable at body scale, and carved stone offers no answer to what a dense lesson page or a scrolling transcript should look like.
+
+The notebook was chosen because it is the only candidate that carries all three of the product's hard parts at once. A protocol corrected in its own margins *is* the agent revising its own skill files. A dated record that only grows *is* its memory. Append-only convention — struck through, never erased — *is* the audit trail the governance audience needs before they will permit an autonomous system anything. The classical reading carried the least of it while looking the most like something.
+
+**Cost.** A light, paper-grounded world is unusual for a technical site and carries a real risk of drifting into the cream-and-serif look that AI-generated interfaces converge on. Mitigated deliberately: the paper token is cool rather than warm, the body face is a Clarendon slab with an official-document lineage rather than a literary serif, and the annotation red may only appear where it means correction. The night mode is an archival negative, not a reading lamp — lamplight being precisely the rendition every model reaches for.
+
+---
+
+### 008 — A platform called Protocol, holding guides
+
+**Decision.** The product is a platform, "Protocol," publishing one guide per subject. The Hermes guide is the first. Content lives at `content/guides/<guide>/<module>/<lesson>.mdx` and serves from `/hermes/…`; module grouping and ordering invariants are keyed per guide.
+
+**Why.** The original framing was a single site about one agent. That is too narrow for where this is going — other agents are worth the same treatment, and a platform can eventually be sold where a single guide cannot. The word earns its place twice over: a protocol is the lab document this design world is built on, written down and revised in the margins and followed exactly, and it is also the term this industry already uses for how agents talk to things.
+
+Doing it now cost a directory move and one keying change. Doing it after sixty lessons exist would have cost a migration.
+
+**Cost.** "Protocol" is a common word, so it confers no exclusivity, and the platform's own identity has to stay quiet enough not to compete with each guide's. Commercial plumbing is deliberately absent: gating requires a backend, which would contradict the zero-cost, zero-data posture, so only the seams are in place — guides as independent units, no architecture that would need tearing out.

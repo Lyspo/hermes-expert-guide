@@ -1,19 +1,31 @@
+import Link from 'next/link'
+import { guides } from '@/lib/content'
 import { site } from '@/lib/site'
 
 export default function HomePage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-24">
-      <p className="font-mono text-ink-soft text-xs">
-        Verified against Hermes {site.verifiedAgainst}
-      </p>
-      <h1 className="font-display mt-6 text-5xl leading-[1.05] tracking-[-0.02em]">
-        The agent that writes its own procedure.
+      <h1 className="font-display text-5xl leading-[1.05] tracking-[-0.02em]">
+        {site.tagline}
       </h1>
       <p className="mt-6 max-w-[68ch] text-lg">
         Scaffold placeholder. The landing page is built last, once the curriculum and the
-        session replays it is supposed to introduce actually exist.
+        session replays it exists to introduce are real.
       </p>
-      <p className="text-ink-soft mt-12 text-sm">{site.disclaimer}</p>
+
+      <ul className="border-rule mt-16 border-t">
+        {guides.map((guide) => (
+          <li key={guide.slug} className="border-rule border-b py-6">
+            <h2 className="font-display text-2xl">
+              <Link href={guide.url}>{guide.title}</Link>
+            </h2>
+            <p className="mt-2 max-w-[68ch]">{guide.summary}</p>
+            <p className="font-mono text-ink-soft mt-2 text-xs">
+              {guide.subject} · verified against {guide.verifiedAgainst}
+            </p>
+          </li>
+        ))}
+      </ul>
     </main>
   )
 }

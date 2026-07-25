@@ -1,10 +1,17 @@
-/** Site-wide constants. The name is provisional — see decisions.md. */
+/**
+ * Platform-level constants.
+ *
+ * "Protocol" is the platform; a guide is one course inside it. The Hermes guide
+ * is the first. Per-guide facts (title, subject, verified version) live in each
+ * guide's `_guide.yaml`, not here — see content-collections.ts.
+ */
 export const site = {
-  name: 'The Hermes Guide',
-  shortName: 'Hermes Guide',
+  /** The platform. */
+  name: 'Protocol',
+  tagline: 'Learn the agents worth learning properly.',
   url: 'https://hermes-expert-guide.vercel.app',
   description:
-    'An interactive, adaptive course in Hermes Agent — the open-source, self-improving AI agent. Unofficial and independent.',
+    'Protocol publishes deep, sourced, adaptive courses in the agents worth learning properly. First course: Hermes Agent, the open-source self-improving agent from Nous Research.',
   disclaimer:
     'Unofficial community project. Not affiliated with, endorsed by, or connected to Nous Research.',
   author: {
@@ -17,8 +24,6 @@ export const site = {
     repo: 'https://github.com/NousResearch/hermes-agent',
     docs: 'https://hermes-agent.nousresearch.com/docs',
   },
-  /** The Hermes release the curriculum is currently verified against. */
-  verifiedAgainst: 'v0.19.0',
 } as const
 
 export const TRACKS = ['newcomer', 'operator', 'architect'] as const
