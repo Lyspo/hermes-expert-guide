@@ -18,7 +18,8 @@ The [official documentation](https://hermes-agent.nousresearch.com/docs) is refe
 
 - **Adaptive curriculum.** A short assessment places you on one of three tracks — Newcomer, Operator, Architect — and lessons show the depth that fits, without hiding anything you'd rather read anyway.
 - **Simulated sessions.** Scrubable replays of real Hermes sessions, so you can watch the agent write a skill for itself, recall something from three weeks ago, or fan work out to subagents — before you've installed anything.
-- **Systems made visible.** The three memory layers, the skill lifecycle, and multi-agent orchestration as animated diagrams rather than prose.
+- **Systems made visible.** The memory system, the skill lifecycle, and multi-agent delegation as animated technical plates rather than prose.
+- **Sourced, and willing to correct the record.** Every claim traces to a citation in `research/`. Some of them contradict what's widely repeated: Hermes's memory is two capped markdown files plus a full-text session index, not the "three-layer memory system" you'll read elsewhere, and multi-agent orchestration arrived with the Kanban board in v0.13.0, not in v0.6.0.
 
 ## Repo map
 
