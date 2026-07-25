@@ -121,6 +121,16 @@ orchestration did not arrive in v0.6.0.
   animating opacity from zero or gating content on an animation completing; a throttled
   clock then leaves the page blank. Transform-only, enter-only, no `AnimatePresence`
   `mode="wait"` on a flow.
+- **Drive any resolve by elapsed time, never by a frame count.** A fourth instance of
+  the trap above, and it shipped: `Revised` counted frames, so a throttled clock left
+  the line as scrambled gibberish for tens of seconds instead of resolving. Timing it
+  means the first frame after a stall arrives with a large delta and lands on the
+  finished text. Caught by looking at the page, not by any test — the build, the types
+  and the link check were all green.
+- **Do not animate the largest text on a page.** The landing hero performs the strike
+  half of the `rewrite` gesture in pure CSS and deliberately not the character-resolve.
+  It is the LCP element and the argument; one stalled clock away from rendering as
+  nonsense is not a trade worth making for motion.
 - **Track adaptivity is membership, not exclusion.** `tk-block` plus `tk-<track>` for each
   track a block *belongs to*; CSS hides blocks not claiming the current track. It was once
   inverted and silently broke the whole feature — `for-track.test.tsx` guards it.
@@ -154,9 +164,11 @@ for d in content/guides/hermes/*/; do n=$(ls $d*.mdx | wc -l); \
 
 **The curriculum is done, so the next work is not lessons.** In rough order of value:
 
-1. **The landing page.** Still a labelled placeholder, and now the only part of the site
-   that does not represent the work behind it. `design.md` specifies the GSAP scroll
-   narrative; nothing of it exists.
+1. **The landing page's scroll narrative.** The page itself is now built — hero, the
+   corrections as its centrepiece, computed track numbers, a real table of contents —
+   and it is entirely server-rendered with no client JavaScript. What is *not* built is
+   the GSAP scroll scene `design.md` specifies. `src/components/landing/` does not
+   exist; the eslint rule permitting GSAP there is currently unused.
 2. **Search, OG images, JSON-LD, sitemap.** All four are scaffolded in `package.json`'s
    `verify` chain in intent only — `pnpm verify` does not currently build a search index
    or OG images despite the phase gate naming them.

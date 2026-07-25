@@ -19,7 +19,17 @@ const GLYPHS = 'abcdefghijklmnopqrstuvwxyz-/_.0123456789'
  *
  * The resting state is the finished text. Reduced motion, a blocked script, or a
  * throttled animation clock all land there — never on a blank line.
+ *
+ * The resolve is driven by elapsed time rather than by a frame count, and that is
+ * load-bearing rather than tidy. Counting frames means a throttled clock — a
+ * background tab, a busy machine, a reduced refresh rate — stretches the scramble
+ * out indefinitely and strands the line as gibberish, which is the same failure as
+ * a blank reveal wearing a different coat. Timing it means the first frame after a
+ * stall arrives with a large delta and lands directly on the finished text.
  */
+
+/** design.md's `rewrite`: ~1.2s to resolve, after the strike. */
+const RESOLVE_MS = 1200
 export function Revised({
   was,
   now,
@@ -39,16 +49,18 @@ export function Revised({
     if (!element) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
-    let frame = 0
+    let begun = 0
     let raf = 0
     let started = false
 
-    const step = () => {
-      const settled = Math.floor(frame / 1.7)
-      if (settled > now.length) {
+    const step = (timestamp: number) => {
+      if (!begun) begun = timestamp
+      const progress = Math.min(1, (timestamp - begun) / RESOLVE_MS)
+      if (progress >= 1) {
         setShown(now)
         return
       }
+      const settled = Math.floor(progress * now.length)
       let out = ''
       for (let i = 0; i < now.length; i++) {
         const character = now[i]!
@@ -58,7 +70,6 @@ export function Revised({
             : GLYPHS[Math.floor(Math.random() * GLYPHS.length)]
       }
       setShown(out)
-      frame++
       raf = requestAnimationFrame(step)
     }
 
@@ -68,7 +79,7 @@ export function Revised({
         for (const entry of entries) {
           if (!entry.isIntersecting || started) continue
           started = true
-          frame = 0
+          begun = 0
           raf = requestAnimationFrame(step)
           observer.disconnect()
         }
