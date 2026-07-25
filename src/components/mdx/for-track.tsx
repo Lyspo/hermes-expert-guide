@@ -3,18 +3,31 @@ import { TRACKS, TRACK_LABELS, type Track } from '@/lib/site'
 /**
  * Track-variant content.
  *
- * These render server-side for *every* track, tagged so CSS can hide what does
- * not apply once `data-track` is set on <html>. Three consequences, all of them
- * the point:
+ * These render server-side for *every* track, tagged so CSS can hide what does not
+ * apply once `data-track` is set on <html>. Three consequences, all of them the
+ * point:
  *
  *   - No flash of wrong content, and no hydration mismatch: the server sends one
  *     document to everyone and React never re-renders on a track change.
- *   - Crawlers, and readers without JavaScript, get the union of all variants
- *     with each one labelled — complete, not degraded.
+ *   - Crawlers, and readers without JavaScript, get the union of all variants with
+ *     each one labelled — complete, not degraded.
  *   - Switching track costs a single attribute write.
+ *
+ * The class contract, which is load-bearing and was once wrong in a way that
+ * silently inverted the whole feature: `tk-block` marks a variant container, and
+ * each `tk-<track>` declares a track the block **belongs to**. The CSS then hides
+ * any block that does not claim the current track. Membership, never exclusion —
+ * tagging by exclusion appears to work for single-track blocks and breaks for
+ * blocks belonging to two.
  */
 
 const ORDER: Record<Track, number> = { newcomer: 0, operator: 1, architect: 2 }
+
+function classesFor(tracks: Track[], extra = ''): string {
+  return ['tk-block', ...tracks.map((track) => `tk-${track}`), extra]
+    .filter(Boolean)
+    .join(' ')
+}
 
 export function ForTrack({
   track,
@@ -24,11 +37,10 @@ export function ForTrack({
   children: React.ReactNode
 }) {
   const tracks = Array.isArray(track) ? track : [track]
-  const hidden = TRACKS.filter((candidate) => !tracks.includes(candidate))
 
   return (
-    <div className={hidden.map((candidate) => `tk-${candidate}`).join(' ')}>
-      <p className="tk-label font-mono text-ice-dim text-xs">
+    <div className={classesFor(tracks)}>
+      <p className="tk-label font-mono text-[0.7rem] tracking-[0.06em] text-ice-dim uppercase">
         For {tracks.map((candidate) => TRACK_LABELS[candidate]).join(' and ')} readers
       </p>
       {children}
@@ -52,27 +64,20 @@ export function Depth({ min, children }: { min: Track; children: React.ReactNode
 export function TrackCallout(props: Partial<Record<Track, string>>) {
   return (
     <>
-      {TRACKS.filter((track) => props[track]).map((track) => {
-        const hidden = TRACKS.filter((candidate) => candidate !== track)
-        return (
-          <aside
-            key={track}
-            // No coloured side stripe: three stacked red-ruled asides are the
-            // banned side-stripe pattern, and the annotation colour may only
-            // appear where it means correction or attention. The label carries
-            // the distinction instead. This becomes a true margin note once the
-            // lesson layout has a margin to put it in.
-            className={`border-ice-faint my-6 border-l pl-4 ${hidden
-              .map((candidate) => `tk-${candidate}`)
-              .join(' ')}`}
-          >
-            <p className="tk-label font-mono text-ice-dim text-xs">
-              For {TRACK_LABELS[track]} readers
-            </p>
-            <p>{props[track]}</p>
-          </aside>
-        )
-      })}
+      {TRACKS.filter((track) => props[track]).map((track) => (
+        <aside
+          key={track}
+          // No coloured side stripe: three stacked signal-ruled asides would be the
+          // banned side-stripe pattern, and the signal colour may only appear where
+          // it means change. The label carries the distinction instead.
+          className={classesFor([track], 'my-6 border-l border-ice-faint pl-4')}
+        >
+          <p className="tk-label font-mono text-[0.7rem] tracking-[0.06em] text-ice-dim uppercase">
+            For {TRACK_LABELS[track]} readers
+          </p>
+          <p>{props[track]}</p>
+        </aside>
+      ))}
     </>
   )
 }

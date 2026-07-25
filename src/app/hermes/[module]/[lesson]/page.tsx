@@ -5,6 +5,7 @@ import { MDXContent } from '@content-collections/mdx/react'
 import { getLesson, lessons, neighbours, prerequisitesOf } from '@/lib/content'
 import { mdxComponents } from '@/components/mdx'
 import { Page } from '@/components/ui/page'
+import { LessonProgress } from '@/components/personalization/lesson-progress'
 
 // This route tree serves one guide. A second guide gets its own directory, which
 // keeps its URLs short and its static params independent. Every lesson URL is
@@ -68,6 +69,10 @@ export default async function LessonPage({ params }: { params: Params }) {
             </div>
           </dl>
 
+          <div className="mt-[var(--step)] border-t border-ice-faint pt-[calc(var(--step)*0.5)]">
+            <LessonProgress id={lesson.id} />
+          </div>
+
           {prerequisites.length > 0 && (
             <div className="border-ice-faint mt-[var(--step)] border-t pt-[calc(var(--step)*0.6)]">
               <p className="font-mono text-ice-dim text-[0.7rem] opacity-70">Assumes</p>
@@ -111,6 +116,10 @@ export default async function LessonPage({ params }: { params: Params }) {
             <time dateTime={lesson.updated}>{lesson.updated}</time> · {lesson.duration} min
           </p>
         </header>
+
+        <div className="mt-[calc(var(--step)*0.75)] lg:hidden">
+          <LessonProgress id={lesson.id} />
+        </div>
 
         <hr className="border-ice-faint mt-[var(--step)] mb-[calc(var(--step)*1.5)]" />
 

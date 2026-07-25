@@ -14,10 +14,123 @@ prerequisites:
   - hermes/01-first-contact/01-what-hermes-is
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+The official documentation is where most of what follows comes from. It is
+accurate, it is thorough, and it is arranged for lookup, which is the right shape
+for reference material and no help at all when the question is what to learn
+second.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+This lesson is the map: every subsystem named once, the module that teaches it,
+and what is left out with the reason attached to each line.
+
+## What it costs
+
+Fifty-one lessons. 611 minutes of written material if you read every word on
+every track, which nobody does — the tracks exist so nobody has to. The figure
+that matters is the core path your track is asked to finish.
+
+| Track | Core lessons | Core path |
+|---|---:|---|
+| Newcomer | 33 | 382 min · 6 h 22 m |
+| Operator | 46 | 554 min · 9 h 14 m |
+| Architect | 35 | 429 min · 7 h 09 m |
+
+In ten-to-thirty-minute sittings, the Newcomer path is thirteen to thirty-eight of
+them. That number belongs at the start rather than being discovered somewhere
+around module 6.
+
+<MarginNote>
+The docs' learning path also offers six routes by use case, each a numbered
+reading order. They are genuine sequences. What they do not carry is an argument
+for the order, or a sentence telling you what to skip.
+</MarginNote>
+
+The docs set three tiers against those figures: Beginner in about an hour,
+Intermediate in two to three, Advanced in four to six. The comparison flatters
+neither side until you look at what each measures. That Advanced tier is four
+pages, and two of them are about working on Hermes rather than using it. Longer
+here means further, not slower.
+
+## The surface, in ten headings
+
+| Module | What it holds |
+|---|---|
+| 1 · First contact | The loop, the single assembled prompt, this map, which release you are reading about |
+| 2 · Standing it up | The installer and the platform tiers, providers and the 64,000-token floor, Nous Portal and its Tool Gateway, `config.yaml` versus `.env`, the default blast radius |
+| 3 · Running a session | TUI and classic CLI, the status bar, context compression, sessions in `state.db`, steering a working agent |
+| 4 · Tools and isolation | The tool catalogue and its toolsets, `terminal` and `process`, the six execution backends, the approval modes and the blocklist none of them can move |
+| 5 · What it knows | The assembled system prompt, `SOUL.md`, project context files, `MEMORY.md` and `USER.md`, session search, and the external memory providers — eight or nine, depending which page you read |
+| 6 · Skills and the loop | `SKILL.md` and the agentskills.io standard, progressive disclosure, the Skills Hub and its taps, `/learn`, the nudge counter, the review fork, the editorial policy, the curator |
+| 7 · Unattended operation | Cron, the gateway process, the authorization chain and DM pairing, Telegram end to end, inbound webhooks, what it costs per day |
+| 8 · More than one agent | `delegate_task`, the Kanban board, profiles, projects |
+| 9 · Extension and routing | MCP servers, plugins and three separate hook systems, routing and fallbacks and credential pools, Mixture of Agents, the other front doors, voice, vision, image generation, browser automation |
+| 10 · Deployment and governance | The deployment checklist, secrets and the egress firewall, what is auditable, the CVEs and the documented incident, checkpoints and rollback and update, where it should not be trusted |
+
+<TrackCallout
+  newcomer="Five of the fifty-one are marked skip for you, and nothing later depends on them — you can read your path straight through without a gap opening behind you."
+  operator="Nothing is skipped on your track. Yours is the longest path because you are the reader who will run this and be asked what it costs."
+  architect="Installation is skim or skip for you. You may never run the software, and you should not have to in order to govern it."
+/>
+
+## What is left out, and why
+
+The test throughout: does this teach a mechanism you will reason with, or is it a
+surface you can look up? Mechanisms earn lessons. Surfaces earn a cheatsheet row.
+
+- **Every messaging platform but one.** One gateway process, one authorization
+  chain, identical mechanics behind each adapter. Telegram is taught end to end;
+  the rest is a capability matrix you consult once.
+- **The skills catalogues.** Two reference pages naming hundreds of skills.
+  Module 6 teaches how to search them and judge what comes back.
+- **The domain integrations** — Home Assistant, Spotify, finance, blockchain,
+  gaming. The pattern is one idea, a skill wrapping a command-line tool, taught
+  once in module 6. Two hundred instances of one pattern are not a curriculum.
+- **Batch trajectory generation and RL training.** Real, documented, and not part
+  of the running agent: it produces training data, a different job from operating
+  one. No source in this guide's research confirms it was used in any published
+  training run.
+- **`hermes lsp`, `hermes computer-use`, the Atropos RL environments.** Named
+  here, taught nowhere — no bearing on the model you now hold.
+- **Nix, Termux, the Windows feature gaps.** Tier 2 or best-effort by the docs'
+  own classification, and for Nix the reason is stated plainly: it "breaks often
+  due to node.js packaging woes." Module 2 prints the tiers so an affected reader
+  knows where they stand, and says the docs never enumerate what Windows loses.
+- **Nous Portal prices.** Two direct fetches of the portal returned HTTP 429, so
+  every figure available here is a search snippet. The tiers are named; no dollar
+  amount appears anywhere.
+- **Contributing to the core**, the contributor shell helpers, and the cosmetics —
+  skins, themes, one decorative subcommand family. Both core-contribution pages
+  open by telling you not to take that route.
+
+<Depth min="operator">
+
+Three surfaces are included but demoted, because each re-exposes the same agent
+through a different door rather than adding a mechanism: the ACP editor
+integration, the OpenAI-compatible API server, and the dashboard with its desktop
+counterpart. They share one survey lesson in module 9.
+
+Their governance-relevant facts do not wait for it. The dashboard's auth gate
+fails closed — with no provider registered it refuses to bind rather than binding
+open — and its middleware skips `/api/plugins/` routes entirely, so a non-loopback
+bind exposes every plugin route unauthenticated. The API server requires a bearer
+token on every deployment, loopback included. Those land in module 10, where they
+change a decision.
+
+Mixture of Agents is relocated rather than demoted. It reads like task
+orchestration and is a model-selection strategy, so it sits in module 9 rather
+than the multi-agent module, and its lesson opens by saying what it is not.
+
+</Depth>
+
+## Two commands with no page at all
+
+`hermes project` and `hermes insights` both ship, both work, and neither has a
+documentation page — confirmed by probing the URLs such a page would live at and
+getting 404s from every one. Module 8 teaches `hermes project` from a docstring in
+the source and labels it that way, because you deserve to know which facts here
+came from documentation and which came from reading code.
+
+That is the same test applied to the map itself, and it is why the exclusion list
+will grow: the surface grows every week or two, and a guide that adds a lesson per
+new page stops being a path and becomes a second set of documentation.

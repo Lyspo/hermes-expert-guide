@@ -116,9 +116,9 @@
    this is CSS rather than conditional rendering.
    --------------------------------------------------------------------------- */
 
-:root[data-track='newcomer'] :is(.tk-operator, .tk-architect),
-:root[data-track='operator'] :is(.tk-newcomer, .tk-architect),
-:root[data-track='architect'] :is(.tk-newcomer, .tk-operator) {
+:root[data-track='newcomer'] .tk-block:not(.tk-newcomer),
+:root[data-track='operator'] .tk-block:not(.tk-operator),
+:root[data-track='architect'] .tk-block:not(.tk-architect) {
   display: none;
 }
 

@@ -13,10 +13,128 @@ prerequisites:
   - hermes/01-first-contact/01-what-hermes-is
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Hermes tagged twenty-two releases between 12 March and 20 July 2026, from v0.2.0
+to v0.19.0. Averaged across those 130 days, that is a release every six days. The
+scheme pairs a semantic number with a date, so v0.19.0 — "The Quicksilver
+Release" — is also the tag `v2026.7.20`.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+Six days is fast enough that the interesting question is not what Hermes does. It
+is what *your* Hermes does, and whether the page in front of you was written about
+it.
+
+## What you are running
+
+<Command verified="v0.19.0">hermes version</Command>
+
+For anything beyond the number, `hermes dump` prints the whole machine. It is also
+the one place the documentation ships a complete literal terminal block, which
+makes it worth reading closely:
+
+<Transcript
+  label="hermes dump"
+  fidelity="verbatim"
+  source="The documentation's own worked example; the api-key list trimmed"
+>
+{`--- hermes dump ---
+version:          0.8.0 (2026.4.8) [af4abd2f]
+os:               Linux 6.14.0-37-generic x86_64
+python:           3.11.14
+openai_sdk:       2.24.0
+profile:          default
+hermes_home:      ~/.hermes
+model:            anthropic/claude-opus-4.6
+provider:         openrouter
+terminal:         local
+
+api_keys:
+  openrouter           set
+  openai               not set
+  ...
+
+features:
+  toolsets:           all
+  mcp_servers:        0
+  memory_provider:    built-in
+  gateway:            running (systemd)
+  platforms:          telegram, discord
+  cron_jobs:          3 active / 5 total
+  skills:             42
+
+config_overrides:
+  agent.max_turns: 250
+  compression.threshold: 0.85
+  display.streaming: True
+--- end dump ---`}
+</Transcript>
+
+Three things sit on that first line: the semantic version, the date tag, and the
+commit hash. And a fourth thing, which is the lesson. The version in the
+documentation's own example is 0.8.0, dated 8 April, matching a real release
+exactly — v0.8.0 shipped on 2026-04-08, and fifteen releases have shipped since.
+The primary source is stale in the one place it prints a version, and it is not
+wrong to be: the block exists to show a format, not a fact.
+
+Two traps follow, and both are the kind you fall into silently.
+
+**No documentation page states the product version.** Not the CLI page, not the
+configuration page, not the features overview. The release this guide is verified
+against came from the GitHub releases API. If you want to know which version a
+docs page describes, the page will not tell you.
+
+**The number in your config file is not the release.** The configuration page
+refers to config version 17. That is the configuration schema's own version; it
+moves for its own reasons and stands in no relation to v0.19.0.
+
+## Where other people's guides drift
+
+Here is a live example, published four days before this lesson was written.
+
+<Revised
+  was="hermes daemon start"
+  now="hermes gateway install, or hermes gateway run"
+  why="A practitioner guide updated 2026-07-24 publishes the first form; no such command appears in the official CLI reference"
+  when="2026-07-25"
+/>
+
+That guide is otherwise consistent with the official docs, which is exactly what
+makes it useful here. Drift does not announce itself by being obviously wrong. It
+arrives as one plausible command on a page where everything else checks out.
+
+A July tutorial makes the same point about its own genre: install snippets copied
+from older articles go stale within weeks, because the releases keep coming. Its
+advice is to review the release notes monthly, which is the cheapest habit
+available for this project, and this guide repeats it without improvement.
+
+<TrackCallout
+  newcomer="When a command from any guide fails, including this one, check which version you are running before you doubt yourself."
+  operator="Pin what you read to a release. Run hermes dump first, then judge every page against that first line."
+  architect="A weekly cadence is a governance fact: what was reviewed in March is not what is running in July, and the release notes are the only record of the difference."
+/>
+
+## The three ways this guide can be wrong
+
+**A command changes.** Every command you are asked to run carries the release it
+was checked against, on the line beneath it. When that label is several releases
+old, treat the command as a claim rather than an instruction.
+
+**A behaviour changes and the prose does not.** Each lesson records the release
+its claims were verified against, and that field moves when someone re-verifies
+the lesson — not when someone edits a sentence. A version that advanced on
+copy-edits would record nothing.
+
+**A fact was never verifiable.** Some things could not be checked, and are
+labelled rather than smoothed over: no page states the product version, Nous
+Portal's pricing returned HTTP 429 on two direct fetches and so no figure is
+printed anywhere here, and no recording of a real Hermes session is published in
+the repository, the docs, or any third-party post — which is why every terminal
+replay in this guide states its own fidelity.
+
+The sharp end of all this is deprecation. `hermes kanban daemon` is documented as
+deprecated in favour of the gateway's embedded dispatcher, with a `--force`
+escape hatch described as lasting one release cycle, and no release named as the
+one that removes it. At this cadence, a warning with no version attached is not a
+warning you can plan around. Nothing in this guide can fix that. What it can
+do is date every claim it makes, so that when one of them stops being true you can
+tell which one.
