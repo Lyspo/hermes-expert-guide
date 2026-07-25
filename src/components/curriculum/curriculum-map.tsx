@@ -267,10 +267,37 @@ export function CurriculumMap({
   }, [entries])
 
   return (
-    <div data-curriculum-map>
+    <section data-curriculum-map aria-labelledby="curriculum-map-heading">
+      {/*
+        A titled, bounded component — not a backdrop.
+
+        The first version had no heading, no frame and no surface: bare points on the
+        page ground with a 10px caption under them. Every other component here sits on
+        a plane with a hairline edge, so the one that did not read as decoration, and
+        a reader looking for "the map" could not tell it from the ambient field behind
+        every other page. A feature has to announce that it is one.
+      */}
+      <div className="flex flex-wrap items-baseline justify-between gap-[calc(var(--step)*0.5)] border-t border-ice-faint pt-[calc(var(--step)*0.7)]">
+        <h2
+          id="curriculum-map-heading"
+          className="font-display text-[1.5rem] tracking-[-0.02em]"
+        >
+          The shape of the course
+        </h2>
+        <p className="font-mono text-[0.68rem] text-ice-dim">
+          51 lessons · 79 prerequisites · 11 deep
+        </p>
+      </div>
+
+      <p className="mt-[calc(var(--step)*0.5)] max-w-[64ch] text-[0.95rem] leading-relaxed text-ice-dim">
+        Every point is a lesson and every line a prerequisite it declares in its own
+        frontmatter. Point at any one of them and everything you need to understand
+        first lights up with it — then click to open it.
+      </p>
+
       <div
         ref={frame}
-        className="relative h-[clamp(22rem,56vh,36rem)] w-full"
+        className="transcript relative mt-[calc(var(--step)*0.8)] h-[clamp(20rem,50vh,32rem)] w-full"
         onPointerLeave={() => setHovered(null)}
       >
         <canvas
@@ -287,7 +314,7 @@ export function CurriculumMap({
           layout never moves under the pointer — the one thing guaranteed to make a
           map like this feel broken.
         */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 min-h-[5.5rem]">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 min-h-[5.5rem] px-[calc(var(--step)*0.9)] pb-[calc(var(--step)*0.8)]">
           {active ? (
             <div
               data-readout
@@ -308,10 +335,8 @@ export function CurriculumMap({
               </p>
             </div>
           ) : (
-            <p className="max-w-[34rem] font-mono text-[0.68rem] leading-relaxed text-ice-dim">
-              Every point is a lesson, every line a prerequisite it declares, and depth is
-              how far into the course it sits. Point at one to light up everything you
-              need first.
+            <p className="font-mono text-[0.68rem] text-ice-dim">
+              Point anywhere in the field →
             </p>
           )}
         </div>
@@ -369,6 +394,6 @@ export function CurriculumMap({
           )
         })}
       </ol>
-    </div>
+    </section>
   )
 }
