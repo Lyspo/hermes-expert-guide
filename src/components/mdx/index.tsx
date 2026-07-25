@@ -2,6 +2,7 @@ import { Depth, ForTrack, TrackCallout } from './for-track'
 import { Command, Transcript } from './transcript'
 import { MarginNote, Revised } from './revised'
 import { prose } from './prose'
+import { Simulation } from '@/components/simulation/simulation'
 
 /**
  * The MDX component map.
@@ -19,4 +20,5 @@ export const mdxComponents = {
   Command,
   Revised,
   MarginNote,
+  Simulation,
 }

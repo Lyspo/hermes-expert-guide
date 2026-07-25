@@ -33,6 +33,9 @@
       ],
       "content-collections": [
         "./.content-collections/generated"
+      ],
+      "@content/*": [
+        "./content/*"
       ]
     }
   },

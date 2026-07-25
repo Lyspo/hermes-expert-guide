@@ -1,8 +1,8 @@
 ---
-title: 'Reading the instrument'
+title: 'The status bar, and the budget it is telling you about'
 description: >-
-  Every element of the status bar, what the colour thresholds mean, and what
-  compression actually does to your conversation when it fires.
+  Six numbers on one line, what each of them costs you, and why compression
+  raises your bill in order to buy you room.
 order: 1
 duration: 11
 tracks:
@@ -10,13 +10,108 @@ tracks:
   operator: core
   architect: skim
 prerequisites:
-  - hermes/02-standing-it-up/02-choosing-a-provider
+  - hermes/01-first-contact/02-the-agent-loop
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Hermes puts one line at the bottom of the terminal, and it is the most useful line
+on the screen. Most people read the token count and ignore the rest, which is a
+mistake — every field on it is telling you about a decision you are about to have
+to make.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+<Command verified="v0.19.0">hermes</Command>
+
+Once a session is running, that line looks like this:
+
+<Transcript label="Status bar" fidelity="verbatim" source="CLI documentation, user-guide/cli">
+{` ⚕ claude-sonnet-4-20250514 │ 12.4K/200K │ [██████░░░░] 6% │ $0.06 │ 15m`}
+</Transcript>
+
+Model, tokens used against the window, the context bar, cost so far, elapsed time.
+The model name truncates past 26 characters, and cost reads `n/a` for models with
+no published price rather than pretending to a number it cannot compute.
+
+## The bar is a warning system with four states
+
+The colours are fixed and worth memorising, because they map onto what you should
+do rather than merely how full you are.
+
+| Fill | Colour | What it means for you |
+|---|---|---|
+| Below 50% | green | Nothing to think about |
+| 50–80% | yellow | Compression is now plausible; finish your thought |
+| 80–95% | orange | Wrap up or compress deliberately |
+| 95% and over | red | The documentation's own advice is "consider `/compress`" |
+
+<MarginNote>
+Fifty percent is not an arbitrary threshold. It is the default value of
+`compression.threshold`, so green-to-yellow is the exact point at which automatic
+compression becomes eligible to fire.
+</MarginNote>
+
+That last row is the one people meet unprepared. Nothing breaks at 95%, but your
+options narrow: you can compress, or you can start a fresh session and lose the
+thread.
+
+## Watch a turn go by
+
+The replay below is one complete turn — a prompt, three tools, an answer, then
+compression. The thing to watch is the bar crossing from green into yellow, and
+then what the numbers do afterwards.
+
+<Simulation id="a-turn-in-full" />
+
+## Compression costs money to save money
+
+Here is the part that surprises people, and it is visible in the replay above: the
+cost figure goes **up** across a compression, not down.
+
+That is correct behaviour. Compressing means sending the conversation to a model to
+be summarised, which is tokens spent now to buy headroom later. What you are buying
+is the ability to continue at all — and, because the summary re-establishes a stable
+prefix, cheaper turns from that point on.
+
+<Depth min="operator">
+
+The defaults worth knowing, all under `compression` in `~/.hermes/config.yaml`:
+`threshold: 0.50` sets when it fires, `target_ratio: 0.20` how far it compresses
+down to, and `protect_last_n: 20` with `protect_first_n: 3` which messages are
+exempt — the most recent twenty and the first three, so both your original framing
+and your current thread survive intact.
+
+One constraint is easy to get wrong, and the documentation is blunt about it: the
+summary model "must have a context window at least as large as your main agent
+model's." A smaller auxiliary model cannot read what it is being asked to summarise.
+
+Editing `model.context_length` or any `compression.*` key on a running gateway takes
+effect on the next message with no restart.
+
+</Depth>
+
+<TrackCallout
+  newcomer="If the bar turns orange mid-task, type /compress rather than starting over. You keep the thread; you pay a little for the privilege."
+  operator="threshold governs automatic firing; /compress is the manual override. protect_first_n keeps your framing, protect_last_n keeps your current work."
+  architect="Compression is the one sanctioned exception to prompt stability, which means it is also the one routine event that rewrites what the model was told. If you are reconstructing a session for review, the compression count is where the record changes shape."
+/>
+
+## The badges
+
+After the first compression a counter appears, and it stays for the session:
+
+<Transcript label="After compressing" fidelity="verbatim" source="CLI and TUI documentation; badge glyphs quoted exactly">
+{` ⚕ claude-sonnet-4-20250514 │ 38.2K/200K │ [██░░░░░░░░] 19% │ $0.44 │ 10m  🗜️ 1`}
+</Transcript>
+
+The others you will meet: `▶ N` for active background tasks, `⏱ 12s/3m 45s` for
+live elapsed time within a turn, `⏲ 32s / 3m 45s` for the frozen figure once a turn
+ends, and `⚠ YOLO` when auto-approval is enabled.
+
+That last badge is the only one that is a warning about you rather than about the
+session, and module 4 is where it earns a lesson of its own.
+
+## What to take from this
+
+Read the bar as a budget, not a gauge. The tokens are what you have spent, the
+colour is what you should do next, and the cost figure is the one number that goes
+up when you fix the problem — which is the correct price for not losing your work.
