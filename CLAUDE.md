@@ -67,13 +67,12 @@ export, content pipeline. Full 51-lesson skeleton generated from the map by
 switcher, progress marks. Simulation engine with a pure timeline core and one flagship
 replay.
 
-**Written lessons: 7 of 51.** All of module 1, plus `03/01`, `05/03` and `06/05`. The last
-two were written to host plates; the count was stale at 5 before this was checked against
-the files, so count them rather than trusting this line.
+**Written lessons: 8 of 51.** All of module 1, plus `03/01`, `05/03`, `06/05` and `08/01`.
+The last three were written to host plates; this line has been stale before, so count the
+files rather than trusting it.
 
-**Not built.** The orchestration plate, VIZ-4 (P7's third and last). Remaining 44 lessons.
-SIM-4. Search, OG images, JSON-LD, sitemap. The landing page — currently a labelled
-placeholder. Glossary and cheatsheets. Colophon.
+**Not built.** Remaining 43 lessons. SIM-4. Search, OG images, JSON-LD, sitemap. The
+landing page — currently a labelled placeholder. Glossary and cheatsheets. Colophon.
 
 **Verification is thinner than it looks.** `pnpm verify` runs typecheck, lint, unit tests,
 the static export and a link check. There is **no** Playwright, no axe sweep and no
@@ -137,12 +136,14 @@ orchestration did not arrive in v0.6.0.
 
 ## Picking up
 
-**P7 is two plates in of three.** VIZ-2 (memory, hosting lesson `05/03`) and VIZ-3 (the
-improvement loop, hosting `06/05`) are built. Next is the orchestration plate, VIZ-4, at
-`08/01` — the map's spec is the two handoff models with the *same* restart event drawn
-twice, as a loss on one side and a reclaim on the other. Then the remaining lessons, module
-by module, against `research/curriculum-map.md`, which carries per-lesson sources and four
-amendment sections at the end recording what the captures changed.
+**P7 is done.** Three plates built, each with the lesson that hosts it: VIZ-2 memory
+(`05/03`), VIZ-3 the improvement loop (`06/05`), VIZ-4 orchestration (`08/01`). The map
+specifies six; VIZ-1, VIZ-5 and VIZ-6 were never in P7's scope and remain unbuilt.
+
+Next is **the remaining lessons, module by module**, against `research/curriculum-map.md`,
+which carries per-lesson sources and four amendment sections at the end recording what the
+captures changed. Modules 1 and 6 are the natural next targets — module 6 because `06/05`
+now sits published among seven stubs, and its prerequisites render as "planned".
 
 `06/05` still owes SIM-4, the flagship replay. It is deliberately not stubbed in the MDX:
 the SKILL.md diff it needs to stop on has never been captured, so the replay cannot be

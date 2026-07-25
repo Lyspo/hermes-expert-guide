@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { MemoryPlate } from './memory-plate'
+import { OrchestrationPlate } from './orchestration-plate'
 import { SkillLoopPlate } from './skill-loop-plate'
 
 /**
@@ -13,6 +14,7 @@ import { SkillLoopPlate } from './skill-loop-plate'
 export const PLATES: Record<string, () => ReactNode> = {
   memory: MemoryPlate,
   'skill-loop': SkillLoopPlate,
+  orchestration: OrchestrationPlate,
 }
 
 /**

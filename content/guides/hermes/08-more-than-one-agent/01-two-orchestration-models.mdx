@@ -14,10 +14,142 @@ prerequisites:
   - hermes/07-unattended/02-the-gateway
 hermesVersion: v0.19.0
 updated: '2026-07-25'
-draft: true
 ---
 
-{/* stub:generated — structure comes from research/curriculum-map.md */}
+Hermes can hand work to another agent in two ways, and they have almost nothing in
+common. One is a function call. The other is a queue with a database behind it.
 
-Not yet written. The map records this lesson's sources and the conflicts it
-must present; see `research/curriculum-map.md`.
+Most writing about this treats them as the same feature at two sizes — small jobs use
+subagents, big jobs use the board. That is not the distinction, and choosing on it
+will eventually cost you a night's work.
+
+## The two shapes
+
+`delegate_task` forks child agents, waits, and collects what they return. The children
+are anonymous, they begin with no knowledge of your conversation, and they cease to
+exist when they are done. Up to three run at once by default.
+
+Kanban is a durable task board. Every task is a row in a SQLite database, every worker
+is a full operating-system process with its own profile and its own memory, and every
+handoff is a row that any agent — or any person — can read and write.
+
+The documentation puts it in one sentence, and it is the right sentence:
+
+> `delegate_task` is a function call; Kanban is a work queue where every handoff is a
+> row any profile (or human) can see and edit.
+
+## The question that actually decides it
+
+Not size. Not agent count. This:
+
+**Does the work have to survive something ending?**
+
+<Viz
+  id="orchestration"
+  caption="The same event, drawn once, across both models. Every pink mark on the plate is that one restart — and the only crossing it permits is on the right."
+/>
+
+Restart Hermes with `delegate_task` children in flight and the children do not come
+back. A restarted process marks them `unknown`. Results that had already been returned
+are restored; work still in progress is gone, and nothing will retry it, because the
+only thing that knew about it was a frame on a stack that no longer exists.
+
+Restart Hermes with a Kanban task running and the row is untouched. The worker
+process dies, its claim goes stale, and on its next tick the dispatcher reclaims the
+task and spawns a new worker. The attempt closes as `reclaimed` rather than
+disappearing.
+
+<MarginNote>
+A claim only goes stale once the worker's process is genuinely dead. A live worker in
+the middle of a long model call has its claim *extended*, not stolen — so the reclaim
+is a crash recovery, not a timeout.
+</MarginNote>
+
+That is the whole difference, and everything else in the comparison follows from it.
+
+## The rest of the comparison
+
+The documentation publishes an eight-row table. It is worth reading as a single claim
+repeated eight ways: one of these keeps state in memory, the other keeps it on disk.
+
+| | `delegate_task` | Kanban |
+|---|---|---|
+| Shape | RPC — fork, then join | Durable queue plus state machine |
+| Parent | Blocks until the child returns | Fire-and-forget after `create` |
+| Child identity | Anonymous subagent | Named profile with persistent memory |
+| Resumability | None | Block, unblock, re-run; crash, reclaim |
+| Human in the loop | Not supported | Comment or unblock at any point |
+| Agents per task | One call, one subagent | Many, over the task's life |
+| Audit trail | Lost on context compression | SQLite rows, kept |
+| Coordination | Hierarchical | Peer — any profile reads or writes any task |
+
+<Depth min="operator">
+
+One row of that table is in tension with the delegation documentation, and it is worth
+knowing before you design around it. The table says the parent *blocks until the child
+returns*; the delegation page says top-level `delegate_task` calls run asynchronously
+in the background and hand you a handle immediately, and that it is specifically
+subagents given `role="orchestrator"` that wait synchronously for their own workers.
+Both pages are current. Treat "blocks" as describing the orchestrator case and verify
+the behaviour you depend on rather than the sentence.
+
+</Depth>
+
+The docs also name four conditions that select the board, and any one is enough: work
+that **crosses agent boundaries**, needs **restart resilience**, involves **humans**,
+or needs to be **discoverable after the fact**.
+
+The last one is quietly the most common. A `delegate_task` audit trail lives in your
+context window and is lost to compression; a Kanban task's history is rows you can
+still query next month.
+
+<TrackCallout
+  newcomer="Start with delegate_task. It is one tool call, and for “read these six files and summarise them” it is exactly right. Reach for the board the first time you find yourself wishing you could see what an agent did yesterday."
+  operator="The failure mode to plan for is the invisible one: a subagent swarm that half-finished before a restart leaves no row, no error, and no retry. If a job matters enough to notice its absence, it belongs on the board."
+  architect="These are different durability contracts, not different sizes. delegate_task is in-process state with no recovery semantics; Kanban is an append-only event log with claims, TTLs and reclaim. The second is auditable, and the first is not — which usually settles it."
+/>
+
+## They compose
+
+This is not an either-or. A Kanban worker can call `delegate_task` internally, and
+that is often the right structure: the board holds the durable, human-visible units of
+work, and inside a single unit an agent fans out to anonymous children for the parts
+that are cheap to redo.
+
+The rule of thumb that falls out: **the board holds what you would be sad to lose; the
+function call holds what you would happily run again.**
+
+## Where the version story goes wrong
+
+One claim about all this circulates widely and is worth killing on sight.
+
+<Revised
+  was="Native multi-agent orchestration shipped in Hermes v0.6.0."
+  now="v0.6.0 shipped Profiles — isolated multi-instance Hermes — along with MCP server mode, Docker and provider fallback chains. It does not mention multi-agent orchestration at all."
+  why="Checked against the v0.6.0 release notes, tag v2026.3.30, fetched from the GitHub releases API"
+  when="2026-07-25"
+/>
+
+The confusion is understandable: v0.6.0 was "the multi-instance release," and
+*multi-instance* is one word away from *multi-agent*. But they are different features,
+and one of them is not orchestration.
+
+The real lineage is later and longer: **v0.11.0** added the subagent `orchestrator`
+role and spawn depth, **v0.13.0** shipped Kanban as a durable multi-agent board,
+**v0.15.0** matured it into a platform with swarm topology, and later releases added
+Mixture-of-Agents as a first-class model.
+
+<ForTrack track="architect">
+
+If a framework or internal standard you have inherited anchors its multi-agent claims
+to v0.6.0, that is a useful signal about the rest of it: the version was almost
+certainly copied from a secondary source rather than checked against release notes. It
+is worth re-verifying whatever else that document asserts about capability dates.
+
+</ForTrack>
+
+## What to take from this
+
+Two models, one question. Ask whether the work must survive something ending — a
+restart, a crash, someone closing their laptop — and the answer picks the tool for
+you. Everything else is detail you can look up when you need it.
