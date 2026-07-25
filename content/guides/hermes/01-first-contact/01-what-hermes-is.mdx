@@ -15,26 +15,120 @@ hermesVersion: v0.19.0
 updated: '2026-07-25'
 ---
 
-Scaffold placeholder — written properly in the content phase from the sourced
-corpus in `research/`. What follows exercises the track-variant mechanism.
+Most agents you have used are stateless. You describe a task, they work through
+it, and when the window closes the reasoning goes with it. Ask the same thing next
+week and you pay for the same thinking again.
+
+Hermes keeps three things instead: a record of what it learned about you and your
+environment, a library of procedures it wrote for itself, and the ability to hand
+work to copies of itself. That combination is the whole claim, and each part is
+smaller and more concrete than the writing around it suggests.
 
 <TrackCallout
   newcomer="A skill is a recipe Hermes writes down for itself so it never has to work the same thing out twice."
   operator="Skills are SKILL.md files under ~/.hermes/skills/, one directory each, following the agentskills.io spec."
-  architect="Agent-authored skills are content-scanned before acceptance; skills.write_approval gates writes behind review."
+  architect="Agent-authored skills are content-scanned before acceptance, and skills.write_approval gates every write behind human review."
 />
+
+## It writes its own procedures
+
+When Hermes finishes something involved, it can write down how it did it. Not a
+log — a procedure, in a file, that it will find and follow next time.
+
+<Plate label="~/.hermes/skills/deploy-staging/SKILL.md" fidelity="reconstructed" source="Format per the agentskills.io specification; contents illustrative">
+{`---
+name: deploy-staging
+description: Deploy the current branch to staging
+version: 3
+---
+
+## Steps
+
+1. Run the test suite. Do not proceed on failure.
+2. Tag the commit with the date.
+3. Push, then watch the deploy log until it reports ready.`}
+</Plate>
+
+Note the version number. That file is on its third revision, and the revisions are
+the interesting part.
+
+## It improves them by using them
+
+This is the part usually described as magic, and is in fact a counter.
+
+<MarginNote>
+The counter counts tool-loop iterations rather than elapsed time — so a long
+thinking pause does not trigger a review, but ten tool calls will.
+</MarginNote>
+
+Every tenth iteration of the tool loop, Hermes forks a background review of its own
+recent work. That review follows a fixed editorial policy, and the policy has a
+strong preference: patch a procedure that already exists rather than write a new
+one. That single bias is why the library converges on a few good procedures instead
+of sprawling into hundreds of near-duplicates.
 
 <Depth min="operator">
 
-The background review that writes skills is triggered by an iteration counter,
-not a timer: `_skill_nudge_interval` defaults to 10 tool-loop iterations.
+The path runs through `agent/agent_init.py`, which sets `_skill_nudge_interval` to
+10; `agent/conversation_loop.py`, which increments the counter once per iteration;
+`agent/turn_finalizer.py`, which spawns the review at threshold; and
+`agent/background_review.py`, which holds the editorial prompt itself.
 
 </Depth>
 
+When it revises a procedure, the old version does not vanish quietly:
+
+<Revised
+  was="Run the test suite. Do not proceed on failure."
+  now="Run the test suite. Do not proceed on failure. Skip the browser tests — they are flaky on this machine and are covered in CI."
+  why="Third run in a row where the browser tests failed locally and passed in CI"
+  when="2026-07-14"
+/>
+
+That is what a self-improving agent actually looks like: a text file, revised, with
+the reason recorded.
+
+## What it remembers
+
+Here the popular accounts are wrong, and the correction matters because it changes
+what you can expect of it.
+
+<Revised
+  was="Hermes has a three-layer memory system: skill memory, conversational memory, and user modelling."
+  now="Hermes keeps two small markdown files — MEMORY.md, capped at 2,200 characters, and USER.md at 1,375 — plus a full-text index of every past session that it searches on demand."
+  why="Checked against the memory documentation. The three-layer framing appears in secondary sources, not in the docs"
+  when="2026-07-25"
+/>
+
+Two files, both deliberately tiny, injected into the system prompt as a frozen
+snapshot when the session starts. Everything else lives in a searchable index of
+past conversations that Hermes queries when it needs to, rather than carrying it all
+in context.
+
 <ForTrack track="architect">
 
-The revision policy is a hardcoded editorial prompt that prefers patching an
-already-loaded skill over minting a new one — which is what makes the loop
-converge instead of proliferating files.
+The cap is the control. Persistent memory is roughly 1,300 tokens by design, it is
+human-readable, it sits at a known path, and `write_approval` can require review
+before anything enters it. An agent whose long-term memory is two inspectable text
+files is a fundamentally different governance proposition from one whose memory is
+an opaque vector store.
 
 </ForTrack>
+
+## It delegates to copies of itself
+
+Subagents start with no knowledge of the parent conversation at all — the
+documentation is blunt about this, under a heading reading "Subagents Know
+Nothing." Whatever a child needs, the parent passes explicitly. That sounds like a
+limitation and is closer to a design decision: it keeps each child's context small
+and its task legible.
+
+## What this is not
+
+It is not autonomous in the sense of unsupervised. It asks before dangerous
+commands, refuses some outright regardless of your settings, and every one of those
+guardrails can be switched off — which people do, occasionally with consequences
+this guide comes back to.
+
+It is also not something you configure once. It accumulates. That is the point, and
+it is the thing to understand before pointing it at anything that matters.

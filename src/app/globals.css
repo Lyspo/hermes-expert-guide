@@ -25,9 +25,12 @@
   --font-ui: var(--font-public-sans), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, 'SF Mono', monospace;
 
-  /* The quadrille module. Every measurement is a multiple of this, which is
-     what makes the visible ruling proof of alignment rather than decoration. */
-  --spacing-quad: 0.75rem;
+  /* The quadrille module. Every vertical measurement on a page is a multiple of
+     this, which is what makes the visible ruling proof of alignment rather than
+     decoration. A grid overlay is normally slop; here the page substrate is a
+     measuring tool, and the content genuinely sits on it. */
+  --spacing-quad: 1.75rem;
+  --quad: 1.75rem;
 
   --ease-annotate: cubic-bezier(0, 0.55, 0.45, 1);
   --ease-settle: cubic-bezier(0.25, 1, 0.5, 1);
@@ -58,6 +61,12 @@
 
   body {
     font-family: var(--font-body);
+    /* Body leading is exactly one quadrille module, so every line of prose lands
+       on a rule. That is the whole justification for drawing the ruling at all —
+       if the text ever stops sitting on it, remove the ruling rather than keep it
+       for atmosphere. */
+    font-size: 1.0625rem;
+    line-height: var(--quad);
     text-underline-offset: 0.2em;
   }
 
@@ -65,6 +74,18 @@
   :focus-visible {
     outline: 2px solid var(--color-annotation);
     outline-offset: 2px;
+  }
+
+  /* rehype-autolink-headings wraps each heading in an anchor so the whole heading
+     is a link to itself. Useful; the default underline is not. */
+  .heading-anchor {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .heading-anchor:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--color-rule);
   }
 
   ::selection {
@@ -112,4 +133,92 @@
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
+}
+
+/* ---------------------------------------------------------------------------
+   The page substrate.
+
+   Quadrille ruling, a bound edge, and page furniture. The ruling is drawn with
+   gradients rather than an image so it stays crisp at any zoom and costs no
+   request — and it is legitimate here only because content actually aligns to
+   it. If an element stops sitting on the grid, the grid becomes decoration and
+   should be removed rather than kept for atmosphere.
+   --------------------------------------------------------------------------- */
+
+@layer components {
+  .page-substrate {
+    --rule-soft: color-mix(in srgb, var(--color-rule) 22%, transparent);
+    background-image:
+      linear-gradient(to right, var(--rule-soft) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--rule-soft) 1px, transparent 1px);
+    /* Horizontal rules every module (the writing lines); vertical every four, so
+       the page reads as ruled paper rather than as engineering graph paper. */
+    background-size: calc(var(--quad) * 4) var(--quad);
+    /* Anchored to the top-left of the text column so the ruling and the
+       baseline rhythm share one origin. */
+    background-position: 0 0;
+  }
+
+  /* The bound edge. A real gutter the text respects, not a decorative stripe:
+     the stitch marks sit in space the layout has actually reserved. */
+  .bound-edge {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: calc(var(--quad) * 2);
+    border-inline-end: 1px solid var(--color-rule);
+    background-image: radial-gradient(
+      circle at center,
+      color-mix(in srgb, var(--color-ink) 34%, transparent) 0 1px,
+      transparent 1.5px
+    );
+    background-size: 100% calc(var(--quad) * 1.5);
+    background-position: center calc(var(--quad) * 0.75);
+    background-repeat: repeat-y;
+    pointer-events: none;
+  }
+
+  /* A stamped impression. Uneven ink and a slight rotation are what separate an
+     impression from a sticker; both are fixed values, not randomised — the
+     irregularity is designed. */
+  .stamp {
+    color: var(--color-stamp);
+    border: 1.5px solid color-mix(in srgb, var(--color-stamp) 74%, transparent);
+    padding: calc(var(--quad) * 0.25) calc(var(--quad) * 0.5);
+    rotate: -1.4deg;
+    opacity: 0.88;
+    /* Ink sits heavier at the edges of a rubber stamp than in the middle. */
+    background-image: radial-gradient(
+      ellipse at 50% 50%,
+      transparent 40%,
+      color-mix(in srgb, var(--color-stamp) 9%, transparent) 100%
+    );
+  }
+
+  /* A specimen tipped into the page: rotated, with the shadow paper-on-paper
+     actually casts. Depth is declared once — shadow, no border. */
+  .tipped-in {
+    rotate: -0.5deg;
+    box-shadow:
+      0 1px 2px color-mix(in srgb, var(--color-ink) 14%, transparent),
+      0 6px 14px -6px color-mix(in srgb, var(--color-ink) 22%, transparent);
+  }
+
+  /* The dark plate. A terminal transcript is a photographic plate pasted into a
+     printed page — which is how this light world earns a dark surface for the
+     one thing that is genuinely dark in life. It does not invert in negative
+     mode; see the mode block above. */
+  .plate {
+    background-color: var(--color-plate);
+    color: var(--color-plate-ink);
+    box-shadow:
+      0 1px 2px color-mix(in srgb, var(--color-ink) 24%, transparent),
+      0 10px 20px -10px color-mix(in srgb, var(--color-ink) 30%, transparent);
+  }
+
+  :root[data-mode='negative'] .plate {
+    /* In the negative the page has gone dark, so the plate needs an edge to stay
+       readable as a distinct object rather than dissolving into the ground. */
+    outline: 1px solid color-mix(in srgb, var(--color-ink) 22%, transparent);
+  }
 }

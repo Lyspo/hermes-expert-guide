@@ -1,4 +1,7 @@
 import { Depth, ForTrack, TrackCallout } from './for-track'
+import { Command, Plate } from './plate'
+import { MarginNote, Revised } from './revised'
+import { prose } from './prose'
 
 /**
  * The MDX component map.
@@ -8,7 +11,12 @@ import { Depth, ForTrack, TrackCallout } from './for-track'
  * variants, not branches — see design.md and globals.css.
  */
 export const mdxComponents = {
+  ...prose,
   ForTrack,
   Depth,
   TrackCallout,
+  Plate,
+  Command,
+  Revised,
+  MarginNote,
 }

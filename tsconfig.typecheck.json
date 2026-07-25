@@ -1,0 +1,13 @@
+{
+  // Standalone type checking.
+  //
+  // Next generates route validators into .next/types and adds that path to the
+  // main tsconfig on every build, where they go stale as soon as a route moves.
+  // Deleting them is not an option — a running dev server's Turbopack cache
+  // depends on files under .next, and removing them mid-session corrupts it.
+  // So this config simply doesn't look there: `tsc` checks our source, and
+  // `next build` checks route validity itself.
+  "extends": "./tsconfig.json",
+  "include": ["next-env.d.ts", "src/**/*.ts", "src/**/*.tsx", "scripts/**/*.ts", "scripts/**/*.tsx", "*.ts", ".content-collections/generated"],
+  "exclude": ["node_modules", "out", ".next", "playwright-report", "test-results"]
+}

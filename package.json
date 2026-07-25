@@ -11,7 +11,7 @@
     "prebuild": "content-collections build",
     "build": "next build",
     "start": "npx serve out",
-    "typecheck": "pnpm content && rm -rf .next/types .next/dev/types && tsc --noEmit",
+    "typecheck": "pnpm content && tsc -p tsconfig.typecheck.json --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
