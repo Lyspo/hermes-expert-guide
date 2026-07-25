@@ -1,83 +1,60 @@
 @import 'tailwindcss';
 
 /* ---------------------------------------------------------------------------
-   Tokens. Values are provisional until the first build settles them; roles are
-   not. See design.md — each of the three functional colours may only appear
-   when it is carrying its meaning.
+   Tokens. See design.md — the signal colour may only appear where it means
+   change, and depth is built from luminance and scale rather than shadows.
    --------------------------------------------------------------------------- */
 
 @theme {
-  --color-paper: #e8e6de;
-  --color-paper-deep: #dcd9cf;
-  --color-rule: #b9bdc0;
-  --color-ink: #1e2a32;
-  --color-ink-soft: #4a5a63;
-  --color-annotation: #a8321e;
-  --color-stamp: #4b3a78;
-  --color-brass: #8a7a4e;
-  --color-plate: #14181b;
-  --color-plate-ink: #d8d4c8;
+  --color-void: #070a0c;
+  --color-deep: #0c1114;
+  --color-raise: #141b1f;
+  --color-ice: #e4eff3;
+  --color-ice-dim: #8da3ac;
+  --color-ice-faint: #4a5c65;
+  --color-signal: #c4566e;
 
-  /* Loaded via next/font in the root layout; see design.md for why each face
-     is here. Fallbacks are chosen for metric proximity, not resemblance. */
-  --font-display: var(--font-faculty), 'Albertus MT', Optima, serif;
-  --font-body: var(--font-bitter), 'Bookman Old Style', Georgia, serif;
-  --font-ui: var(--font-public-sans), system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, 'SF Mono', monospace;
+  /* Self-hosted via next/font. Serif is deliberately absent: this is software,
+     and "creative therefore serif" is a tell, not a decision. */
+  --font-display: var(--font-familjen), system-ui, sans-serif;
+  --font-body: var(--font-archivo), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', monospace;
 
-  /* The quadrille module. Every vertical measurement on a page is a multiple of
-     this, which is what makes the visible ruling proof of alignment rather than
-     decoration. A grid overlay is normally slop; here the page substrate is a
-     measuring tool, and the content genuinely sits on it. */
-  --spacing-quad: 1.75rem;
-  --quad: 1.75rem;
+  /* One spacing step; vertical rhythm is a multiple of it. */
+  --step: 1.5rem;
 
-  --ease-annotate: cubic-bezier(0, 0.55, 0.45, 1);
-  --ease-settle: cubic-bezier(0.25, 1, 0.5, 1);
   --ease-arrive: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-scrub: cubic-bezier(0.87, 0, 0.13, 1);
-}
-
-/* The archival negative. Not a filtered inversion of the day palette — its own
-   committed values. The terminal plate deliberately does not flip: it is the one
-   element that was always dark. */
-:root[data-mode='negative'] {
-  --color-paper: #15191c;
-  --color-paper-deep: #101315;
-  --color-rule: #2f3a40;
-  --color-ink: #e2ded1;
-  --color-ink-soft: #9aa5ab;
-  --color-annotation: #d4614a;
-  --color-stamp: #9c8bcf;
-  --color-brass: #b09a63;
+  --ease-settle: cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 @layer base {
   html {
-    background-color: var(--color-paper);
-    color: var(--color-ink);
+    background-color: var(--color-void);
+    color: var(--color-ice);
     -webkit-text-size-adjust: 100%;
+    scrollbar-color: var(--color-ice-faint) var(--color-void);
   }
 
   body {
     font-family: var(--font-body);
-    /* Body leading is exactly one quadrille module, so every line of prose lands
-       on a rule. That is the whole justification for drawing the ruling at all —
-       if the text ever stops sitting on it, remove the ruling rather than keep it
-       for atmosphere. */
     font-size: 1.0625rem;
-    line-height: var(--quad);
-    text-underline-offset: 0.2em;
+    line-height: 1.6;
+    text-underline-offset: 0.22em;
   }
 
-  /* Focus is deliberate and always visible. */
+  /* A dark ground needs a bright focus ring, not a subtle one. */
   :focus-visible {
-    outline: 2px solid var(--color-annotation);
+    outline: 2px solid var(--color-ice);
     outline-offset: 2px;
   }
 
-  /* rehype-autolink-headings wraps each heading in an anchor so the whole heading
-     is a link to itself. Useful; the default underline is not. */
+  ::selection {
+    background-color: var(--color-signal);
+    color: var(--color-ice);
+  }
+
+  /* rehype-autolink-headings wraps each heading in a self-link. Useful; its
+     default underline on display type is not. */
   .heading-anchor {
     color: inherit;
     text-decoration: none;
@@ -85,12 +62,47 @@
 
   .heading-anchor:hover {
     text-decoration: underline;
-    text-decoration-color: var(--color-rule);
+    text-decoration-color: var(--color-ice-faint);
+  }
+}
+
+@layer components {
+  /* The field: the agent's interior, drifting behind everything. Decorative by
+     definition — every structure it depicts also exists as real text nearby. */
+  .field {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.85;
+    /* Explicit CSS size is essential: a canvas is a replaced element, so without
+       it the width/height attributes can influence layout, and any code that
+       measures the element in order to set those attributes will feed back on
+       itself and double the buffer on every pass. */
+    width: 100%;
+    height: 100%;
   }
 
-  ::selection {
-    background-color: var(--color-stamp);
-    color: var(--color-paper);
+  /* The plane content sits on, above the field. */
+  .plane {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* A nearer, flatter surface for terminal output. Hairline edge, no shadow —
+     depth is declared once, and here it is declared by luminance. */
+  .transcript {
+    background-color: var(--color-deep);
+    border: 1px solid color-mix(in srgb, var(--color-ice) 9%, transparent);
+  }
+
+  /* The signature gesture: a superseded line struck in the signal colour with
+     its replacement above it. The resting state is complete and legible. */
+  .struck {
+    color: var(--color-ice-dim);
+    text-decoration-line: line-through;
+    text-decoration-color: var(--color-signal);
+    text-decoration-thickness: 2px;
   }
 }
 
@@ -98,10 +110,10 @@
    Track adaptivity.
 
    Lessons render every track's variant into the static HTML. An inline script
-   sets data-track on <html> before first paint and CSS hides what does not
-   apply. With no track set — a crawler, a no-JS reader, a first visit — every
-   variant shows, each wearing its label. That default is the whole reason this
-   is CSS and not conditional rendering.
+   stamps data-track on <html> before first paint and CSS hides what does not
+   apply. With no track set — a crawler, a reader without JavaScript, a first
+   visit — every variant shows with its label. That default is the entire reason
+   this is CSS rather than conditional rendering.
    --------------------------------------------------------------------------- */
 
 :root[data-track='newcomer'] :is(.tk-operator, .tk-architect),
@@ -110,10 +122,21 @@
   display: none;
 }
 
-/* The "For architects" label only earns its place when variants sit side by
-   side. Once a track is chosen, the reader knows which track they are on. */
 :root[data-track] .tk-label {
   display: none;
+}
+
+/* A reader who needs contrast should not have to give up the page to get it:
+   secondary text moves toward primary and the field recedes. */
+@media (prefers-contrast: more) {
+  :root {
+    --color-ice-dim: #cfe0e6;
+    --color-ice-faint: #7e929b;
+  }
+
+  .field {
+    opacity: 0.3;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -133,92 +156,4 @@
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
-}
-
-/* ---------------------------------------------------------------------------
-   The page substrate.
-
-   Quadrille ruling, a bound edge, and page furniture. The ruling is drawn with
-   gradients rather than an image so it stays crisp at any zoom and costs no
-   request — and it is legitimate here only because content actually aligns to
-   it. If an element stops sitting on the grid, the grid becomes decoration and
-   should be removed rather than kept for atmosphere.
-   --------------------------------------------------------------------------- */
-
-@layer components {
-  .page-substrate {
-    --rule-soft: color-mix(in srgb, var(--color-rule) 22%, transparent);
-    background-image:
-      linear-gradient(to right, var(--rule-soft) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--rule-soft) 1px, transparent 1px);
-    /* Horizontal rules every module (the writing lines); vertical every four, so
-       the page reads as ruled paper rather than as engineering graph paper. */
-    background-size: calc(var(--quad) * 4) var(--quad);
-    /* Anchored to the top-left of the text column so the ruling and the
-       baseline rhythm share one origin. */
-    background-position: 0 0;
-  }
-
-  /* The bound edge. A real gutter the text respects, not a decorative stripe:
-     the stitch marks sit in space the layout has actually reserved. */
-  .bound-edge {
-    position: absolute;
-    inset-block: 0;
-    inset-inline-start: 0;
-    inline-size: calc(var(--quad) * 2);
-    border-inline-end: 1px solid var(--color-rule);
-    background-image: radial-gradient(
-      circle at center,
-      color-mix(in srgb, var(--color-ink) 34%, transparent) 0 1px,
-      transparent 1.5px
-    );
-    background-size: 100% calc(var(--quad) * 1.5);
-    background-position: center calc(var(--quad) * 0.75);
-    background-repeat: repeat-y;
-    pointer-events: none;
-  }
-
-  /* A stamped impression. Uneven ink and a slight rotation are what separate an
-     impression from a sticker; both are fixed values, not randomised — the
-     irregularity is designed. */
-  .stamp {
-    color: var(--color-stamp);
-    border: 1.5px solid color-mix(in srgb, var(--color-stamp) 74%, transparent);
-    padding: calc(var(--quad) * 0.25) calc(var(--quad) * 0.5);
-    rotate: -1.4deg;
-    opacity: 0.88;
-    /* Ink sits heavier at the edges of a rubber stamp than in the middle. */
-    background-image: radial-gradient(
-      ellipse at 50% 50%,
-      transparent 40%,
-      color-mix(in srgb, var(--color-stamp) 9%, transparent) 100%
-    );
-  }
-
-  /* A specimen tipped into the page: rotated, with the shadow paper-on-paper
-     actually casts. Depth is declared once — shadow, no border. */
-  .tipped-in {
-    rotate: -0.5deg;
-    box-shadow:
-      0 1px 2px color-mix(in srgb, var(--color-ink) 14%, transparent),
-      0 6px 14px -6px color-mix(in srgb, var(--color-ink) 22%, transparent);
-  }
-
-  /* The dark plate. A terminal transcript is a photographic plate pasted into a
-     printed page — which is how this light world earns a dark surface for the
-     one thing that is genuinely dark in life. It does not invert in negative
-     mode; see the mode block above. */
-  .plate {
-    background-color: var(--color-plate);
-    color: var(--color-plate-ink);
-    box-shadow:
-      0 1px 2px color-mix(in srgb, var(--color-ink) 24%, transparent),
-      0 10px 20px -10px color-mix(in srgb, var(--color-ink) 30%, transparent);
-  }
-
-  :root[data-mode='negative'] .plate {
-    /* In the negative the page has gone dark, so the plate needs an edge to stay
-       readable as a distinct object rather than dissolving into the ground. */
-    outline: 1px solid color-mix(in srgb, var(--color-ink) 22%, transparent);
-  }
 }

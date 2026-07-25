@@ -28,24 +28,24 @@ export default function GuidePage() {
       </h1>
       <p className="mt-6 max-w-[68ch] text-lg">{guide.summary}</p>
 
-      <p className="font-mono text-ink-soft mt-6 text-xs">
+      <p className="font-mono text-ice-dim mt-6 text-xs">
         {guideModules.length} modules · {lessonCount} lessons · {minutes} min · verified
         against {guide.subject} {guide.verifiedAgainst}
       </p>
 
-      <ol className="border-rule mt-12 border-t">
+      <ol className="border-ice-faint mt-12 border-t">
         {guideModules.map((mod) => (
-          <li key={mod.slug} className="border-rule border-b py-6">
+          <li key={mod.slug} className="border-ice-faint border-b py-6">
             <h2 className="font-display text-2xl">
               <Link href={mod.url}>
-                <span className="font-mono text-ink-soft mr-3 text-xs align-middle">
+                <span className="font-mono text-ice-dim mr-3 text-xs align-middle">
                   {String(mod.number).padStart(2, '0')}
                 </span>
                 {mod.title}
               </Link>
             </h2>
             <p className="mt-2 max-w-[68ch]">{mod.summary}</p>
-            <p className="font-mono text-ink-soft mt-2 text-xs">
+            <p className="font-mono text-ice-dim mt-2 text-xs">
               {mod.lessons.length} {mod.lessons.length === 1 ? 'lesson' : 'lessons'}
             </p>
           </li>

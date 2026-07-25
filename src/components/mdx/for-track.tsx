@@ -28,7 +28,7 @@ export function ForTrack({
 
   return (
     <div className={hidden.map((candidate) => `tk-${candidate}`).join(' ')}>
-      <p className="tk-label font-mono text-ink-soft text-xs">
+      <p className="tk-label font-mono text-ice-dim text-xs">
         For {tracks.map((candidate) => TRACK_LABELS[candidate]).join(' and ')} readers
       </p>
       {children}
@@ -62,11 +62,11 @@ export function TrackCallout(props: Partial<Record<Track, string>>) {
             // appear where it means correction or attention. The label carries
             // the distinction instead. This becomes a true margin note once the
             // lesson layout has a margin to put it in.
-            className={`border-rule my-6 border-l pl-4 ${hidden
+            className={`border-ice-faint my-6 border-l pl-4 ${hidden
               .map((candidate) => `tk-${candidate}`)
               .join(' ')}`}
           >
-            <p className="tk-label font-mono text-ink-soft text-xs">
+            <p className="tk-label font-mono text-ice-dim text-xs">
               For {TRACK_LABELS[track]} readers
             </p>
             <p>{props[track]}</p>

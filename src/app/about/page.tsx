@@ -17,13 +17,13 @@ export default function AboutPage() {
         Placeholder. The colophon is written at the end, once there is a finished
         process to describe honestly rather than a plan to describe optimistically.
       </p>
-      <p className="text-ink-soft mt-6 max-w-[68ch]">
+      <p className="text-ice-dim mt-6 max-w-[68ch]">
         What it will cover: the sourced research corpus every factual claim traces back
         to, including the two places where it contradicts the widely-repeated summaries
         of how Hermes works; how the visual direction was derived and why the obvious
         one was rejected; and the multi-agent process used to build it.
       </p>
-      <p className="text-ink-soft mt-6">{site.disclaimer}</p>
+      <p className="text-ice-dim mt-6">{site.disclaimer}</p>
     </main>
   )
 }

@@ -1,139 +1,103 @@
 # Design system
 
-The visual authority for this project. Durable rules only — anything provisional is marked as such and gets settled by the first build.
+The visual authority for this project. Durable rules only — anything provisional is marked as such and settled by the first build.
 
-Derivation and the candidates that lost are recorded in [`research/design/03-direction-derivation.md`](research/design/03-direction-derivation.md). Reference material and the pattern audit are in `research/design/01-reference-sites.md`; type, motion, and motif research in `research/design/02-type-motion-motifs.md`.
+The nine candidate directions and how they were derived are recorded in [`research/design/03-direction-derivation.md`](research/design/03-direction-derivation.md); reference material in `research/design/01-reference-sites.md`, type and motion research in `02-type-motion-motifs.md`, the Dribbble pass in `04-dribbble-pass.md`.
 
 ---
 
 ## The world
 
-**A bound laboratory notebook and its protocols.**
+**Substrate — depth as the medium, with type that rewrites itself.**
 
-Paginated, dated, stamped, signed. Printed procedures corrected by hand in the margins across successive runs. Results tipped in as pasted specimen slips. Nothing erased — only struck through and re-entered above it, so the whole revision history stays legible on the page.
+A dark, dimensional field in which the agent's interior is actually rendered: skills, memory, sessions and workers as points and edges at real depth, drifting slowly, responding to the pointer. Content sits on a plane above it. Moving through the curriculum means moving through the structure rather than scrolling past pictures of it.
 
-It was chosen because it carries all three of the product's hard parts at once, and nothing else on the candidate list carried more than two:
+Its signature motion is borrowed deliberately from a second direction: **display type that strikes its own line out and re-enters it**, characters resolving in sequence. That gesture is the product's thesis performed rather than described — an agent that rewrites its own instructions — and it is the one motion the site owns.
 
-| The product's mechanism | The world's device |
+Two candidate worlds, fused: the field is what the agent *is*, and the type is what it *does*.
+
+| The product's mechanism | How this world carries it |
 |---|---|
-| An agent that writes and revises its own procedures | A printed protocol corrected in its own margins, run after run |
-| Memory that accumulates across sessions | A dated, paginated record that only ever grows |
-| An audit trail an autonomous system cannot quietly rewrite | Append-only convention: struck through, never erased |
-| A curriculum with a real sequence | You work *through* a notebook, page by page |
-| Systems that must be understood structurally | The technical plate, bound into the same volume |
+| An agent that revises its own procedures | Display type struck through and re-entered in place |
+| A skill library, a memory index, a delegation tree | Genuine graphs, rendered in depth and navigable |
+| Layers that depend on layers | Depth planes: what sits behind is what you are standing on |
+| A curriculum with a real sequence | Descending goes *into* the structure, not down a list |
+| An audit trail that cannot be quietly rewritten | Superseded content stays on the plane beside its replacement |
 
-The classical reading of the name "Hermes" — dark ground, engraved capitals, gold — was ranked and rejected. It is the literal reading of a product name, it collides with a known AI-convergence look, and rendered as comps it actively fought the reading task: inscribed letters on a stoichedon grid are beautiful at hero scale and unusable for sixty lessons of dense prose.
+**Register.** Cold, precise, dimensional. Instrument-grade rather than consumer-grade — the confidence of software that assumes a competent operator. Never playful, never cosy. If a surface starts to feel like a marketing page for a startup, it has failed.
 
-**Register.** Institutional, exact, unhurried. The voice of a record that expects to be audited. Never precious, never cosy, never nostalgic — this is a working document, not memorabilia. If a surface starts to feel like a scrapbook or a Moleskine advertisement, it has failed.
+**What was rejected and why it matters.** An earlier round committed to a paper-notebook world. It was abandoned for two reasons, and the second one is the instructive one. It fought the subject — a learning platform about autonomous software should not look like stationery. And its palette (cream ground around `#E8E6DE`, brass accent near `#8A7A4E`, warm near-black ink) turned out to sit almost exactly on tasteskill's named list of banned defaults, where that combination is recorded as the second-most-recurring signature of machine-generated design. The lesson kept: avoiding one convergence cluster is not the same as avoiding all of them, and a rule against neon does not license a retreat into paper.
 
 ## Colour
 
-**Strategy: restrained, with three functional roles.** The paper and the ink are substrate rather than palette. Three further colours exist, and each earns its place by *meaning* — never by decoration. If a colour appears without carrying its meaning, remove it.
+**Strategy: drenched dark with one signal.** The ground is not a backdrop, it is the medium — depth is built from luminance and scale, never from borders or drop shadows. Exactly one hue exists besides the neutrals, and it means one thing.
 
-| Token | Value (provisional) | Role — and the only thing it is allowed to mean |
+| Token | Value | Role — the only thing it may mean |
 |---|---|---|
-| `--paper` | `#E8E6DE` | The page. Cool, dense cellulose — not cream, not warm |
-| `--paper-deep` | `#DCD9CF` | Recessed page areas, table zebra, the gutter |
-| `--rule` | `#B9BDC0` | The quadrille grid and hairline rules |
-| `--ink` | `#1E2A32` | Iron-gall blue-black. All body text and keylines |
-| `--ink-soft` | `#4A5A63` | Secondary text, captions, figure labels |
-| `--annotation` | `#A8321E` | **Correction and attention.** Marginal marks, the struck line, the active part in a plate. Never a brand accent, never a button fill |
-| `--stamp` | `#4B3A78` | **Provenance.** Dates, version chips, verification marks. Applied as an impression, never as flat fill |
-| `--brass` | `#8A7A4E` | **Navigation hardware.** Index tabs, the bound edge, instrument plates. Structural, never typographic |
-| `--plate` | `#14181B` | The pasted terminal specimen. Darker than the ink |
+| `--void` | `#070A0C` | The field. Cool near-black with a green-blue bias, never pure black |
+| `--deep` | `#0C1114` | A nearer plane: panels, transcript surfaces, the assessment |
+| `--raise` | `#141B1F` | The nearest plane, for the few elements that must sit above content |
+| `--ice` | `#E4EFF3` | Primary text. Cool white, never pure white |
+| `--ice-dim` | `#8DA3AC` | Secondary text, labels, captions |
+| `--ice-faint` | `#4A5C65` | Hairlines, inactive nodes, disabled states |
+| `--signal` | `#C4566E` | **Change.** A revised line, a written skill, an active node, an error. Nothing decorative, ever |
 
-Prohibitions this world does not need and will not have: gradients as surface, any glow or zero-offset coloured halo, glassmorphism, gradient text, coloured side-stripe borders above 1px, and terracotta — which is a slop-cluster tell and sits one hue-step from `--annotation`, so the red must stay oxide and dark rather than drifting warm.
+Under 80% saturation on the signal, deliberately. Prohibited outright: gradients as surface, any outer glow or zero-offset halo, glassmorphism, gradient text, pure `#000`, purple or blue-violet accents, neon cyan, acid green, and vermilion-on-black — the last four being the specific families both rulebooks flag.
+
+**Depth instead of elevation.** No card shadows. A thing is nearer because it is lighter, larger, and less transparent, and because the field behind it parallaxes at a different rate. Declare depth once per element.
 
 ## Light and dark
 
-Dark or light is not a category choice here; it comes from the object. A record is paper, so the default surface is paper. Two consequences follow, and both are load-bearing.
+**Dark only, as a commitment rather than an omission.** The world is a luminous field; inverting it does not produce a light theme, it destroys the medium. Both design rulesets permit a deliberate single-theme world, and this is one.
 
-**Terminal transcripts are dark plates pasted into the light page.** This is how the world earns a dark surface without a theme switch: the code is a photographic plate tipped into a printed book. The contrast is material, not stylistic — and it means the thing readers came to look at is the thing that stands out on the page.
-
-**Night mode is the archival negative, not lamplight.** Archives keep the same record twice: the paper original and the photographic negative. So the second mode inverts the page — ground to a dense iron-black, the quadrille to fine cool lines, ink to bone — while the pasted terminal plates *stay dark and gain a hairline edge*. The one element that was always dark does not flip. That inversion is truthful to the material and, unlike a warm dimmed "reading lamp" treatment, it is not the rendition every model reaches for.
-
-Both modes are full commitments with their own token values, not one palette with filters applied.
+Two obligations follow. Contrast is verified rather than assumed — body text at 4.5:1 or better against `--void` *and* against `--deep`, since transcript panels sit on their own plane. And `prefers-contrast: more` raises `--ice-dim` toward `--ice` and drops the field's opacity, because a reader who needs contrast should not have to give up the page to get it.
 
 ## Type
 
-Every face is openly licensed, and every one is here because of what it sets rather than what it evokes. The full evaluation, including the faces rejected and why, is in `research/design/02-type-motion-motifs.md`.
+Every face openly licensed. The previous stack — a glyphic display serif with a slab-serif body — belonged to the abandoned paper world and is gone. Serif is deliberately absent: this is software, and "creative brief therefore serif" is the single most-tested tell in the stricter ruleset.
 
 | Role | Face | Why this one |
 |---|---|---|
-| Display | **Faculty Glyphic** (OFL) | A 2024 tribute to Wolpe's Albertus — glyphic, incised, flared terminals, upright only. Albertus lived on engraved bronze plates, Faber jackets, and City of London signage, which is close to a literal match for this world's brass tabs and stamped headers. Single weight, which is honest: cut letterforms have no bold |
-| Lesson body | **Bitter** (OFL, Huerta Tipográfica) | A Clarendon-genre slab — the one serif classification with a direct nineteenth-century lineage to legal and official documents. It replaces the literary humanist serif that was the obvious first reach, because that warmth on pale paper is precisely the cream-plus-serif convergence risk |
-| Dense technical text | **Public Sans** (OFL, USWDS) | Commissioned for United States government documents. In a world made of official records that is earned rather than borrowed — it is the register, not a reference to it |
-| Tightest labels | **Archivo Narrow** (OFL) | Index tabs and table headers, where Public Sans runs too wide |
-| Code, data, measurement | **JetBrains Mono** (OFL) | Chosen for character disambiguation (`0`/`O`, `1`/`l`/`I`): a misread character in a lesson is a comprehension failure, not an aesthetic one. Its home is the dark terminal plate, which is the most literal possible case of content that genuinely *is* code |
+| Display | **Familjen Grotesk** (OFL) | A Swedish grotesque with genuine character in its `a`, `g` and `k` — tight, confident, and not one of the four faces every technical site currently reaches for. Carries the kinetic rewrite at scale without looking like a logotype |
+| Body and UI | **Archivo** (OFL, Omnibus-Type) | A workhorse grotesque built for documents and small sizes, with a real width axis. Legible at length on a dark ground, which is the whole job |
+| Code, data, measurement | **Geist Mono** (OFL) | Unambiguous `0`/`O` and `1`/`l`/`I`, which matters because a misread character in a lesson is a comprehension failure. Its home is the transcript plane |
 
-**The monospace rule.** Mono sets real code, real terminal output, real timestamps, versions, durations, and measurements. It is never a costume for "technical" applied to arbitrary labels, chips, or eyebrows. This constraint is not decorative modesty — it is what keeps the mono meaningful when it does appear.
+**The monospace rule stands.** Mono sets real code, real terminal output, real versions, durations and counts. It is never a costume applied to labels for a technical feeling.
 
-Mechanics: hierarchy comes from size, tracking, and case, since the display face has one weight. Tracking floor is `-0.04em` and `-0.02em` to `-0.03em` usually reads better. Display caps at `6rem`. Body measure stays between 65 and 75 characters. More space above a heading than below it, everywhere.
-
-## Structure
-
-**The quadrille is a real grid.** The graph ruling is the layout system, not a background image: every element aligns to it, and the visible ruling is the proof. A grid you can see but that nothing aligns to is decoration, and decoration is what this project exists to avoid.
-
-**Page furniture, used functionally.** Page numbers that count real pages. Index tabs that navigate. Dates that record when a lesson was verified. A bound edge that marks where the volume begins. Every piece of furniture must do its job — a stamp that isn't recording anything is a sticker.
-
-**The plate.** System diagrams are exploded axonometric technical plates: 1px keyline, prior state ghosted, one flat `--annotation` on the active part, 1:1 call-out boxes, dashed leader arrows, oversized step numerals. Numbered steps are permitted here specifically because a curriculum's sequence carries information the reader needs — that is the exemption, and it does not extend to numbering ordinary page sections.
-
-**Depth is declared once.** Border or shadow, never both. Real shadows carry an offset and a soft blur; a pasted slip casts an adhesive shadow because paper on paper actually does. Card radii stay at or below 16px, and cards are not the page's structure — a grid of identical icon-heading-text cards is the lazy container, and nested cards are always wrong.
+Mechanics: tracking floor `-0.04em`, with `-0.02em` to `-0.03em` reading better on display sizes. Display caps at `6rem`. Body measure 65–75 characters. More space above a heading than below it. Italic descenders get `leading-[1.1]` minimum and reserve below, since the display face will be set tight.
 
 ## Motion
 
-One authored moment per surface, not scattered effects, and never one identical entrance on every section. Every animation has a defined static end state; `prefers-reduced-motion` and the in-site motion preference land on that state.
-
-**Named vocabulary.** These are the motions the world does in life. Nothing outside this list ships without adding it here first.
+The named vocabulary. Nothing outside this list ships without being added here. Every entry has a defined resting state, and that resting state is what `prefers-reduced-motion` and a throttled or blocked script both land on — a lesson learned the hard way when a status board built as a reveal rendered permanently blank in an environment whose animation clock was frozen.
 
 | Name | What happens | Ease | Duration |
 |---|---|---|---|
-| `annotate` | A marginal mark draws itself along its own path | `easeOutCirc` `cubic-bezier(0, .55, .45, 1)` | 420ms |
-| `strike` | A rule crosses superseded text; the replacement settles in above it | `easeOutQuart` `cubic-bezier(.25, 1, .5, 1)` | 300ms, then 240ms |
-| `stamp` | An impression lands at a slight rotation, ink unevenly dense. No bounce, no overshoot | `easeOutExpo` `cubic-bezier(.16, 1, .3, 1)` | 260ms |
-| `tip-in` | A specimen slip rotates into place, adhesive shadow resolving under it | `easeOutExpo` | 480ms |
-| `assemble` | Exploded parts travel their leader lines home | `easeInOutExpo` `cubic-bezier(.87, 0, .13, 1)` | scroll-scrubbed |
-| `resolve` | Ghosted prior state hardens to solid | `easeOutQuart` | 360ms |
+| `rewrite` | A line strikes itself through; the replacement resolves character by character above it | `cubic-bezier(.16, 1, .3, 1)` | 300ms strike, then ~1.2s resolve |
+| `drift` | The field moves continuously and slowly. Never idle, never fast | linear | perpetual |
+| `parallax` | Pointer and scroll displace planes at different rates | damped follow, ~0.045 | continuous |
+| `resolve` | Content arrives from depth: scale and opacity only, never position | `cubic-bezier(.16, 1, .3, 1)` | 480ms |
+| `settle` | Micro-interaction feedback, with a small tactile press on `:active` | `cubic-bezier(.25, 1, .5, 1)` | 240ms |
 
-A single house curve is registered once as a GSAP `CustomEase` and shared verbatim with CSS, so every reveal on the site decelerates the same way.
+**Rules.** Transform and opacity only — never `top`, `left`, `width`, or `height`. No `window.addEventListener('scroll')`; scroll comes from `useScroll`, `ScrollTrigger`, `IntersectionObserver`, or a CSS scroll timeline. No `requestAnimationFrame` loop touches React state. Text resolves by line or word except for short display moments, where character-by-character is the point. The division of labour is lint-enforced: Motion animates components, GSAP animates scroll scenes and cannot be imported elsewhere.
 
-**Text reveals** split by line or word, never by character, except for short display labels — character-by-character reads as precious at paragraph length. **Scroll scenes** follow a five-beat shape (hook, context, journey, climax, resolution) as one pinned, scrubbed GSAP timeline whose playhead is driven by scroll position rather than time. **Line art** draws via `stroke-dashoffset` paired with `easeOutCirc`; a linear stroke reveal reads as a progress bar rather than as something being drawn.
+## Structure
 
-The division of labour is enforced by lint: Motion animates components, GSAP animates scenes, and GSAP cannot be imported outside the landing and scroll-scene directories.
+**Planes, not boxes.** Three depths: the field behind, content on the plane, and a small nearest layer for navigation and the few controls that must float. An element earns the nearest plane by needing to persist across scroll, not by being important.
 
-## Built, and what it looks like
+**The transcript plane.** Terminal output sits on `--deep` — a nearer, flatter surface than the field, with a hairline edge rather than a shadow. Code is the one content type that is genuinely dark in life, so it needs no special pleading here; it simply sits closer.
 
-The devices below exist in the lesson template. Anything in this document not on this list is specified but not yet built.
+**Hairlines only.** Rules and edges are `--ice-faint` at 1px. No borders above 1px, no side stripes, no card grids as page structure, and no nested containers.
 
-| Device | What it is |
-|---|---|
-| `page-substrate` | Quadrille ruling drawn with gradients — horizontal every module, vertical every four. Body leading is exactly one module, so every line of prose lands on a rule. The moment content stops sitting on it, remove the ruling rather than keep it for atmosphere |
-| `bound-edge` | A real reserved gutter with stitch marks, not a decorative stripe |
-| Page stamp | Counts the lesson's true position in the record |
-| `Plate` | A terminal transcript as a dark specimen pasted into the light page, carrying its own provenance and an explicit verbatim-or-reconstructed label |
-| `Command` | A real command stamped with the release it was verified against |
-| `Revised` | Superseded text struck through, replacement above it, reason in the margin. Renders as `<del>`/`<ins>`, so the device and the correct semantics are one thing |
-| `MarginNote` | A note in the real margin above 1024px; falls into the flow beside its referent below that, never behind a toggle |
-| `stamp` | An impression with fixed uneven ink and a fixed slight rotation — designed irregularity, never randomised |
-
-Still to build: index tabs as module navigation, the exploded technical plates, and the negative mode's control.
-
-## Texture
-
-**The default is no surface texture at all.** The world is carried by structure and palette — the grid, the page furniture, the ink relationships. That is the decision, not a placeholder for a texture pass later.
-
-Two narrow exceptions, each requiring a reason at the point of use: a real photographed paper tile at very low opacity where paper-on-paper is literally the point (behind a tipped-in specimen), applied to a pseudo-element so it never touches content or the accessibility tree; and one careful stamp-impression treatment, since uneven ink coverage is what makes a stamp read as an impression rather than a sticker.
-
-`feTurbulence` is out. It reads as amateur, and it is the reflex reach whenever something "needs texture." Note also that the common rough- and torn-edge techniques are themselves turbulence-based, so the honest way to get an irregular edge here is a **hand-authored `clip-path` with deliberately chosen vertices** — designed imperfection rather than simulated noise. Randomness is not craft.
+**Sequence is spatial.** Module and lesson order maps to depth and position in the field, so the curriculum map is a view of the structure rather than a table of contents drawn to look like one.
 
 ## The refusals
 
-Named so they can be caught in review. Each is a category default rather than an absolute — the brief's own words could earn any of them, but reaching for one when the choice was free means a decision wasn't made.
+Each is a category default rather than an absolute — the brief's own words could earn any of them, but reaching for one when the choice was free means a decision was not made.
 
-Same-size icon-heading-text cards as page structure · nested cards · the hero-metric template · a tracked uppercase eyebrow over every section · numbered section markers outside the curriculum's own sequence · a modal for a task needing neither interruption nor protected focus · gradient text · glass and blur as decoration · coloured side-stripe borders above 1px · sparklines and progress rings standing in for content · monospace as a costume · a 1px border under a wide soft shadow · sketch-style or doodle SVG · `repeating-linear-gradient` stripes · two-axis grid overlays without a real canvas beneath them · animating an image on hover.
+Same-size icon-heading-text cards as page structure · nested cards · the hero-metric template · an uppercase eyebrow above every section (at most one per three sections) · section-number eyebrows and `01 / 4` pagination · version labels in the hero · the split-header pattern of big headline beside small explainer · three consecutive image-and-text zigzag sections · gradient text · glass and blur as decoration · coloured side-stripe borders above 1px · sparklines and progress rings standing in for content · monospace as costume · outer glows · pure black · `feTurbulence` grain · hand-rolled sketchy SVG · div-built fake screenshots · a hero that overflows its viewport or whose CTA wraps to two lines · placeholder-as-label · custom cursors.
 
-And the three whole-look conventions to stay clear of: warm cream ground with high-contrast serif display and a terracotta accent; near-black with one neon accent and glowing edges; broadsheet hairlines with italic display serif and small tracked mono labels. The first is the live risk for this world, and the paper token is deliberately cool to keep away from it.
+And the whole-look conventions to stay clear of: warm cream with a serif display and a terracotta or brass accent; near-black with one neon accent and glowing edges; broadsheet hairlines with an italic display serif and tracked mono labels; a purple-to-blue gradient hero. The first is the one this project already walked into once.
 
 ## Accessibility as a design constraint
 
-Not a later audit. Body and placeholder text at 4.5:1 or better, large text at 3:1, verified against both modes — and secondary text on the paper ground is tinted from the ink hue rather than greyed. Terminal plates, being the subject matter, must stay legible at 200% zoom. Diagrams carry real text and descriptions; they are never images of words. Session replays ship as complete transcripts a screen reader can read straight through, with playback as the enhancement. Focus is always visible and always deliberate.
+A build gate, not an audit. Contrast verified against both `--void` and `--deep`. `prefers-reduced-motion` stops the field and the rewrite at their resting states, both of which are complete and legible. `prefers-contrast: more` is honoured. The field is decorative and carries `aria-hidden`, so nothing in it is load-bearing information — every structure it depicts also exists as real text. Session replays ship as complete transcripts a screen reader can read straight through, with playback as the enhancement. Focus is always visible against a dark ground, which means a light ring, not a subtle one. Terminal content stays legible at 200% zoom.

@@ -31,7 +31,7 @@ export default async function ModulePage({ params }: { params: Params }) {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-16" data-pagefind-body>
-      <p className="font-mono text-ink-soft text-xs">
+      <p className="font-mono text-ice-dim text-xs">
         Module {String(mod.number).padStart(2, '0')}
       </p>
       <h1 className="font-display mt-4 text-4xl leading-[1.1] tracking-[-0.02em]">
@@ -39,18 +39,18 @@ export default async function ModulePage({ params }: { params: Params }) {
       </h1>
       <p className="mt-4 max-w-[68ch] text-lg">{mod.summary}</p>
 
-      <ol className="border-rule mt-12 border-t">
+      <ol className="border-ice-faint mt-12 border-t">
         {mod.lessons.map((lesson) => (
-          <li key={lesson.id} className="border-rule border-b">
+          <li key={lesson.id} className="border-ice-faint border-b">
             <Link href={lesson.url} className="flex items-baseline gap-4 py-4">
-              <span className="font-mono text-ink-soft text-xs">
+              <span className="font-mono text-ice-dim text-xs">
                 {String(lesson.order).padStart(2, '0')}
               </span>
               <span className="flex-1">
                 <span className="block">{lesson.title}</span>
-                <span className="text-ink-soft block text-sm">{lesson.description}</span>
+                <span className="text-ice-dim block text-sm">{lesson.description}</span>
               </span>
-              <span className="font-mono text-ink-soft text-xs">{lesson.duration} min</span>
+              <span className="font-mono text-ice-dim text-xs">{lesson.duration} min</span>
             </Link>
           </li>
         ))}

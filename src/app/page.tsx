@@ -13,14 +13,14 @@ export default function HomePage() {
         session replays it exists to introduce are real.
       </p>
 
-      <ul className="border-rule mt-16 border-t">
+      <ul className="border-ice-faint mt-16 border-t">
         {guides.map((guide) => (
-          <li key={guide.slug} className="border-rule border-b py-6">
+          <li key={guide.slug} className="border-ice-faint border-b py-6">
             <h2 className="font-display text-2xl">
               <Link href={guide.url}>{guide.title}</Link>
             </h2>
             <p className="mt-2 max-w-[68ch]">{guide.summary}</p>
-            <p className="font-mono text-ink-soft mt-2 text-xs">
+            <p className="font-mono text-ice-dim mt-2 text-xs">
               {guide.subject} · verified against {guide.verifiedAgainst}
             </p>
           </li>

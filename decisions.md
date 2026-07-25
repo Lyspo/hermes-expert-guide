@@ -85,3 +85,17 @@ The notebook was chosen because it is the only candidate that carries all three 
 Doing it now cost a directory move and one keying change. Doing it after sixty lessons exist would have cost a migration.
 
 **Cost.** "Protocol" is a common word, so it confers no exclusivity, and the platform's own identity has to stay quiet enough not to compete with each guide's. Commercial plumbing is deliberately absent: gating requires a backend, which would contradict the zero-cost, zero-data posture, so only the seams are in place — guides as independent units, no architecture that would need tearing out.
+
+---
+
+### 009 — Substrate: depth as the medium, type that rewrites itself
+
+**Decision.** The visual world is a dark, dimensional field in which the agent's interior is actually rendered — clustered nodes and edges at real depth, drifting, displaced by the pointer — with content on a plane above it. Its signature motion is borrowed from a second candidate direction: display type that strikes its own line through and re-enters it, characters resolving in sequence. Dark only, one signal colour, no serif.
+
+**Why.** This replaces the paper-notebook world of decision 007, which was wrong twice over. It fought the subject: a platform teaching autonomous software should not look like stationery. And its palette turned out to sit almost exactly on tasteskill's published list of banned defaults, where cream grounds with brass accents and warm near-black ink are recorded as the second-most-recurring signature of machine-generated design. Avoiding one convergence cluster is not the same as avoiding all of them, and a rule against neon does not license a retreat into paper.
+
+The fusion is not a compromise. A skill library, a memory index and a delegation tree genuinely are graphs, so rendering them in depth is description rather than decoration — the field is what the agent *is*. And an agent that rewrites its own instructions is exactly what self-rewriting display type performs — the type is what it *does*. Nine candidate directions were built as live prototypes before this one was chosen; three were authored directly, three derived by following Impeccable's world-derivation process, three by following tasteskill's dial-driven method.
+
+**Cost.** A committed dark world offers no light theme, because inverting a luminous field destroys the medium rather than translating it; that is stated as a choice and paid for with verified contrast against both surface planes and an honoured `prefers-contrast`. The field is canvas, so it must stay decorative and `aria-hidden`, with every structure it depicts also present as real text. And the whole token layer, page shell and component set were rebuilt — roughly a day, which is the price of having discovered the mistake at forty-three pages rather than four hundred.
+
+**What the previous world contributed.** One idea survived intact and is now the centrepiece: revision made visible, superseded content kept on the page beside its replacement and its reason, rendered as real `<del>` and `<ins>`. It was the best thing about the abandoned direction and it was never paper-specific.

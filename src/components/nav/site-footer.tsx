@@ -16,8 +16,8 @@ export function SiteFooter() {
   ].filter((link) => link.href.length > 0)
 
   return (
-    <footer className="border-rule mt-24 border-t">
-      <div className="text-ink-soft mx-auto max-w-3xl px-6 py-10 text-sm">
+    <footer className="border-ice-faint mt-24 border-t">
+      <div className="text-ice-dim mx-auto max-w-3xl px-6 py-10 text-sm">
         <p className="max-w-[60ch]">
           {site.disclaimer} Hermes Agent is{' '}
           <a href={site.upstream.repo}>their open-source project</a>; its{' '}
@@ -36,7 +36,7 @@ export function SiteFooter() {
           ))}
         </p>
 
-        <p className="font-mono mt-4 text-xs">Code MIT, prose CC BY 4.0.</p>
+        <p className="mt-4 font-mono text-xs">Code MIT, prose CC BY 4.0.</p>
       </div>
     </footer>
   )
