@@ -120,3 +120,51 @@ two thousand words of prose.
 
 That tension is real and it is not a reason to refuse the direction — it is the thing the
 first build has to prove. Test it on one surface before committing the whole system to it.
+
+---
+
+## First build against this direction, and the verdict on it
+
+The curriculum map was rebuilt as a lit field — real perspective, spheres shaded from a
+reconstructed normal with a specular term, prerequisite depth as the third axis, the
+seventy-nine prerequisites drawn as lines through it. Commit `6c6cdcc`.
+
+**The author's verdict, and it is the operative fact for the next session:**
+
+> "Direction is alright, still looks extremely basic / not designed — but if you're only
+> working on the functionality aspect for now, all good."
+
+Read that precisely, because it is not a rejection and it is not an approval:
+
+- **The direction survived.** Lit geometry over flat drawing was not the thing objected
+  to. Nobody said go back.
+- **The execution is not designed yet.** A shaded sphere is a *material*, not a design.
+  What the field currently has is physics and no composition: no hierarchy beyond size,
+  no typography in or around the drawing, no framing, no rhythm, no moment. Igloo is not
+  admired because its spheres are lit — it is admired because a lit igloo sits in a
+  composed landscape with a wireframe system laid over it and a considered frame around
+  it.
+- **The gap is composition, not fidelity.** Turning up the shader will not close it.
+
+### What "designed" would plausibly mean here, unbuilt
+
+Named so the next session starts from a list rather than from a blank:
+
+1. **Typography inside the field.** Module numbers, depth labels, a legend — set in the
+   real type stack, positioned in 3D. Active Theory's glyph-density disc is *type as
+   rendering*; there is currently no type in this drawing at all.
+2. **A composed frame.** Igloo's scene has a horizon, a foreground and a vignette. The
+   field is currently a rectangle with points in the middle of it.
+3. **A structural overlay.** Igloo's constellation wireframe is a second system drawn
+   *over* the terrain, not the terrain's own edges. Here the prerequisite lines are
+   doing double duty as both content and texture, and they are neither.
+4. **A moment.** Basement and Lusion were both praised as "could be used once." The map
+   has no arrival, no transition, no single thing that happens.
+5. **Hierarchy beyond radius.** Fifty-one nodes currently differ only in size and
+   readiness tint. Modules are not visible as groupings at all.
+
+### The unresolved question, still unresolved
+
+Whether any of this survives next to two thousand words of prose. The map is the easy
+case — a map is *meant* to be a field. A lesson page is the real test and has not been
+attempted.

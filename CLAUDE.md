@@ -58,7 +58,29 @@ This is an **unofficial community project**, not affiliated with or endorsed by 
 
 # State of play
 
-Updated 2026-07-25. This section exists so a session on a different machine picks up
+> ## ⇢ Handoff, 2026-07-27 — session moved from Windows to Mac
+>
+> Everything is committed and pushed. `main` is at the lit-field commit; working tree
+> clean on both sides. Nothing is half-finished in the tree.
+>
+> **Read in this order before touching design:** `research/design/06-direction-calibration.md`
+> (the author's reactions to ten real sites, the direction they specify, and the verdict
+> on the first build), then `05-direction-exploration.md`, then `decisions.md` 010.
+>
+> **The live verdict, in the author's words:** *"Direction is alright, still looks
+> extremely basic / not designed — but if you're only working on the functionality
+> aspect for now, all good."* The direction survived; the execution has physics and no
+> composition. `06` ends with five named, unbuilt things that "designed" would plausibly
+> mean here. Start from that list, not from a blank.
+>
+> **The open question is unchanged:** none of this has been tried next to two thousand
+> words of prose. The map was the easy case. A lesson page is the real test.
+>
+> **Do not** re-litigate the banned-cluster question — `06` settles it. The ruleset bans
+> `box-shadow` glow and gradient chrome, not luminance from real geometry.
+
+
+Updated 2026-07-27. This section exists so a session on a different machine picks up
 without re-deriving anything — the assistant's own memory is machine-local and does not
 travel with the repo.
 
