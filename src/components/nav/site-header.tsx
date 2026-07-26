@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PaletteTrigger } from './palette-trigger'
 import { TrackChip } from './track-chip'
 import { site } from '@/lib/site'
 
@@ -44,12 +45,9 @@ export function SiteHeader() {
           >
             Glossary
           </Link>
-          <Link
-            href="/search/"
-            className="font-mono text-[0.65rem] tracking-[0.08em] text-ice-dim uppercase no-underline transition-colors duration-200 hover:text-ice"
-          >
-            Search
-          </Link>
+          {/* Server-renders as the plain search link, so nothing is lost without
+              JavaScript; hydrates into the ⌘K palette trigger. */}
+          <PaletteTrigger />
           <Link
             href="/about/"
             className="hidden font-mono text-[0.65rem] tracking-[0.08em] text-ice-dim uppercase no-underline transition-colors duration-200 hover:text-ice sm:inline"

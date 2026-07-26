@@ -102,8 +102,20 @@ and must not be undone:
   invisible to it. Guide commentary inside the console is prefixed `┈`; that is a load-
   bearing convention, not a decoration.
 
-**Not built.** The ⌘K command palette. The mastery layer (`decisions.md` 010). `/map`
-and its OGL field. The simulations beyond SIM-1's engine — the map specifies eight and
+**The ⌘K palette.** `src/lib/palette.ts` is the matcher (pure, tested against the real
+index); `scripts/build-palette.mjs` writes `public/palette.json` in `prebuild`, so it can
+never drift from the content. `PaletteTrigger` server-renders as the header's plain
+search link and hydrates into the shortcut, so no-JS readers keep Pagefind at `/search/`.
+The dialog is fetched and imported on first open only.
+
+**It must stay portalled to `document.body`.** `.plane` sets `z-index: 1` and therefore
+creates a stacking context; a `z-50` dialog rendered inside the header is confined to it
+and the main content — a later sibling on the same layer — paints straight over it. The
+symptom was a see-through palette with lesson prose showing through its own result rows.
+
+**Not built.** The mastery layer (`decisions.md` 010). `/map`
+and its OGL field. Wiring `Workspace`'s `prompt` prop to a `console:` frontmatter field,
+so a lesson can open the console on the frame it teaches. The simulations beyond SIM-1's engine — the map specifies eight and
 one flagship replay exists. A colophon. The landing page's GSAP scroll narrative.
 Lighthouse CI.
 
