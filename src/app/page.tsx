@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { BootScene } from '@/components/landing/boot-scene'
+import { BootSequence } from '@/components/landing/boot-sequence'
 import { coreCountFor, durationFor, guides, lessons, modules } from '@/lib/content'
 import { jsonLd, websiteSchema } from '@/lib/schema'
 import { TRACKS, TRACK_LABELS, site } from '@/lib/site'
@@ -111,6 +113,24 @@ export default function HomePage() {
           reachable, nothing is hidden behind a toggle, and you can switch at any point
           without losing your place.
         </p>
+      </section>
+
+      {/* The loop, performed. Placed before the corrections because it is what makes
+          them matter: a reader who has watched the agent write itself a procedure
+          understands why being wrong about its memory model is not a detail. */}
+      <section className="mt-[calc(var(--step)*4)] border-t border-ice-faint pt-[calc(var(--step)*1.25)]">
+        <h2 className="font-display text-[1.6rem] leading-[1.15] tracking-[-0.015em]">
+          One session, six frames
+        </h2>
+        <p className="mt-[calc(var(--step)*0.75)] max-w-[62ch] text-[0.95rem] leading-[1.75] text-ice-dim">
+          All of it captured from a real v0.19.0 install. Watch for the fourth frame: the
+          agent reviews its own work after the answer is already on screen, and writes
+          down a procedure it did not have when the session started.
+        </p>
+
+        <BootScene>
+          <BootSequence />
+        </BootScene>
       </section>
 
       {/* The corrections. This is the product, so it gets the most space. */}

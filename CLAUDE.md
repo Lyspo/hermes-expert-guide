@@ -231,6 +231,11 @@ orchestration did not arrive in v0.6.0.
 
 ## Recurring traps in this codebase
 
+- **Any `overflow-*-auto` element needs `tabIndex={0}`.** A scrollable region with no
+  keyboard route is a serious axe violation, and this codebase is mostly terminal frames
+  wider than a phone. It has been caught three times now: the console scroller, the
+  static transcript, and the boot sequence. Add the attribute when you add the overflow,
+  not when the gate fails.
 - **Every animation needs a visible resting state.** Three separate bugs came from
   animating opacity from zero or gating content on an animation completing; a throttled
   clock then leaves the page blank. Transform-only, enter-only, no `AnimatePresence`

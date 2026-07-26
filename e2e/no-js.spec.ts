@@ -105,3 +105,21 @@ test('the map is complete as text, with no canvas involved', async ({ page }) =>
   })
   expect(lessonLinks).toBe(51)
 })
+
+test('the boot sequence is the whole argument, with no scene running', async ({ page }) => {
+  await page.goto('/')
+
+  // Six frames, all present. The GSAP scene brightens captions and lifts frames a few
+  // pixels; it never reveals anything, so with scripting off the sequence is simply
+  // finished rather than empty.
+  const steps = page.locator('[data-boot-step]')
+  await expect(steps).toHaveCount(6)
+
+  // The frame that carries the thesis: the review firing unprompted, in the software's
+  // own words rather than the documentation's.
+  await expect(page.getByText("💾 Self-improvement review: Skill 'github-repo-discovery' created.")).toBeVisible()
+  await expect(page.locator('body')).not.toContainText("Skill 'foo' patched")
+
+  // And the payload — pitfalls that are the agent's own earlier failures.
+  await expect(page.getByText('GitHub rate-limits anonymous API calls')).toBeVisible()
+})
