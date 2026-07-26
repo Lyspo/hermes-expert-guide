@@ -76,7 +76,7 @@ onboarding experience, so there is an alternative.
 An unknown user messages the bot. Instead of silence, they get an eight-character
 pairing code. You approve it:
 
-<Command verified="v0.19.0">hermes pairing approve telegram A1B2C3D4</Command>
+<Command verified="v0.19.0">hermes pairing approve telegram XKGH5N7P</Command>
 
 Alongside it: `hermes pairing list`, `revoke`, and `clear-pending`. Behaviour for
 unknown senders is set by `unauthorized_dm_behavior`, which takes `pair` or `ignore`.
@@ -91,6 +91,12 @@ The limits are sensible and worth knowing, because they are also a rate-limiting
 | Failed attempts | 5, then a 1-hour lockout |
 
 Pairing state lives under `~/.hermes/pairing/`, per platform, stored `0600`.
+
+Default deny is the kind of claim readers accept in a sentence and disbelieve in
+practice, so here is the whole exchange — including the part where someone you work
+with asks a reasonable question and does not get an answer:
+
+<Simulation id="letting-someone-else-in" />
 
 ## Beyond the individual
 

@@ -9,9 +9,17 @@ import type { SimScript } from '@/lib/sim/script'
  * component is what loads lazily.
  */
 import { script as aTurnInFull } from './a-turn-in-full'
+import { script as memoryFillsUp } from './memory-fills-up'
+import { script as aJobThatFiresAtNine } from './a-job-that-fires-at-nine'
+import { script as lettingSomeoneElseIn } from './letting-someone-else-in'
+import { script as threeChildren } from './three-children-and-no-memory-of-you'
 
 export const SIMULATIONS: Record<string, SimScript> = {
   [aTurnInFull.id]: aTurnInFull,
+  [memoryFillsUp.id]: memoryFillsUp,
+  [aJobThatFiresAtNine.id]: aJobThatFiresAtNine,
+  [lettingSomeoneElseIn.id]: lettingSomeoneElseIn,
+  [threeChildren.id]: threeChildren,
 }
 
 export function getSimulation(id: string): SimScript | undefined {

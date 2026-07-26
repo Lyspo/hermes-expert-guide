@@ -60,14 +60,29 @@ hermes            # classic CLI
 hermes --tui      # modern TUI, recommended
 ```
 
-You get a banner. On a real v0.19.0 install it is a Braille-block rendering of the
-Hermes emblem inside a bronze-and-gold box frame, with the version on the top border,
-a two-column panel of available tools and skills, and your model, working directory and
-session id beneath the emblem. It ends with a line you can check against:
+You get a banner. The documentation renders it as an SVG figure and publishes no
+character art, so for a long time the honest thing to say about it here was nothing. A
+real v0.19.0 install prints this:
 
-<Transcript fidelity="verbatim" source="Captured session, v0.19.0, 2026-07-25">
-{`Welcome to Hermes Agent! Type your message or /help for commands.`}
+<Transcript label="hermes, first line of a session" fidelity="verbatim" source="Captured session, v0.19.0, 2026-07-25 — emblem rows and long lists elided">
+{`╭──────────── Hermes Agent v0.19.0 (2026.7.20) · upstream 760112ad ────────────╮
+│                                       Available Tools                        │
+│    ⠀⠀⠀⠀⠀⠀⢀⣠⣴⣾⣿⣿⣇⠸⣿⣿⠇⣸⣿⣿⣷⣦⣄⡀⠀⠀⠀     browser: browser_back, browser_click,  │
+│    ⠀⢀⣠⣴⣶⠿⠋⣩⡿⣿⡿⠻⣿⡇⢠⡄⢸⣿⠟⢿⣿⢿⣍⠙⠿⣶⣦⣄⡀     ...                                    │
+│                              ⋮        code_execution: execute_code           │
+│    <model> · <provider>               Available Skills                       │
+│  <cwd, elided with …>                 <namespace>: <skill>, +N more          │
+│    Session: <id>                      N tools · N skills · /help for         │
+│                                       commands                               │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Welcome to Hermes Agent! Type your message or /help for commands.`}
 </Transcript>
+
+The emblem is Braille block art, the frame is bronze and the version line gold. Three
+things in that frame are worth checking rather than admiring: the **model and provider**
+under the emblem are what you actually configured, the **counts** on the footer line
+tell you how many tools and skills loaded, and the **upstream hash** on the top border
+is the build you are running when you come to report a bug.
 
 Then a rotating tip prefixed `✦ Tip:`.
 

@@ -13,6 +13,9 @@ export default defineConfig({
       'content-collections': fileURLToPath(
         new URL('./.content-collections/generated', import.meta.url)
       ),
+      // Same reasoning for the replay registry: the test that resolves every embedded
+      // <Simulation id> has to read the real one.
+      '@content': fileURLToPath(new URL('./content', import.meta.url)),
     },
   },
   test: {

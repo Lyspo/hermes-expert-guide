@@ -231,9 +231,32 @@ others describe arrangements rather than sequences. Cost to a lesson page is **+
 not GSAP's ~45 kB, because the import is dynamic — the split in "Architecture rules" is
 what makes that true, so do not let it decay.
 
-**Not built.** The simulations beyond SIM-1's engine — the map specifies eight and one
-flagship replay exists. A colophon. The landing page's GSAP scroll narrative. Lighthouse
-CI.
+**The replays, built 2026-07-27.** Five of the map's eight exist: SIM-2 `a-turn-in-full`
+(`03/01`), SIM-3 `memory-fills-up` (`05/03`), SIM-5 `a-job-that-fires-at-nine` (`07/01`),
+SIM-6 `letting-someone-else-in` (`07/03`), SIM-7 `three-children-and-no-memory-of-you`
+(`08/02`). Each was placed where its host lesson taught a *sequence* in prose and had no
+way to show it.
+
+Three are deliberately not built, and the reasons are different in each case:
+
+- **SIM-4** stays blocked. Its payload is the SKILL.md diff and no capture of one exists;
+  `06/05` says so rather than reconstructing it.
+- **SIM-1 and SIM-8 would duplicate their hosts.** `02/03` and `04/04` already carry every
+  frame those replays would show, as static `<Transcript>` blocks, and `04/04` in
+  particular is built around the three-frame contrast that SIM-8 was specified to
+  perform. A player there would be motion over material the reader has already read. The
+  one real gap in that pair was the launch banner, which `02/03` described in prose and
+  never showed — it is now shown, verbatim from `[09]` §1.
+
+**The player is a fixed window now, not a growing list.** The new replays run to roughly
+four times their own height — the cron one reaches 1,675 px in a 416 px frame — and the
+`ol` had `min-h` with no cap, so every frame of playback would have pushed the rest of
+the lesson down the page. It is a fixed height that scrolls itself and follows the newest
+event, and the pin releases the instant the reader scrolls back to re-read something.
+`e2e/replay.spec.ts` measures the figure *and a witness heading below it* across
+playback, because a stable figure with a moving page would pass a naive check.
+
+**Not built.** SIM-1, SIM-4 and SIM-8 as above. A colophon. Lighthouse CI.
 
 **Verification, and what it does and does not cover.** `pnpm verify` runs typecheck,
 lint, unit tests, OG image generation, the static export, the search index and a link
@@ -367,40 +390,38 @@ orchestration did not arrive in v0.6.0.
 
 ## Picking up
 
-**P7 is done.** Three plates built, each with the lesson that hosts it: VIZ-2 memory
-(`05/03`), VIZ-3 the improvement loop (`06/05`), VIZ-4 orchestration (`08/01`). The map
-specifies six; VIZ-1, VIZ-5 and VIZ-6 were never in P7's scope and remain unbuilt.
-
-Next is **the remaining lessons, module by module**, against `research/curriculum-map.md`,
-which carries per-lesson sources and four amendment sections at the end recording what the
-captures changed. To regenerate the counts above rather than trusting them:
+`research/curriculum-map.md` carries per-lesson sources and four amendment sections at
+the end recording what the captures changed. Regenerate any count in this file rather
+than trusting it:
 
 ```bash
+# lessons written, per module
 for d in content/guides/hermes/*/; do n=$(ls $d*.mdx | wc -l); \
   s=$(grep -l "^draft: true" $d*.mdx 2>/dev/null | wc -l); \
   echo "$(basename $d): $((n-s))/$n"; done
+
+# plates and replays actually in use
+grep -rho 'id="[a-z-]*"' content/guides/ --include=*.mdx | sort -u
 ```
 
-**The curriculum is done, so the next work is not lessons.** In rough order of value:
+**The curriculum is done, the landing scroll narrative is done, the glossary and the
+cheatsheets are done, and five of the eight replays are done.** What is actually left, in
+rough order of value:
 
-1. **The landing page's scroll narrative.** The page itself is now built — hero, the
-   corrections as its centrepiece, computed track numbers, a real table of contents —
-   and it is entirely server-rendered with no client JavaScript. What is *not* built is
-   the GSAP scroll scene `design.md` specifies. `src/components/landing/` does not
-   exist; the eslint rule permitting GSAP there is currently unused.
-2. **The remaining simulations.** The map specifies eight; the engine and one flagship
-   replay exist. SIM-4 is still blocked on an uncaptured SKILL.md diff.
-3. **Glossary, cheatsheets, colophon** — all specified in the map, none started. The
-   `glossaries` and `cheatsheets` collections already exist in `content-collections.ts`
-   and are empty.
+1. **The visual direction**, which is the only thing genuinely blocking the project's
+   stated ambition and is not an engineering task. See the warning at the top of this
+   file. Do not open by building.
+2. **Lighthouse CI.** LCP and CLS are still unmeasured, so `design.md`'s performance
+   budgets remain intentions rather than gates. This is now the largest untruth a reader
+   of this file could take away — the accessibility half of that old gap is closed
+   (Playwright and an axe sweep both run in CI), the performance half is not.
+3. **A colophon.** Specified in the map, never started.
+4. **The three unbuilt replays**, none of which is simply outstanding work: SIM-4 is
+   blocked on a capture, SIM-1 and SIM-8 would duplicate their hosts. Revisit only if a
+   capture arrives or those lessons change shape.
 
-Verification is still thinner than the plan calls for: no Playwright, no axe sweep, no
-Lighthouse CI, so the accessibility and performance budgets in `design.md` remain
-intentions. That gap is now the largest untruth a reader of this file could take away.
-
-Four of the map's six plates are built — VIZ-1 to VIZ-4. The two remaining are VIZ-5
-(`10/02`, secrets and egress) and VIZ-6 (`07/03`, the authorization chain); both sit in
-modules that are entirely unwritten, so they arrive with their hosts.
+All six plates are built (VIZ-1 to VIZ-6). Ignore any line above claiming otherwise;
+regenerate rather than trust, with `grep -rl "<Viz" content/guides/`.
 
 Two things about module 6 worth not rediscovering:
 

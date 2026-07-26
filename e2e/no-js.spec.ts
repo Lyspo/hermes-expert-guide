@@ -77,6 +77,26 @@ test('search degrades to a complete route through the curriculum', async ({ page
   await expect(page.locator('ol li a')).toHaveCount(10)
 })
 
+test('a replay carries its whole transcript with no script', async ({ page }) => {
+  await page.goto('/hermes/07-unattended/01-scheduled-work/')
+
+  // The player reveals events over time, so with no script it shows the first frame
+  // and stops. The guarantee is that the complete transcript sits beside it in a
+  // <details> — which opens with no script at all, because that is what the element
+  // does — carrying the last event, which playback would otherwise gate behind ten
+  // seconds of a clock that is never going to run.
+  await page.getByRole('group').getByText('Full transcript').click()
+
+  await expect(page.getByText('Cronjob Response: Morning feeds')).toBeVisible()
+  await expect(
+    page.getByText('Note: The agent cannot see this message, and therefore cannot respond to it.'),
+  ).toBeVisible()
+
+  // Provenance ships with it. A replay that hid whether its strings were quoted or
+  // reconstructed would be the one dishonest thing on the site.
+  await expect(page.getByText(/Verbatim strings · v0\.19\.0/)).toBeVisible()
+})
+
 test('the disclaimer is on the page, not painted on by a script', async ({ page }) => {
   await page.goto('/hermes/06-skills-and-the-loop/05-the-nudge-and-the-review-fork/')
   await expect(page.getByText(/Unofficial community project/)).toBeVisible()

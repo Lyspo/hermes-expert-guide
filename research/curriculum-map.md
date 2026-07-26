@@ -1644,3 +1644,31 @@ The panel is titled `⚠️ Dangerous Command`, displays the matched pattern des
 original. SIM-5 is now fully buildable from three captured frames — default silence,
 pending prompt, denial — and the letter-key option set must be struck wherever the map
 marked it VERBATIM.
+
+---
+
+## 23. A numbering correction to §22 (noted 2026-07-27)
+
+**Every "SIM-5" in §22 and in `[09]` §§11–14 means SIM-8.** The approval-gate replay is
+**SIM-8 · `the-approval-you-should-have-read`** (§14 of this map, hosted at
+`04/04-approvals-in-depth`). SIM-5 is `a-job-that-fires-at-nine`, the cron replay at
+`07/01-scheduled-work`, which those amendments do not touch at all. The slip originated
+in `[09]` and was inherited here; §14's own numbering is authoritative.
+
+The substance is unaffected — the captures do settle the approval replay — but read the
+amendments with the right id or the cron lesson will look like it has open questions it
+does not have.
+
+**Build status as of 2026-07-27**, since the sections above describe intent rather than
+what shipped:
+
+| Replay | Host | Status |
+|---|---|---|
+| SIM-1 `first-run` | `02/03` | Not built — the host already carries every frame statically. The banner gap it existed to close is now filled directly from `[09]` §1. |
+| SIM-2 `a-turn-in-full` | `03/01` | Built |
+| SIM-3 `memory-fills-up` | `05/03` | Built |
+| SIM-4 `the-skill-writes-itself` | `06/05` | Blocked — no SKILL.md diff has been captured |
+| SIM-5 `a-job-that-fires-at-nine` | `07/01` | Built |
+| SIM-6 `letting-someone-else-in` | `07/03` | Built, messaging half labelled as described-not-drawn |
+| SIM-7 `three-children-and-no-memory-of-you` | `08/02` | Built, `/agents` overlay deliberately absent |
+| SIM-8 `the-approval-you-should-have-read` | `04/04` | Not built — the host is built around the same three frames as static transcripts, and a player would repeat them |

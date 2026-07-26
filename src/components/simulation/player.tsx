@@ -30,6 +30,18 @@ export function Player({ script }: { script: SimScript }) {
   const frame = useRef(0)
   const last = useRef(0)
 
+  // The transcript is a fixed-size window that scrolls itself, not a list that grows.
+  // A replay carrying a full delivered message or a config block is well over a
+  // thousand pixels by its last event, and letting the element grow would reflow
+  // everything below it on almost every frame — the reader loses their place in the
+  // prose and the page's CLS budget goes with it.
+  //
+  // Pinning releases the moment the reader scrolls up. Someone who has gone back to
+  // re-read an earlier frame is doing the thing this component exists for, and
+  // yanking them to the bottom on the next event would be the worst possible answer.
+  const view = useRef<HTMLOListElement>(null)
+  const pinned = useRef(true)
+
   // A reader who has asked for less motion gets the finished transcript and a
   // step-through control instead of a clock.
   useEffect(() => {
@@ -39,6 +51,10 @@ export function Player({ script }: { script: SimScript }) {
         setStepMode(true)
         setPlaying(false)
         setTime(timeline.total)
+        // Everything is revealed at once here, so the reader wants the first frame,
+        // not the last. Release the pin as well: they are scrolling this themselves.
+        pinned.current = false
+        if (view.current) view.current.scrollTop = 0
       }
     }
     apply()
@@ -107,6 +123,23 @@ export function Player({ script }: { script: SimScript }) {
   const done = time >= timeline.total
   const currentMarker = [...timeline.markers].reverse().find((marker) => marker.at <= time)
 
+  const count = slots.length
+
+  const onScroll = useCallback(() => {
+    const element = view.current
+    if (!element) return
+    const distance = element.scrollHeight - element.scrollTop - element.clientHeight
+    pinned.current = distance < 24
+  }, [])
+
+  useEffect(() => {
+    const element = view.current
+    if (!element || !pinned.current) return
+    // Written directly rather than via scrollIntoView, which would also scroll the
+    // page — the replay must never move the document around the reader.
+    element.scrollTop = element.scrollHeight
+  }, [count, time])
+
   return (
     <div
       className="transcript mt-[calc(var(--step)*0.75)]"
@@ -117,7 +150,11 @@ export function Player({ script }: { script: SimScript }) {
       role="group"
       aria-label={`Replay: ${script.title}. Space to play or pause, arrow keys to step.`}
     >
-      <ol className="min-h-[22rem] overflow-x-auto px-[calc(var(--step)*0.75)] py-[calc(var(--step)*0.7)]">
+      <ol
+        ref={view}
+        onScroll={onScroll}
+        className="h-[22rem] overflow-auto px-[calc(var(--step)*0.75)] py-[calc(var(--step)*0.7)] md:h-[26rem]"
+      >
         {slots.map((slot) => {
           const typed = slot.event.t === 'user' || slot.event.t === 'say'
           return (
