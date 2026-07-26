@@ -42,7 +42,9 @@ Lessons live at `content/curriculum/<NN-module>/<NN-lesson>.mdx` with typed fron
 
 Playwright runs against the **exported `out/`**, not the dev server — including a `javaScriptEnabled: false` pass asserting content completeness, and an axe sweep per template.
 
-Performance budgets are Lighthouse CI assertions, not aspirations: lesson pages ≤130 kB initial JS / LCP ≤1.8 s / CLS <0.02; landing ≤200 kB pre-lazy / LCP ≤2.5 s. The WebGL canvas, if it ever exists, is never the LCP element.
+**JavaScript budgets are measured as first-party code on top of the framework floor**, and `pnpm budgets` is a real gate in CI. The floor is read on every run from `/about`, a page with no page-specific client code: **189.3 kB gzipped** of React 19, the Next 16 App Router runtime and this site's persistent chrome. Every other page is judged on what it adds — landing +0.7 kB, map +0.5 kB, a lesson +4.5 kB, against allowances of 4, 4 and 8. Lowering the floor is a stack decision, not a code decision; do not attack it in a page.
+
+LCP and CLS are **not** enforced. There is no Lighthouse CI, so do not describe them as budgets. The WebGL canvas is never the LCP element.
 
 ## Tone and legal
 
@@ -172,18 +174,31 @@ was being used as a text colour in 29 places, which `design.md` never sanctioned
 palette table gives that token as "hairlines, inactive nodes, disabled states". All 29
 are now `--ice-dim` (7.5:1). **`--ice-faint` is a hairline colour. Never set text in it.**
 
-**The JavaScript budget is measured and currently missed.** `pnpm budgets` reads what each
-page actually references in the export and gzips it. Landing is **186.6 kB** against its
-200 kB budget and passes. A lesson page is **191.0 kB** against a 130 kB budget and does
-not. (The console added **0.5 kB** to that figure, not more: `console-mount.tsx` loads it
-with `ssr: false`, so it is out of the initial chunk, and the server still renders the
-captured transcript for readers without JavaScript. Keep that split.) The 130 kB target
-itself is dead per `decisions.md` 010 and awaits re-setting from measurement — and essentially all of it is the React 19 + Next 16 App Router client runtime rather
-than first-party code. Removing Zod from `src/lib/storage.ts` took 63 kB off every page
-and was the whole of the available win; what remains is the framework floor. Do not
-"fix" this by raising the number in `design.md` — either the stack changes or the budget
-is documented as unreachable. `pnpm budgets` is `continue-on-error` in CI for exactly
-that reason, and that is a temporary honesty measure, not an acceptance.
+**The JavaScript budget is measured against the framework floor, and it now passes
+honestly.** The old 130 kB lesson target was 59 kB *below* the floor and unreachable by
+any amount of work, so it failed for reasons unrelated to whatever was being changed,
+and `pnpm budgets` had to be `continue-on-error` to stop it blocking every PR. A gate
+nobody can pass is a gate nobody reads.
+
+`scripts/check-budgets.mjs` now reads the floor on every run from `/about` — a page with
+no page-specific client code — and judges every other page on what it *adds*:
+
+```
+     framework floor             189.3 kB   React + Next runtime and site chrome
+ok   landing                     190.0 kB   +0.7 kB first-party  (allowance 4)
+ok   map (initial)               189.8 kB   +0.5 kB first-party  (allowance 4)
+ok   lesson                      193.8 kB   +4.5 kB first-party  (allowance 8)
+```
+
+That number answers the question anyone actually has — how much did we write for this
+page — and it self-corrects when a framework upgrade moves the floor. `continue-on-error`
+is removed; a failure now means something was written that costs too much. Lowering the
+floor is a stack decision, not a code decision.
+
+Two splits are what keep the allowances small, and both must survive: `console-mount.tsx`
+loads the console with `ssr: false` while the server still renders the captured
+transcript, and `boot-scene.tsx` imports GSAP *inside its effect* so it is in no bundle
+until the scene mounts.
 
 Still **no** Lighthouse CI, so LCP and CLS remain unmeasured. Do not describe them as
 enforced.
@@ -285,22 +300,23 @@ for d in content/guides/hermes/*/; do n=$(ls $d*.mdx | wc -l); \
   echo "$(basename $d): $((n-s))/$n"; done
 ```
 
-**The curriculum is done, so the next work is not lessons.** In rough order of value:
+**The curriculum is done, and so is the shell `decisions.md` 010 specified.** All five
+surfaces exist: the workspace and its console, the ⌘K palette, the mastery layer, `/map`,
+and the landing page's scroll narrative. What is left, in rough order of value:
 
-1. **The landing page's scroll narrative.** The page itself is now built — hero, the
-   corrections as its centrepiece, computed track numbers, a real table of contents —
-   and it is entirely server-rendered with no client JavaScript. What is *not* built is
-   the GSAP scroll scene `design.md` specifies. `src/components/landing/` does not
-   exist; the eslint rule permitting GSAP there is currently unused.
+1. **Mastery coverage.** 7 lessons of 51 have a check or an objective. The other 44 do
+   not advance the ladder, which is the honest state but a thin one. Module 04 is the
+   worked example to copy.
 2. **The remaining simulations.** The map specifies eight; the engine and one flagship
    replay exist. SIM-4 is still blocked on an uncaptured SKILL.md diff.
-3. **Glossary, cheatsheets, colophon** — all specified in the map, none started. The
-   `glossaries` and `cheatsheets` collections already exist in `content-collections.ts`
-   and are empty.
+3. **The colophon**, specified in the map and never started.
+4. **The generated `SOUL.md`** completion artefact, named in 010 and not built.
 
-Verification is still thinner than the plan calls for: no Playwright, no axe sweep, no
-Lighthouse CI, so the accessibility and performance budgets in `design.md` remain
-intentions. That gap is now the largest untruth a reader of this file could take away.
+Verification is real now, and this is what it does and does not cover. **Enforced:**
+typecheck, lint, 187 unit tests, the static export, the search index, a link check, an
+axe sweep at WCAG 2.1 AA across eleven templates plus the open palette dialog, a no-JS
+content-completeness pass, and JavaScript budgets as a hard gate. **Not enforced:** LCP
+and CLS, because there is still no Lighthouse CI. Do not describe those two as budgets.
 
 Four of the map's six plates are built — VIZ-1 to VIZ-4. The two remaining are VIZ-5
 (`10/02`, secrets and egress) and VIZ-6 (`07/03`, the authorization chain); both sit in

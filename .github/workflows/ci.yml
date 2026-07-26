@@ -55,9 +55,13 @@ jobs:
       - name: End-to-end and accessibility
         run: pnpm e2e
 
+      # No longer continue-on-error. That flag was a temporary honesty measure while the
+      # lesson budget sat 59 kB below the framework floor and could not be passed by any
+      # amount of work. Budgets are now measured as first-party JavaScript on top of a
+      # floor read from a page that has none, so failing this step means something was
+      # actually written that costs too much.
       - name: JavaScript budgets
         run: pnpm budgets
-        continue-on-error: true
 
       - name: Upload export
         uses: actions/upload-artifact@v4
