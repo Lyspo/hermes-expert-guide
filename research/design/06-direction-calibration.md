@@ -168,3 +168,75 @@ Named so the next session starts from a list rather than from a blank:
 Whether any of this survives next to two thousand words of prose. The map is the easy
 case — a map is *meant* to be a field. A lesson page is the real test and has not been
 attempted.
+
+---
+
+## Second build against this direction: a lesson page (2026-07-27)
+
+The section above ends by naming the unresolved question — whether any of this survives
+next to two thousand words of prose — and calling a lesson page the real test. This is
+that test, and it is the first time the direction has been applied to a reading surface.
+
+**What was built.** A masthead band at the top of every lesson that has prerequisites:
+the whole curriculum as a corridor receding by prerequisite depth, with this lesson
+bracketed and lit, its transitive prerequisite chain drawn as a constellation over the
+field, and the remaining lessons as context. `src/lib/field/plan.ts` computes it;
+`src/components/lesson/masthead-field.tsx` emits it.
+
+**It is precomputed SVG, not WebGL, and that is a design decision rather than a
+shortcut.** A reader's position in the curriculum does not change while they read, so
+there is nothing to drive per frame. The lighting is `field-renderer.ts`'s lighting
+evaluated once per sphere instead of once per fragment — same direction, same lambert,
+same specular exponent, same falloff, same three materials — so the two surfaces are one
+system. Cost to a lesson page: **zero client JavaScript**. The lesson budget is unchanged
+at +6.0 kB against its 8 kB allowance.
+
+### Against the five named items
+
+| | Answered by |
+|---|---|
+| Typography inside the field | The depth axis, as real numbers on the planes they label |
+| A composed frame | Near depth planes run wider than the band, so the field is cropped rather than floating |
+| A structural overlay | The graticule, plus drop lines anchoring the lit chain to its plane |
+| A moment | The chain draws itself once on arrival, shallowest link first, in CSS |
+| Hierarchy beyond radius | Three materials and a registration bracket; radius capped so perspective cannot make a context node outrank the subject |
+
+### What went wrong on the way, since the same mistakes are available next time
+
+- **The first version drew only this lesson's own chain.** Four dots in an empty band —
+  the identical "physics, no composition" verdict, reproduced at a smaller size. Density
+  is not decoration: a field needs enough in it to be a place, and the curriculum has
+  fifty-one real things to put there.
+- **The spread was guessed and wrong.** `layout()` returns x ≈ ±0.39 and y ≈ ±0.28, not
+  the unit range it looks like it should. Scaling by eye produced a 187×29 pixel smudge
+  in a 1200×420 box with forty-five of the fifty-one nodes at seven percent opacity.
+  Measuring took one dump and fixed it; three rounds of eyeballing had not.
+- **`preserveAspectRatio="slice"` cropped the composition away.** It was there and simply
+  outside the box being shown.
+- **Type was added to the field and then removed again.** A module caption and an axis
+  title both landed on the graticule where it is densest, and the module caption repeated
+  the eyebrow a centimetre below it. Type in a drawing has to be doing a job.
+- **The depth numbers overprinted into a smudge** at the vanishing point, and the first
+  fix — thin the labels but always force the current depth — put that number hard against
+  its neighbour. Both are now geometry in `plan.ts` with a test asserting clearance.
+
+### The honest verdict on it, unprompted
+
+This is better than the editorial column it replaces, and it is defensibly *composed*
+rather than merely lit: it has a subject, a ground, an overlay, a crop and a moment. It
+is also **not yet at the bar the brief sets**. Specifically, and worth someone's judgement
+rather than another round of my own:
+
+- The image is atmospheric but **low in contrast** — it reads as murk before it reads as
+  depth, particularly above the fold on a bright screen.
+- **The chain reads as a web, not as a path.** Prerequisite edges connect lessons whose
+  field positions are unrelated to their depth, so the constellation is tangled where the
+  idea ("how far back does this go") wants a line.
+- The **shallow lessons are weak**. At depth 1–2 there is very little chain and the band
+  is carrying almost no information; the deep ones (module 10, twenty lessons behind) are
+  where it earns its space.
+- It has had **no reaction from the author**, and everything above is self-assessment.
+
+The open question from the first build is now partly answered: the direction *does*
+survive next to prose, because it can be given a job and kept out of the reading column.
+Whether this particular execution is wanted is a separate question and is not settled.

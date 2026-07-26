@@ -11,6 +11,7 @@ import { getModule } from '@/lib/content'
 import { jsonLd, lessonSchema } from '@/lib/schema'
 import { LessonProgress } from '@/components/personalization/lesson-progress'
 import { SectionIndex } from '@/components/lesson/section-index'
+import { MastheadField } from '@/components/lesson/masthead-field'
 import { curriculumGraph } from '@/lib/curriculum-graph'
 import { ancestorsOf, descendantsOf } from '@/lib/graph'
 
@@ -176,7 +177,21 @@ export default async function LessonPage({ params }: { params: Params }) {
     >
       <article data-pagefind-body>
         <header>
-          <p className="font-mono text-ice-dim text-[0.7rem] tracking-[0.06em] uppercase">
+          {/*
+            The masthead sits above the title rather than behind it. Overlaying a
+            rendered field on the largest type on the page would cost legibility on
+            the LCP element to buy atmosphere, which is the trade `design.md` refuses
+            everywhere else. Adjacency and a shared left edge compose them just as
+            well and cost the reader nothing.
+          */}
+          {at !== -1 && (
+            <MastheadField
+              graph={curriculumGraph}
+              focusIndex={at}
+            />
+          )}
+
+          <p className="font-mono text-ice-dim mt-[calc(var(--step)*1.1)] text-[0.7rem] tracking-[0.06em] uppercase">
             <Link href={`/${lesson.guideSlug}/${lesson.moduleSlug}/`}>
               {String(lesson.moduleNumber).padStart(2, '0')} · {lesson.module.title}
             </Link>

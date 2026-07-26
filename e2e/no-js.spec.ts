@@ -49,9 +49,19 @@ test('a lesson renders its prose, its transcripts and its plate', async ({ page 
   ).toBeVisible()
 
   // The plate is SVG with real text, so it survives with no script and no image load.
-  const plate = page.locator('svg[role="img"]')
+  // Addressed by its own title rather than by `svg[role="img"]`: a lesson now carries
+  // two figures with that role, and a selector that matches both would either fail on
+  // strict mode or silently start asserting about whichever came first.
+  const plate = page.locator('svg[role="img"]').filter({ has: page.locator('title') })
   await expect(plate).toBeVisible()
   await expect(plate.locator('title')).toHaveText(/Memory: two files and an index/)
+
+  // The masthead is precomputed SVG, so the lesson's place in the curriculum is drawn
+  // with no bundle at all. Its ground rules and depth numbers are the whole figure —
+  // if the geometry ever moved to the client this is what would go blank.
+  const masthead = page.getByRole('img', { name: /stand behind this one/ })
+  await expect(masthead).toBeVisible()
+  await expect(masthead.locator('circle')).not.toHaveCount(0)
 
   // The correction gesture resolves to finished text, never to a scramble.
   await expect(page.locator('ins').first()).toHaveText(/two capped markdown files/)

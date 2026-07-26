@@ -197,6 +197,47 @@
 }
 
 /* ---------------------------------------------------------------------------
+   The lesson masthead's one moment.
+
+   The prerequisite chain draws itself on arrival, shallowest link first, so it
+   arrives *at* this lesson rather than spraying out of it. `06-direction-calibration`
+   asked for "a moment" and specifically for one — Basement and Lusion were both
+   praised as "could be used once."
+
+   The resting state is the finished drawing. The dash pattern that makes a line
+   drawable is applied only inside the no-preference query, so with reduced motion,
+   with no CSS animation support, or on a clock that never ticks, every line is solid
+   from the first paint. This repo has shipped the inverse mistake — content gated on
+   an animation completing — three times, and once in a way that left a section blank
+   for tens of seconds.
+   --------------------------------------------------------------------------- */
+
+@keyframes masthead-draw {
+  from {
+    stroke-dashoffset: var(--len);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .masthead-chain line {
+    stroke-dasharray: var(--len);
+    stroke-dashoffset: 0;
+    animation: masthead-draw 760ms var(--ease-arrive) both;
+    /* Capped deliberately: the deepest chain is eleven ranks, and eleven times a
+       larger step would be a loading screen rather than a gesture. */
+    animation-delay: calc(var(--i, 0) * 55ms);
+  }
+}
+
+:root[data-motion='reduced'] .masthead-chain line {
+  animation: none;
+  stroke-dasharray: none;
+}
+
+/* ---------------------------------------------------------------------------
    Track adaptivity.
 
    Lessons render every track's variant into the static HTML. An inline script
