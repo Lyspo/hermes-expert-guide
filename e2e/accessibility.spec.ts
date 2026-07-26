@@ -22,6 +22,8 @@ const TEMPLATES = [
   { name: 'placement', url: '/begin/' },
   { name: 'search', url: '/search/' },
   { name: 'about', url: '/about/' },
+  { name: 'map', url: '/map/' },
+  { name: 'profile', url: '/profile/' },
 ]
 
 for (const template of TEMPLATES) {

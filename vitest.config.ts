@@ -7,6 +7,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      // Mirrors the tsconfig path. Without it a test that reaches the real curriculum
+      // cannot resolve it, and the tempting fix — asserting against a hand-written
+      // fixture instead — tests the fixture rather than the content.
+      'content-collections': fileURLToPath(
+        new URL('./.content-collections/generated', import.meta.url)
+      ),
     },
   },
   test: {

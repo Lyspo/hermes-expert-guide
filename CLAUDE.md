@@ -133,9 +133,30 @@ writes to storage, which re-renders with `mastered` true; testing that first rep
 explanation with the compact "Mastered" panel in the same frame it appeared, so the
 reader saw a reward and never saw why they were right.
 
-**Not built.** `/map` and its OGL field. The generated `SOUL.md` completion artefact.
-Wiring `Workspace`'s `prompt` prop to a `console:` frontmatter field, so a lesson can
-open the console on the frame it teaches. The simulations beyond SIM-1's engine — the map specifies eight and
+**The map.** `/map` renders the curriculum as the graph it is: 10 modules, 51 lessons and
+79 prerequisites, on a descending helix where depth is sequence. `src/lib/map-layout.ts`
+is pure and deterministic — a force-directed layout could not be tested and would move
+under the reader on every load — and `map-layout.test.ts` runs it against the real
+curriculum, asserting no two nodes collide and that at least one prerequisite crosses a
+module boundary, without which it would be a tree drawn to look like a graph.
+
+The renderer is OGL, and the call paid off: **the whole WebGL layer is 14 kB gzipped**
+as a lazy chunk, against roughly 150 kB for three.js. `pnpm budgets` measures only
+*initial* scripts, so `map (initial)` guards against OGL leaking into the first payload
+rather than claiming the map is free.
+
+Two things about that route:
+
+- **The ambient `.field` is turned off on it**, via `body:has(.map-route) .field`. Two
+  fields drifting behind one another read as noise and make it genuinely unclear which
+  points are the curriculum.
+- **The canvas is `aria-hidden` and decorative.** The complete outline and every
+  prerequisite are server-rendered text below it, and `no-js.spec.ts` counts all 51
+  lesson links to prove it.
+
+**Not built.** The landing page's GSAP scroll narrative. The generated `SOUL.md`
+completion artefact. Wiring `Workspace`'s `prompt` prop to a `console:` frontmatter
+field, so a lesson can open the console on the frame it teaches. The simulations beyond SIM-1's engine — the map specifies eight and
 one flagship replay exists. A colophon. The landing page's GSAP scroll narrative.
 Lighthouse CI.
 

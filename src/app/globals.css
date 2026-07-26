@@ -122,6 +122,14 @@
     z-index: 1;
   }
 
+  /* On the map route the field *is* the content, so the ambient one is turned off.
+     Two fields drifting at different rates behind one another read as noise and make
+     it genuinely unclear which points are the curriculum. The map's own canvas is a
+     sibling of this element, not a descendant, so the selector has to reach up. */
+  body:has(.map-route) .field {
+    display: none;
+  }
+
   /* A nearer, flatter surface for terminal output. Hairline edge, no shadow —
      depth is declared once, and here it is declared by luminance. */
   .transcript {

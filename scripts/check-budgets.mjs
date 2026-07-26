@@ -17,6 +17,15 @@ import { gzipSync } from 'node:zlib'
 
 const BUDGETS = [
   { name: 'landing', file: 'out/index.html', limitKb: 200 },
+  // The map is the one route that wants a GPU.
+  //
+  // Read this number for what it is: `initialScripts` counts only what the document
+  // loads up front, and OGL plus the renderer are a lazy chunk fetched when the canvas
+  // mounts — 14 kB gzipped, measured directly, which is the whole argument for OGL over
+  // three.js at roughly 150 kB. So this budget guards against OGL *leaking into the
+  // initial payload*, which is the failure that would matter; it is not a claim that
+  // the map is free.
+  { name: 'map (initial)', file: 'out/map/index.html', limitKb: 200 },
   {
     name: 'lesson',
     file: 'out/hermes/06-skills-and-the-loop/05-the-nudge-and-the-review-fork/index.html',

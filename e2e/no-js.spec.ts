@@ -77,3 +77,31 @@ test('the disclaimer is on the page, not painted on by a script', async ({ page 
   await page.goto('/hermes/06-skills-and-the-loop/05-the-nudge-and-the-review-fork/')
   await expect(page.getByText(/Unofficial community project/)).toBeVisible()
 })
+
+test('the map is complete as text, with no canvas involved', async ({ page }) => {
+  await page.goto('/map/')
+
+  // Every module and every lesson is a real link, because the field is decorative and
+  // `design.md` requires that everything it depicts also exist as text. Without
+  // JavaScript there is no canvas at all, so this list *is* the map.
+  await expect(page.getByRole('heading', { name: 'The map' })).toBeVisible()
+  // `.first()` because a lesson legitimately appears more than once here: in its
+  // module's list, and again in every prerequisite row that names it.
+  await expect(
+    page.getByRole('link', { name: 'The gate, and the four ways past it' }).first()
+  ).toBeVisible()
+
+  // The prerequisites — the edges that make this a graph rather than a list — are
+  // stated, not only drawn.
+  await expect(page.getByText('assumes').first()).toBeVisible()
+
+  // Every one of the 51 lessons is reachable from here. Counted rather than sampled,
+  // because "the list is there" and "the list is complete" are different claims.
+  const lessonLinks = await page.locator('a[href^="/hermes/"]').evaluateAll((links) => {
+    const urls = links
+      .map((link) => link.getAttribute('href') ?? '')
+      .filter((href) => /^\/hermes\/[^/]+\/[^/]+\/$/.test(href))
+    return new Set(urls).size
+  })
+  expect(lessonLinks).toBe(51)
+})
