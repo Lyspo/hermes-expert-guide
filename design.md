@@ -2,6 +2,8 @@
 
 The visual authority for this project. Durable rules only — anything provisional is marked as such and settled by the first build.
 
+> **Status, 2026-07-26: partially superseded by `decisions.md` 010.** The world moved from a single-column document over a masked field to an operator's console with real panes, and a mastery layer was added. Until this file is rewritten against the first build of that shell, three sections below are known to be stale and must not be cited as current: **The world** (its register line, "never playful, never cosy", is explicitly reversed for the mastery surfaces), **Structure** (planes-not-boxes assumed one reading column; the OS has panes with surfaces), and the performance budget referenced from `CLAUDE.md`. Everything else — the palette and its one-signal discipline, the type stack, the motion vocabulary, the refusals, and the accessibility constraints — stands unchanged and still binds. The rewrite waits for the build because that is what the paragraph above says should happen.
+
 The nine candidate directions and how they were derived are recorded in [`research/design/03-direction-derivation.md`](research/design/03-direction-derivation.md); reference material in `research/design/01-reference-sites.md`, type and motion research in `02-type-motion-motifs.md`, the Dribbble pass in `04-dribbble-pass.md`.
 
 ---

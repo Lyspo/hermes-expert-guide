@@ -99,3 +99,43 @@ The fusion is not a compromise. A skill library, a memory index and a delegation
 **Cost.** A committed dark world offers no light theme, because inverting a luminous field destroys the medium rather than translating it; that is stated as a choice and paid for with verified contrast against both surface planes and an honoured `prefers-contrast`. The field is canvas, so it must stay decorative and `aria-hidden`, with every structure it depicts also present as real text. And the whole token layer, page shell and component set were rebuilt — roughly a day, which is the price of having discovered the mistake at forty-three pages rather than four hundred.
 
 **What the previous world contributed.** One idea survived intact and is now the centrepiece: revision made visible, superseded content kept on the page beside its replacement and its reason, rendered as real `<del>` and `<ins>`. It was the best thing about the abandoned direction and it was never paper-specific.
+
+---
+
+### 010 — The site is the thing it teaches: an operator's OS, with progress as capability
+
+**Decision.** The platform is built as an operator's console rather than as a document with a canvas behind it. Four surfaces: a boot sequence at `/` that performs the agent's loop as a scroll narrative; a desktop at `/map` where the field is finally real — a WebGL graph of the agent's interior that the reader's own mastery lights up; a workspace at `/hermes/…` where a lesson pane sits beside a live, typeable, deterministic Hermes terminal; and a profile at `/~`. A mastery system runs across all four, and every one of its surfaces is a real Hermes artefact rather than a game element borrowed from elsewhere.
+
+Decision 009 is superseded. What survives from it is named at the end.
+
+**Why.** Three things forced this, and only the third is about taste.
+
+*The brief changed.* 009 was derived for a reader who reads. The product now has to do two more jobs: land inside forty seconds on a hiring audience in the Swiss AI market, and earn a return visit tomorrow. 009's register — recorded in `design.md` as "cold, precise, dimensional… never playful, never cosy" — is a direct instruction not to do the second. A gamified layer bolted onto that world would read as exactly what it was: a bolt-on.
+
+*The strongest asset was being spent as a demo.* A deterministic, faithful, typeable terminal — the real numbered approval menu, the 300-second countdown that fails closed and is documented nowhere, the shipped `contemlating` typo — is the single hardest artefact in this project for a neighbouring guide to copy, and the fastest possible proof to an engineer that the research was real. Under 009 it was one embedded component on some lessons. Here it is the chrome, and the pure timeline core in `src/lib/sim/timeline.ts` is what makes that affordable rather than reckless.
+
+*The world had never actually arrived.* 009's field is masked out of the middle 46% × 52% of the viewport (`globals.css`), because content sits on a plane with no surface of its own and an unmasked field made prose illegible. The medium ended up as periphery. An OS has panes with real surfaces, which is precisely what lets the field be dense and alive without ever fighting a paragraph. The direction did not fail; it was structurally unable to land in a single-column document, and that was knowable earlier than it was known.
+
+**Why an OS and not the other candidates.** `research/design/03-direction-derivation.md` names four ruts to stay clear of: the Greek-god-and-gold literal reading, the friendly light-mode docs site, cream-with-brass, and near-black-with-one-neon-accent-and-glow. An operator's console is on none of them. It carries one rut of its own, and that document already found it when it weighed Teletext: **retro terminal costume**. The defence is that this is a contemporary console, not a CRT — no scanlines, no phosphor bloom, no ASCII borders standing in for structure — and that the existing monospace rule holds without exception. Mono sets real output, real commands, real versions. It never dresses a label.
+
+It also answers the product's own success sentence better than any alternative. The reader is supposed to leave able to build their own agent OS. A site that is one is a demonstration of the destination rather than a description of it.
+
+**The mastery system, and why it does not embarrass the governance reader.** Nothing in it is invented vocabulary:
+
+- The unit of mastery is a **skill file written into the reader's own `~/skills/` tree**. Fifty-one lessons, fifty-one capabilities, in the namespaced layout the real binary uses.
+- The level is **the agent's version number**, climbing v0.1.0 toward v0.19.0 along Hermes's actual twenty-two-release ladder. The progression teaches the release history as a side effect.
+- The streak is **uptime**, in the status bar's verified format — which has no cost field, because the captured binary does not have one.
+- A mastery check is **the approval prompt**, answered as the operator with the countdown running. It is a comprehension gate that is simultaneously a lesson in the mechanic it gates.
+- Completion produces a **generated `SOUL.md` and capability manifest**, downloadable, shareable through URL-encoded state.
+
+A newcomer still gets unlocks, a streak and a celebration. An engineer or a risk officer is never winked at. That is the whole design constraint on this layer, and any future addition to it has to pass the same test: if it is not a real artefact of the software, it does not ship.
+
+**Cost, stated honestly.**
+
+- **The 130 kB lesson budget is dead.** It was already missed at 190.5 kB against a framework floor, and this direction adds a WebGL field, a terminal pane and a persistence layer. The number will be re-set from measurement by `pnpm budgets` after the workspace exists, never by choosing a number that the build happens to meet.
+- **A second rebuild of the shell.** The token layer largely survives; the page shell, navigation and landing do not. This is the second world this project has paid for, and the reason is recorded above so it is not mistaken for indecision.
+- **A new dependency.** OGL rather than three.js for the field — roughly 10 kB gzip against roughly 150 kB. If OGL cannot carry the graph at the density required, the field degrades to the existing 2D canvas rather than the budget degrading to three.js.
+- **The no-JavaScript commitment gets harder and is not relaxed.** Lesson prose stays server-rendered and complete. The terminal pane, the field and the entire mastery layer are enhancements that a reader without JavaScript never misses, because nothing load-bearing lives in them. This is the constraint that keeps the whole build defensible to the audience it is meant to impress, so it is the one that must not be quietly traded away when it becomes inconvenient.
+- **Antiquity is dropped entirely.** Not geometry, not inscription, not the messenger. The identity is the console. This removes the last dependence on an accident of the product's name, and with it the residual risk of evoking the luxury house.
+
+**What 009 contributed, kept intact.** The palette family and its one-signal discipline. The self-rewriting type gesture, still the site's signature and still performing the thesis. Depth declared by luminance rather than by shadow. And, inherited through 009 from 007, revision made visible as real `<del>` and `<ins>` — now three worlds old and still the best idea any of them produced.

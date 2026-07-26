@@ -61,7 +61,8 @@ travel with the repo.
 Live at [hermes-expert-guide.vercel.app](https://hermes-expert-guide.vercel.app). CI green.
 
 **Done.** Research corpus (`research/01`–`09` plus `curriculum-map.md`). Design direction
-locked — "Substrate", see `decisions.md` 009 and `design.md`. Next 16 scaffold, static
+is **`decisions.md` 010, the operator's OS** — 009's "Substrate" is superseded, and
+`design.md` carries a status block naming which of its sections went stale with it. Next 16 scaffold, static
 export, content pipeline. Full 51-lesson skeleton generated from the map by
 `scripts/scaffold-curriculum.mjs`. Personalization: placement flow at `/begin`, track
 switcher, progress marks. Simulation engine with a pure timeline core and one flagship
@@ -78,9 +79,33 @@ exists to resolve, at `/glossary/`. **Cheatsheets** — 9 sheets at `/cheatsheet
 are load-bearing rather than supplementary: the lessons are short *because* the
 reference lives there.
 
-**Not built.** The simulations beyond SIM-1's engine — the map specifies eight and one
-flagship replay exists. A colophon. The landing page's GSAP scroll narrative. Lighthouse
-CI.
+**The console, and the audit that keeps it honest.** `src/lib/term/` is a deterministic,
+typeable Hermes terminal: `sources.ts` (every string it can print, each carrying its
+corpus citation), `format.ts` (status bar, tool feed, the two duration formats), and
+`machine.ts` (a pure `(state, input) => state` engine, no DOM). It renders in the lesson
+workspace via `src/components/term/`. It has **no generative path** — anything the
+corpus never captured falls through to `notCaptured()`, which refuses. That refusal is
+the feature.
+
+`fidelity.test.ts` is what makes "verbatim" mean something, and it has already been
+through one adversarial review that broke it twice. Both structural findings are fixed
+and must not be undone:
+
+- **It compares exactly, preserving interior whitespace.** It used to collapse runs of
+  spaces, which made two 81-character banner rows compare equal to the corpus's
+  80-character originals — it certified a ragged box border as verbatim. Box art and the
+  feed's padded verb column *are* whitespace.
+- **It drives `machine.ts` through every path and classifies every emitted line** as
+  corpus / sources-block / guide-voice / declared-derived. It used to audit only
+  `sources.ts`, so a fabricated `Usage: hermes [OPTIONS] COMMAND [ARGS]...` header —
+  wearing a real `[08] §2` citation, in the first command a sceptic types — was
+  invisible to it. Guide commentary inside the console is prefixed `┈`; that is a load-
+  bearing convention, not a decoration.
+
+**Not built.** The ⌘K command palette. The mastery layer (`decisions.md` 010). `/map`
+and its OGL field. The simulations beyond SIM-1's engine — the map specifies eight and
+one flagship replay exists. A colophon. The landing page's GSAP scroll narrative.
+Lighthouse CI.
 
 **Verification, and what it does and does not cover.** `pnpm verify` runs typecheck,
 lint, unit tests, OG image generation, the static export, the search index and a link
@@ -96,8 +121,11 @@ are now `--ice-dim` (7.5:1). **`--ice-faint` is a hairline colour. Never set tex
 
 **The JavaScript budget is measured and currently missed.** `pnpm budgets` reads what each
 page actually references in the export and gzips it. Landing is **186.6 kB** against its
-200 kB budget and passes. A lesson page is **190.5 kB** against a 130 kB budget and does
-not — and essentially all of it is the React 19 + Next 16 App Router client runtime rather
+200 kB budget and passes. A lesson page is **191.0 kB** against a 130 kB budget and does
+not. (The console added **0.5 kB** to that figure, not more: `console-mount.tsx` loads it
+with `ssr: false`, so it is out of the initial chunk, and the server still renders the
+captured transcript for readers without JavaScript. Keep that split.) The 130 kB target
+itself is dead per `decisions.md` 010 and awaits re-setting from measurement — and essentially all of it is the React 19 + Next 16 App Router client runtime rather
 than first-party code. Removing Zod from `src/lib/storage.ts` took 63 kB off every page
 and was the whole of the available win; what remains is the framework floor. Do not
 "fix" this by raising the number in `design.md` — either the stack changes or the budget

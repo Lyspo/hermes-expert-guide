@@ -129,6 +129,23 @@
     border: 1px solid color-mix(in srgb, var(--color-ice) 9%, transparent);
   }
 
+  /* A console line arriving. Transform only, and opacity is never touched — the
+     resting state of a stalled animation clock is a line sitting two pixels low,
+     which is legible, rather than a line at opacity zero, which is the bug this
+     project has now shipped four times. */
+  .term-row {
+    animation: term-settle 240ms var(--ease-settle) backwards;
+  }
+
+  @keyframes term-settle {
+    from {
+      transform: translateY(2px);
+    }
+    to {
+      transform: none;
+    }
+  }
+
   /* The signature gesture: a superseded line struck in the signal colour with
      its replacement above it. The resting state is complete and legible. */
   .struck {

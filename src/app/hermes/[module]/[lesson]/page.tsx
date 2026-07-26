@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { MDXContent } from '@content-collections/mdx/react'
 import { getLesson, isWritten, lessons, neighbours, prerequisitesOf } from '@/lib/content'
 import { mdxComponents } from '@/components/mdx'
-import { Page } from '@/components/ui/page'
+import { Workspace } from '@/components/term/workspace'
 import { getModule } from '@/lib/content'
 import { jsonLd, lessonSchema } from '@/lib/schema'
 import { LessonProgress } from '@/components/personalization/lesson-progress'
@@ -59,65 +59,17 @@ export default async function LessonPage({ params }: { params: Params }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={jsonLd(lessonSchema(lesson, parentModule))}
       />
-    <Page
-      aside={
-        /* Provenance lives in the margin, where a corrector would have written
-           it: what this was checked against, and when. */
-        <div className="lg:sticky lg:top-[calc(var(--step)*3)]">
-          <dl className="font-mono text-ice-dim space-y-[calc(var(--step)*0.5)] text-[0.7rem]">
-            <div>
-              <dt className="opacity-70">Verified against</dt>
-              <dd className="mt-[calc(var(--step)*0.25)]">
-                <span className="inline-block font-mono text-ice">
-                  {lesson.guide.subject} {lesson.hermesVersion}
-                </span>
-              </dd>
-            </div>
-            <div>
-              <dt className="opacity-70">Last checked</dt>
-              <dd>
-                <time dateTime={lesson.updated}>{lesson.updated}</time>
-              </dd>
-            </div>
-            <div>
-              <dt className="opacity-70">Reading</dt>
-              <dd>{lesson.duration} min</dd>
-            </div>
-          </dl>
-
-          <div className="mt-[var(--step)] border-t border-ice-faint pt-[calc(var(--step)*0.5)]">
-            <LessonProgress id={lesson.id} />
-          </div>
-
-          {prerequisites.length > 0 && (
-            <div className="border-ice-faint mt-[var(--step)] border-t pt-[calc(var(--step)*0.6)]">
-              <p className="font-mono text-ice-dim text-[0.7rem] opacity-70">Assumes</p>
-              <ul className="mt-[calc(var(--step)*0.3)] space-y-[calc(var(--step)*0.2)] text-[0.8125rem]">
-                {/* A prerequisite that is still a stub is named but not linked —
-                    the dependency is real and worth stating, and a link to a page
-                    that does not exist is worse than no link. Same treatment, and
-                    the same word, as the module index. */}
-                {prerequisites.map((prerequisite) =>
-                  isWritten(prerequisite) ? (
-                    <li key={prerequisite.id}>
-                      <Link
-                        href={prerequisite.url}
-                        className="underline decoration-[var(--color-rule)]"
-                      >
-                        {prerequisite.title}
-                      </Link>
-                    </li>
-                  ) : (
-                    <li key={prerequisite.id} className="text-ice-dim">
-                      {prerequisite.title}{' '}
-                      <span className="font-mono text-[0.7rem] text-ice-dim">planned</span>
-                    </li>
-                  ),
-                )}
-              </ul>
-            </div>
-          )}
-        </div>
+    <Workspace
+      /* What this lesson was checked against, sitting on the instrument that shows the
+         frames. A version chip beside a console is provenance; the same chip in a
+         margin is decoration. */
+      provenance={
+        <p className="font-mono text-[0.65rem] text-ice-dim">
+          <span className="text-ice">
+            {lesson.guide.subject} {lesson.hermesVersion}
+          </span>{' '}
+          · checked <time dateTime={lesson.updated}>{lesson.updated}</time>
+        </p>
       }
     >
       <article data-pagefind-body>
@@ -136,17 +88,44 @@ export default async function LessonPage({ params }: { params: Params }) {
             {lesson.description}
           </p>
 
-          {/* On narrow screens the margin has nowhere to go, so provenance falls
-              into the flow rather than disappearing. */}
-          <p className="font-mono text-ice-dim mt-[var(--step)] text-[0.7rem] lg:hidden">
-            Verified against {lesson.guide.subject} {lesson.hermesVersion} ·{' '}
-            <time dateTime={lesson.updated}>{lesson.updated}</time> · {lesson.duration} min
+          {/* The console pane carries version and check date, so the flow copy carries
+              only what the console has no business knowing: how long this takes to read. */}
+          <p className="font-mono text-ice-dim mt-[var(--step)] text-[0.7rem]">
+            {lesson.duration} min · verified against {lesson.guide.subject}{' '}
+            {lesson.hermesVersion} ·{' '}
+            <time dateTime={lesson.updated}>{lesson.updated}</time>
           </p>
         </header>
 
-        <div className="mt-[calc(var(--step)*0.75)] lg:hidden">
+        <div className="mt-[calc(var(--step)*0.75)]">
           <LessonProgress id={lesson.id} />
         </div>
+
+        {prerequisites.length > 0 && (
+          <div className="border-ice-faint mt-[var(--step)] border-t pt-[calc(var(--step)*0.6)]">
+            <p className="font-mono text-ice-dim text-[0.7rem] opacity-70">Assumes</p>
+            <ul className="mt-[calc(var(--step)*0.3)] flex flex-wrap gap-x-[var(--step)] gap-y-[calc(var(--step)*0.2)] text-[0.8125rem]">
+              {/* A prerequisite that is still a stub is named but not linked — the
+                  dependency is real and worth stating, and a link to a page that was
+                  never generated is worse than no link. Same treatment, and the same
+                  word, as the module index. */}
+              {prerequisites.map((prerequisite) =>
+                isWritten(prerequisite) ? (
+                  <li key={prerequisite.id}>
+                    <Link href={prerequisite.url} className="underline decoration-ice-faint">
+                      {prerequisite.title}
+                    </Link>
+                  </li>
+                ) : (
+                  <li key={prerequisite.id} className="text-ice-dim">
+                    {prerequisite.title}{' '}
+                    <span className="font-mono text-[0.7rem] text-ice-dim">planned</span>
+                  </li>
+                ),
+              )}
+            </ul>
+          </div>
+        )}
 
         <hr className="border-ice-faint mt-[var(--step)] mb-[calc(var(--step)*1.5)]" />
 
@@ -169,7 +148,7 @@ export default async function LessonPage({ params }: { params: Params }) {
           )}
         </nav>
       </article>
-    </Page>
+    </Workspace>
     </>
   )
 }
