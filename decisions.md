@@ -115,3 +115,54 @@ the guide index, drawn from real lessons and real prerequisites, in a titled fra
 the `--deep` plane. Pages otherwise sit on plain `--void`. "Depth as the medium" now
 lives in the plane system and the transcript surface rather than in a canvas behind
 the text, and `drift` leaves the motion vocabulary with it.
+
+---
+
+### 010 — The console, the mastery layer and the palette. Not a new world.
+
+**Decision.** Three capabilities ship, and the visual direction stays open.
+
+- **A deterministic Hermes console** (`src/lib/term/`). Typeable, offline, pure. Every
+  string it can print carries a corpus citation; anything never captured is refused
+  rather than invented, and `fidelity.test.ts` enforces that in CI.
+- **A mastery layer.** A lesson is mastered by driving a console objective or answering
+  one question posed as the software's own numbered approval prompt. The level is the
+  agent's version on Hermes's real twenty-two-release ladder, the unit of progress is a
+  skill file at the namespaced path the binary uses, the streak is uptime.
+- **A ⌘K palette** over all 129 destinations.
+
+**What this decision explicitly does NOT do, and why that correction matters.**
+
+An earlier draft of 010 declared a new world — "the site is an operator's OS" — and
+would have superseded 009 outright. That draft was written without knowledge of
+`research/design/05-direction-exploration.md`, which landed on another machine seven
+minutes before the session that produced it and records thirteen prototypes that did not
+converge. **`05-the-shell.html` — "you operate a simulated Hermes; the curriculum is the
+filesystem" — is in that table, and it was not chosen.** That file's own instruction is
+to not re-propose anything in the table without saying so explicitly. This says so.
+
+So the world claim is withdrawn. What survives is the part that was never a world: a
+console, a progression and a search surface are capabilities, and they work inside
+Substrate exactly as they would have worked inside a shell. The design question is
+unchanged and still open, and `05-direction-exploration.md` remains the place it lives.
+
+**Why the capabilities still stand on their own.** The console is the hardest artefact in
+this project for a neighbouring guide to copy and the fastest proof to an engineer that
+the research was real — the numbered approval menu, the undocumented 300-second timeout
+that fails closed, the shipped `contemlating` typo. That value does not depend on which
+world it is drawn in. The same is true of a progression built only from real Hermes
+artefacts: it is a claim about honesty rather than about aesthetics.
+
+**Cost.** Two lines of work were done in parallel on two machines against the same
+commit, and roughly a day of one of them is discarded here: a WebGL curriculum map, a
+second landing scroll narrative, and a lesson template that put the console in the
+margin. Every one of those had a better counterpart on the other side —
+`lib/graph.ts` computes real prerequisite depth where the discarded map only computed
+positions; the corrections scene had already survived a frozen-scene bug and a
+runway-length redesign; and the margin turned out to be spoken for by a section index and
+a graph-derived position, which a reader mid-lesson wants far more often than a terminal.
+The reconciliation kept the better one in each case rather than the more recent one.
+
+**One thing deliberately deferred.** The console now sits after the prose rather than
+beside it. Three zones at `xl` — margin, prose, console — is a layout that needs
+designing, and settling it during a merge would be deciding it by accident.

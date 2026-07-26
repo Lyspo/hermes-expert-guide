@@ -5,6 +5,8 @@ import { MDXContent } from '@content-collections/mdx/react'
 import { getLesson, isWritten, lessons, neighbours, prerequisitesOf } from '@/lib/content'
 import { mdxComponents } from '@/components/mdx'
 import { Page } from '@/components/ui/page'
+import { LessonConsole } from '@/components/term/lesson-console'
+import { MasteryGate } from '@/components/personalization/mastery-gate'
 import { getModule } from '@/lib/content'
 import { jsonLd, lessonSchema } from '@/lib/schema'
 import { LessonProgress } from '@/components/personalization/lesson-progress'
@@ -220,6 +222,19 @@ export default async function LessonPage({ params }: { params: Params }) {
         <hr className="border-ice-faint mt-[var(--step)] mb-[calc(var(--step)*1.5)]" />
 
         <MDXContent code={lesson.mdx} components={mdxComponents} />
+
+        {/* The console sits after the prose rather than in the margin, and that is a
+            deliberate deferral rather than the final answer. The margin already carries
+            the section index, the lesson's position in the prerequisite graph and its
+            provenance — all of which a reader mid-lesson wants more often than a
+            terminal. Putting both in the second column at `xl` is a three-zone layout
+            that needs designing, not improvising during a merge. */}
+        <LessonConsole
+          lessonId={lesson.id}
+          {...(lesson.objective ? { objectiveId: lesson.objective } : {})}
+        />
+
+        {lesson.check && <MasteryGate lessonId={lesson.id} check={lesson.check} />}
 
         <nav className="border-ice-faint mt-[calc(var(--step)*2.5)] flex justify-between gap-[calc(var(--step)*2)] border-t pt-[var(--step)] text-[0.9375rem]">
           {previous ? (

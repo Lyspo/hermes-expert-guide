@@ -42,7 +42,9 @@ Lessons live at `content/curriculum/<NN-module>/<NN-lesson>.mdx` with typed fron
 
 Playwright runs against the **exported `out/`**, not the dev server — including a `javaScriptEnabled: false` pass asserting content completeness, and an axe sweep per template.
 
-Performance budgets are Lighthouse CI assertions, not aspirations: lesson pages ≤130 kB initial JS / LCP ≤1.8 s / CLS <0.02; landing ≤200 kB pre-lazy / LCP ≤2.5 s. The WebGL canvas, if it ever exists, is never the LCP element.
+**JavaScript budgets are measured as first-party code on top of the framework floor**, and `pnpm budgets` is a real gate. The old absolute target — 130 kB for a lesson — sat 59 kB *below* the floor and was unreachable by any amount of work, so it failed for reasons unrelated to whatever was being changed and had to be `continue-on-error` to stop blocking every PR. A gate nobody can pass is a gate nobody reads. The floor is now read on every run from `/about`, a page with no page-specific client code (**188.5 kB** of React 19, the Next 16 App Router runtime and site chrome), and each page is judged on what it adds: landing +1.6 kB, guide index +2.8 kB, a lesson +5.7 kB, against allowances of 4, 4 and 8. Lowering the floor is a stack decision, not a code decision.
+
+LCP and CLS are **not** enforced — there is no Lighthouse CI, so do not call them budgets.
 
 ## Tone and legal
 
@@ -126,6 +128,37 @@ real content rather than decorating:
   into another's is a smear, not continuity.
 
 Cost: +0.4 kB to a lesson, +0.6 kB to the landing. GSAP stays lazy.
+
+**The console, the mastery layer and the palette, merged 2026-07-26** — see
+`decisions.md` 010, and read its "what this decision does NOT do" section before
+treating any of it as a design direction. It is not one.
+
+- **`src/lib/term/` is a deterministic Hermes console**: `sources.ts` (every string it
+  can print, each with its corpus citation), `format.ts`, and a pure
+  `(state, input) => state` machine. It has **no generative path** — anything the corpus
+  never captured falls through to `notCaptured()`, which refuses. That refusal is the
+  feature. It renders after the prose on each lesson via `components/term/`.
+- **`fidelity.test.ts` is what makes "verbatim" mean anything**, and it survived an
+  adversarial review that broke it twice. It compares **exactly, preserving interior
+  whitespace** — it used to collapse runs of spaces, which certified a ragged 81-character
+  banner row as an 80-character capture — and it **drives the machine through every path
+  and classifies every emitted line** as corpus / block / guide-voice / declared-derived,
+  because auditing only `sources.ts` left a fabricated `Usage: hermes [OPTIONS]...` header
+  invisible. Guide commentary inside the console is prefixed `┈`; that convention is
+  load-bearing.
+- **Mastery** is earned by a console objective (`src/lib/term/objectives.ts`, ids
+  validated at build time) or a `check:` in frontmatter posed as the software's own
+  numbered approval prompt, whose `source` must be a corpus reference. Seven lessons of
+  51 have one. `src/lib/mastery.ts` holds the 22-release ladder, asserted against
+  `research/03`. Storage is v2; the migration deliberately does **not** grant mastery for
+  lessons only marked read.
+- **In `MasteryGate`, `answered` must be checked before `mastered`** — the write
+  re-renders with `mastered` true, and testing that first replaced the explanation with
+  the reward in the same frame.
+- **The ⌘K palette** indexes 129 destinations from `public/palette.json`, generated in
+  `prebuild`. It **must stay portalled to `document.body`**: `.plane` sets `z-index: 1`
+  and creates a stacking context, so a dialog inside the header is painted over by the
+  main content — it shipped see-through once for exactly that.
 
 **There is no ambient background canvas, deliberately.** One existed behind every page
 and was removed on 2026-07-26 by the author's decision, with `decisions.md` 009 and

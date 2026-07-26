@@ -1,3 +1,4 @@
+import { advanceStreak } from './mastery'
 import { initialState, read, subscribe as subscribeToOtherTabs, update, type GuideState } from './storage'
 
 /**
@@ -56,4 +57,24 @@ export function subscribe(listener: () => void): () => void {
 export function mutate(fn: (state: GuideState) => GuideState): void {
   update(fn)
   emit()
+}
+
+/**
+ * Records a lesson as mastered, and advances the streak on the same day.
+ *
+ * Idempotent: mastering a lesson twice neither duplicates the skill nor extends the
+ * streak twice, because both are the same day's single act. `today` is passed in rather
+ * than read from a clock here so the caller owns the timezone and this stays testable.
+ */
+export function grantMastery(lessonId: string, today: string): void {
+  mutate((state) => {
+    if (state.mastery.mastered.includes(lessonId)) return state
+    return {
+      ...state,
+      mastery: {
+        mastered: [...state.mastery.mastered, lessonId],
+        streak: advanceStreak(state.mastery.streak, today),
+      },
+    }
+  })
 }

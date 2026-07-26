@@ -6,15 +6,16 @@
  * it. There is no backend to sync with, which makes the schema's evolution the
  * only migration problem, and this file owns it.
  */
+import { emptyStreak, type Streak } from './mastery'
 import { TRACKS, type Track } from './site'
 
 const KEY = 'hermes-guide'
 
 /** Bump when the shape changes, and add the matching entry to MIGRATIONS. */
-export const CURRENT_VERSION = 1
+export const CURRENT_VERSION = 2
 
 export interface GuideState {
-  v: 1
+  v: 2
   track: Track | null
   assessment: {
     answers: Record<string, string>
@@ -23,6 +24,19 @@ export interface GuideState {
   progress: {
     completedLessons: string[]
     lastVisited: string | null
+  }
+  /**
+   * Mastery is deliberately not the same thing as progress.
+   *
+   * `completedLessons` is "I marked this read" — self-reported, revocable, and the
+   * right basis for "continue where you left off". `mastered` is earned, and it is what
+   * the version ladder and the skill tree are computed from. Collapsing the two would
+   * make the level a reading counter, which is exactly the hollow mechanic
+   * `decisions.md` 010 commits to avoiding.
+   */
+  mastery: {
+    mastered: string[]
+    streak: Streak
   }
   prefs: {
     motion?: 'system' | 'reduced'
@@ -49,9 +63,21 @@ const isStringMap = (value: unknown): value is Record<string, string> =>
 const isNullableString = (value: unknown): value is string | null =>
   value === null || typeof value === 'string'
 
+function parseStreak(value: unknown): Streak | null {
+  if (!isRecord(value)) return null
+  if (!isNullableString(value['lastDay'])) return null
+  if (typeof value['days'] !== 'number' || !Number.isFinite(value['days'])) return null
+  if (typeof value['longest'] !== 'number' || !Number.isFinite(value['longest'])) return null
+  return {
+    lastDay: value['lastDay'],
+    days: value['days'],
+    longest: value['longest'],
+  }
+}
+
 function parse(value: unknown): GuideState | null {
   if (!isRecord(value)) return null
-  if (value['v'] !== 1) return null
+  if (value['v'] !== 2) return null
 
   const track = value['track']
   if (track !== null && !TRACKS.includes(track as Track)) return null
@@ -67,13 +93,21 @@ function parse(value: unknown): GuideState | null {
   if (!Array.isArray(completed) || !completed.every((id) => typeof id === 'string')) return null
   if (!isNullableString(progress['lastVisited'])) return null
 
+  const mastery = value['mastery']
+  if (!isRecord(mastery)) return null
+  const mastered = mastery['mastered']
+  if (!Array.isArray(mastered) || !mastered.every((id) => typeof id === 'string')) return null
+  const streak = parseStreak(mastery['streak'])
+  if (!streak) return null
+
   const prefs = value['prefs']
   if (!isRecord(prefs)) return null
   const motion = prefs['motion']
   if (motion !== undefined && motion !== 'system' && motion !== 'reduced') return null
 
   return {
-    v: 1,
+    v: 2,
+    mastery: { mastered, streak },
     track: track as Track | null,
     assessment: {
       answers: assessment['answers'],
@@ -85,10 +119,11 @@ function parse(value: unknown): GuideState | null {
 }
 
 export const initialState: GuideState = {
-  v: 1,
+  v: 2,
   track: null,
   assessment: { answers: {}, completedAt: null },
   progress: { completedLessons: [], lastVisited: null },
+  mastery: { mastered: [], streak: emptyStreak },
   prefs: {},
 }
 
@@ -99,7 +134,20 @@ export const initialState: GuideState = {
  */
 const MIGRATIONS: Record<number, (state: Record<string, unknown>) => Record<string, unknown>> =
   {
-    // 1 → 2 goes here when the shape next changes.
+    /**
+     * 1 → 2: adds the mastery block.
+     *
+     * A returning reader keeps their track, their assessment and their read lessons, and
+     * starts the ladder at zero. Seeding `mastered` from `completedLessons` was tempting
+     * and would have been wrong: mastery is earned rather than self-reported, and
+     * granting it retroactively would hand someone a v0.19.0 agent for having ticked
+     * boxes. The honest migration gives them their reading back and nothing else.
+     */
+    1: (state) => ({
+      ...state,
+      v: 2,
+      mastery: { mastered: [], streak: { lastDay: null, days: 0, longest: 0 } },
+    }),
   }
 
 /** Exported for tests: the pure part, with no storage or environment involved. */

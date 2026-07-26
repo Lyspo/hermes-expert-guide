@@ -13,6 +13,21 @@ prerequisites:
   - hermes/04-tools-and-isolation/01-tools-and-toolsets
 hermesVersion: v0.19.0
 updated: '2026-07-25'
+check:
+  question: >-
+    A command produces far more output than the limit allows. Which part of it
+    does the agent actually get to see?
+  options:
+    - The first N bytes, and nothing after
+    - The last N bytes, and nothing before
+    - The first 40% and the last 60%, with a truncation marker between them
+    - A model-written summary of the whole output
+  answer: 3
+  because: >-
+    max_bytes truncation keeps first 40% + last 60% with an [OUTPUT TRUNCATED]
+    marker, roughly 12-15K tokens by default. The middle is what disappears,
+    which is exactly where a long build log keeps its first error.
+  source: '[01] §6'
 ---
 
 Of the seventy tools, one reaches your machine. Almost everything interesting Hermes
