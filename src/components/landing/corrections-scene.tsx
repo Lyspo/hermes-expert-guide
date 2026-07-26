@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
+import { useSceneCapable } from '@/components/ui/use-scene-capable'
 
 /**
  * The guide's thesis, performed once per claim, at the reader's own pace.
@@ -33,18 +34,29 @@ export interface Correction {
 export function CorrectionsScene({ corrections }: { corrections: readonly Correction[] }) {
   const runway = useRef<HTMLDivElement>(null)
   const stack = useRef<HTMLOListElement>(null)
-  const [active, setActive] = useState(false)
+  const capable = useSceneCapable()
   const [step, setStep] = useState(0)
 
+  /**
+   * Deciding to run the scene, and running it, are two separate things.
+   *
+   * They were one effect, and it was broken in a way no gate could see.
+   * `setActive(true)` is a state update, so on the very next line the runway still
+   * had its collapsed height and the strike bars — which only exist while the scene
+   * is active — had not rendered. Every `[data-strike]` query returned null, GSAP
+   * threw on the first null target, and the timeline was never built: the section
+   * pinned for four screens showing claim one, frozen. The report was "scroll for
+   * nothing, page not moving", which described it exactly.
+   *
+   * Capability is now read from the environment as a subscription, and the GSAP
+   * effect runs only once that decision has been rendered — which is the first
+   * moment the DOM it needs actually exists.
+   */
   useEffect(() => {
+    if (!capable) return
     const runwayElement = runway.current
     const stackElement = stack.current
     if (!runwayElement || !stackElement) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    // Stacking four full-height items and scrubbing them is a desktop gesture; on a
-    // phone it costs four screens of scroll to read four sentences. The list is the
-    // better reading there, and it is already correct.
-    if (!window.matchMedia('(min-width: 64rem)').matches) return
 
     let cleanup = () => {}
     let cancelled = false
@@ -58,11 +70,16 @@ export function CorrectionsScene({ corrections }: { corrections: readonly Correc
       gsap.registerPlugin(ScrollTrigger)
 
       const items = [...stackElement.querySelectorAll<HTMLElement>('[data-correction]')]
-      const strikes = items.map((item) => item.querySelector<HTMLElement>('[data-strike]'))
-      const replacements = items.map((item) => item.querySelector<HTMLElement>('[data-now]'))
-      if (items.length === 0) return
-
-      setActive(true)
+      // Non-null now, because this effect only runs after the active render. Filtered
+      // anyway: a null target is what GSAP throws on, and one throw here silently
+      // costs the whole sequence.
+      const strikes = items
+        .map((item) => item.querySelector<HTMLElement>('[data-strike]'))
+        .filter((node): node is HTMLElement => node !== null)
+      const replacements = items
+        .map((item) => item.querySelector<HTMLElement>('[data-now]'))
+        .filter((node): node is HTMLElement => node !== null)
+      if (items.length === 0 || strikes.length !== items.length) return
 
       gsap.set(items, { opacity: 0 })
       gsap.set(items[0]!, { opacity: 1 })
@@ -87,25 +104,42 @@ export function CorrectionsScene({ corrections }: { corrections: readonly Correc
       items.forEach((item, index) => {
         timeline
           .to(strikes[index]!, { scaleX: 1, duration: 0.32, ease: 'power2.inOut' }, index)
-          .to(replacements[index]!, { opacity: 1, duration: 0.34, ease: 'power1.out' }, index + 0.3)
+          .fromTo(
+            replacements[index]!,
+            { opacity: 0.16, scale: 0.985 },
+            { opacity: 1, scale: 1, duration: 0.34, ease: 'power1.out', transformOrigin: 'left center' },
+            index + 0.3,
+          )
 
         const following = items[index + 1]
         if (following) {
           timeline
-            .to(item, { opacity: 0, duration: 0.26, ease: 'power1.in' }, index + 0.74)
-            .to(following, { opacity: 1, duration: 0.26, ease: 'power1.out' }, index + 0.74)
+            // Starts where the replacement finishes rather than after a pause. The
+            // gap between them was scroll during which nothing moved, which is the
+            // whole complaint a pinned section earns when it earns one.
+            .to(item, { opacity: 0, duration: 0.36, ease: 'power1.in' }, index + 0.64)
+            .to(following, { opacity: 1, duration: 0.36, ease: 'power1.out' }, index + 0.64)
         }
       })
 
       timeline.set({}, {}, items.length)
 
+      // `setActive` is a React state update, so the runway's height class is not on
+      // the element yet when this runs. ScrollTrigger measured the *collapsed* box,
+      // finished the whole sequence inside the first few pixels, and left the rest of
+      // the runway as dead scroll — several screens where the page is pinned and
+      // nothing whatsoever happens. Refresh once the browser has actually laid the
+      // new height out.
+      const refresh = requestAnimationFrame(() => ScrollTrigger.refresh())
+
       cleanup = () => {
+        cancelAnimationFrame(refresh)
         timeline.scrollTrigger?.kill()
         timeline.kill()
         // Whatever the scroll position was, leave every claim struck and replaced.
         gsap.set(items, { clearProps: 'opacity' })
-        gsap.set(strikes.filter(Boolean), { clearProps: 'transform' })
-        gsap.set(replacements.filter(Boolean), { clearProps: 'opacity' })
+        gsap.set(strikes, { clearProps: 'transform' })
+        gsap.set(replacements, { clearProps: 'opacity,transform' })
       }
     })()
 
@@ -113,16 +147,16 @@ export function CorrectionsScene({ corrections }: { corrections: readonly Correc
       cancelled = true
       cleanup()
     }
-  }, [corrections])
+  }, [capable, corrections])
 
   return (
-    <div ref={runway} className={active ? 'relative h-[420vh]' : ''}>
+    <div ref={runway} className={capable ? 'relative h-[210vh]' : ''}>
       <div
         className={
-          active ? 'sticky top-0 flex min-h-dvh flex-col justify-center' : ''
+          capable ? 'sticky top-0 flex min-h-dvh flex-col justify-center' : ''
         }
       >
-        {active && (
+        {capable && (
           <p
             aria-hidden="true"
             className="mb-[var(--step)] font-mono text-[0.7rem] text-ice-dim"
@@ -131,13 +165,13 @@ export function CorrectionsScene({ corrections }: { corrections: readonly Correc
           </p>
         )}
 
-        <ol ref={stack} data-corrections className={active ? 'relative min-h-[20rem]' : ''}>
+        <ol ref={stack} data-corrections className={capable ? 'relative min-h-[20rem]' : ''}>
           {corrections.map((correction) => (
             <li
               key={correction.was}
               data-correction
               className={
-                active
+                capable
                   ? 'absolute inset-x-0 top-0'
                   : 'border-t border-ice-faint py-[calc(var(--step)*1)] first:border-t-0 first:pt-0'
               }
@@ -151,14 +185,14 @@ export function CorrectionsScene({ corrections }: { corrections: readonly Correc
               <del className="relative inline-block [text-decoration:none]">
                 <span
                   className={
-                    active
+                    capable
                       ? 'block text-[clamp(1.1rem,2.1vw,1.6rem)] leading-[1.5] text-ice-dim'
                       : 'struck block text-[0.95rem] leading-[1.7]'
                   }
                 >
                   {correction.was}
                 </span>
-                {active && (
+                {capable && (
                   <span
                     data-strike
                     aria-hidden="true"
@@ -170,7 +204,7 @@ export function CorrectionsScene({ corrections }: { corrections: readonly Correc
               <ins
                 data-now
                 className={
-                  active
+                  capable
                     ? 'mt-[calc(var(--step)*0.5)] block font-display text-[clamp(1.6rem,3.4vw,2.6rem)] leading-[1.15] tracking-[-0.025em] text-ice no-underline'
                     : 'mt-[calc(var(--step)*0.3)] block text-[1.0625rem] leading-[1.7] no-underline'
                 }
@@ -181,7 +215,7 @@ export function CorrectionsScene({ corrections }: { corrections: readonly Correc
               <Link
                 href={correction.where}
                 className={`inline-block font-mono text-[0.7rem] text-ice-dim underline ${
-                  active ? 'mt-[var(--step)]' : 'mt-[calc(var(--step)*0.4)]'
+                  capable ? 'mt-[var(--step)]' : 'mt-[calc(var(--step)*0.4)]'
                 }`}
               >
                 the lesson that carries the source

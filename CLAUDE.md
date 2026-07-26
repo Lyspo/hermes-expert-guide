@@ -217,6 +217,18 @@ orchestration did not arrive in v0.6.0.
   means the first frame after a stall arrives with a large delta and lands on the
   finished text. Caught by looking at the page, not by any test — the build, the types
   and the link check were all green.
+- **A scroll scene may not query DOM it renders itself, in the tick it decides to.**
+  The landing narrative shipped frozen: `setActive(true)` is a state update, so on the
+  next line the runway still had its collapsed height and the strike bars — rendered
+  only while the scene is active — did not exist. Every query returned null, GSAP threw
+  on the first null target, the timeline was never built, and the section pinned for
+  four screens showing claim one. Reported as "scroll for nothing, page not moving".
+  Decide with `useSceneCapable` (a `useSyncExternalStore` over the media queries, so it
+  also survives a resize or a motion-preference change), render off that, and let the
+  GSAP effect run on the *next* pass when the DOM it needs exists. `ScrollTrigger.refresh()`
+  in a rAF covers the height half of the same problem for scenes whose elements already
+  exist. **Measure a scene by how much of its scroll produces visible change** — sample
+  every element it animates, not the first one, or the metric lies to you the way mine did.
 - **Hit-test a canvas by nearest neighbour, never by a proximity radius.** The
   curriculum map shipped with a 26px threshold against nodes two or three pixels across
   spread over a box a thousand wide, so sweeping the pointer over the graph selected

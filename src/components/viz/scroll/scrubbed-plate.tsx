@@ -133,7 +133,16 @@ export function ScrubbedPlate({
       // Hold the last beat on screen instead of ending the moment it draws.
       timeline.set({}, {}, beats.length)
 
+      // `setActive` is a React state update, so the runway's height class is not on
+      // the element yet when this runs. ScrollTrigger measured the *collapsed* box,
+      // finished the whole sequence inside the first few pixels, and left the rest of
+      // the runway as dead scroll — several screens where the page is pinned and
+      // nothing whatsoever happens. Refresh once the browser has actually laid the
+      // new height out.
+      const refresh = requestAnimationFrame(() => ScrollTrigger.refresh())
+
       cleanup = () => {
+        cancelAnimationFrame(refresh)
         timeline.scrollTrigger?.kill()
         timeline.kill()
         // Leave the plate complete, whatever the scroll position was at unmount.
