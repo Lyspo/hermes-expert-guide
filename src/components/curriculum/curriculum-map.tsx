@@ -28,19 +28,9 @@ import type { MapEntry } from '@/lib/curriculum-graph'
  * what it should degrade to.
  */
 
-const ICE = '228,239,243'
-const ICE_DIM = '141,163,172'
-const ICE_FAINT = '74,92,101'
-const SIGNAL = '196,86,110'
-
-const TONE: Record<Readiness, { rgb: string; alpha: number; scale: number }> = {
-  known: { rgb: ICE, alpha: 1, scale: 1.2 },
-  ready: { rgb: SIGNAL, alpha: 1.15, scale: 1.5 },
-  far: { rgb: ICE_FAINT, alpha: 0.9, scale: 0.95 },
-}
-
-/** How much of the box the nearest nodes reach. Slightly over 1, so the graph bleeds. */
-const FILL = 1.12
+// The palette moved into `field-renderer.ts` when the drawing did: colour is now a
+// material sampled by a shader rather than an rgba string, and keeping a second copy
+// here as text was how the two would drift apart.
 
 /** A module's shop-window prose, so the index below the map is the only index. */
 export interface MapModule {
@@ -98,127 +88,103 @@ export function CurriculumMap({
     return { x, y }
   }, [graph])
 
+  /**
+   * What the next drawn frame should show, held in a ref rather than closed over.
+   *
+   * The renderer is built once and *driven*; it is not rebuilt when the pointer moves.
+   * An earlier version listed `hovered` in the effect's dependencies, so every hover
+   * tore the field down and stood a new one up — and since `dispose` forced the WebGL
+   * context lost, the replacement linked its programs against a dead context and threw.
+   * A map that died the moment you pointed at it, from a dependency array.
+   */
+  const frameState = useRef<{
+    hovered: number | null
+    chain: Set<number> | null
+    readiness: readonly Readiness[]
+  }>({ hovered: null, chain: null, readiness: [] })
+
+  // Assigned in an effect rather than during render: writing a ref while rendering is
+  // a lint error here for good reason, and this one only has to be current by the time
+  // the next animation frame runs, which is strictly after commit.
+  useEffect(() => {
+    frameState.current = { hovered, chain, readiness }
+  }, [hovered, chain, readiness])
+
   useEffect(() => {
     const box = frame.current
     const surface = canvas.current
     if (!box || !surface) return
 
-    const context = surface.getContext('2d')
-    if (!context) return
+    let cancelled = false
+    let teardown: (() => void) | undefined
 
-    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    let width = 0
-    let height = 0
-    let raf = 0
-    let time = 0
+    void (async () => {
+      // Imported inside the effect, so OGL is in no bundle until this map mounts.
+      // Statically importing it put 14 kB of renderer into the guide index's initial
+      // payload — `pnpm budgets` caught it at +16.9 kB against a 4 kB allowance, which
+      // is the entire reason that gate was rewritten to measure first-party code.
+      const { createField } = await import('./field-renderer')
+      if (cancelled) return
 
-    // Measured from the *container*, never from the canvas. The canvas is absolutely
-    // positioned so it cannot contribute to its parent's size, which is what breaks
-    // the feedback loop that once produced a three-gigapixel buffer here.
-    const resize = () => {
-      const ratio = Math.min(window.devicePixelRatio || 1, 2)
-      const rect = box.getBoundingClientRect()
-      width = Math.max(1, rect.width)
-      height = Math.max(1, rect.height)
-      surface.width = Math.round(width * ratio)
-      surface.height = Math.round(height * ratio)
-      context.setTransform(ratio, 0, 0, ratio, 0, 0)
-    }
+      // Lit geometry rather than a flat painting — see `field-renderer.ts` for why, and
+      // `research/design/06-direction-calibration.md` for the reactions that decided it.
+      const field = createField(surface, graph, extent)
+      if (!field) return
 
-    const draw = () => {
-      context.clearRect(0, 0, width, height)
-      const centreX = width / 2
-      const centreY = height / 2
+      const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      let raf = 0
+      let time = 0
 
-      const projected = graph.nodes.map((node) => {
-        const z = node.z + Math.sin(time * 0.3 + node.x * 9 + node.y * 7) * 0.05
-        const perspective = 1 / (1.95 + z)
-        return {
-          x: centreX + (node.x / extent.x) * perspective * FILL * (width / 2),
-          y: centreY + (node.y / extent.y) * perspective * FILL * (height / 2),
-          alpha: 0.2 + Math.max(0, perspective - 0.33) * 1.5,
-          radius: Math.max(0.9, node.weight * perspective * 3.4),
-        }
-      })
-      points.current = projected
-
-      // With a lesson under the pointer, everything outside its prerequisite chain is
-      // pushed down rather than hidden: the rest of the curriculum stays visible as
-      // context, which is the whole reason to show it in one frame.
-      const lit = (index: number) =>
-        chain === null || index === hovered || chain.has(index)
-      // Enough that the rest of the curriculum still reads as a structure the chain
-      // is embedded in. Pushed too far down, the reveal stops being "here is your
-      // path through this" and becomes "here is a path, in the dark".
-      const muted = chain === null ? 1 : 0.3
-
-      context.lineWidth = 0.8
-      for (const [from, to] of graph.edges) {
-        const a = projected[from]
-        const b = projected[to]
-        if (!a || !b) continue
-
-        const onChain = chain !== null && lit(from) && lit(to)
-        const walked = readiness[from] === 'known' && readiness[to] === 'known'
-        const weight = onChain ? 0.85 : walked ? 0.5 : 0.22
-        const alpha = Math.min(a.alpha, b.alpha) * weight * (onChain ? 1 : muted)
-        if (alpha <= 0.004) continue
-
-        context.strokeStyle = `rgba(${onChain ? ICE : walked ? ICE_DIM : ICE_FAINT},${alpha.toFixed(3)})`
-        context.beginPath()
-        context.moveTo(a.x, a.y)
-        context.lineTo(b.x, b.y)
-        context.stroke()
+      // Measured from the *container*, never from the canvas. The canvas is absolutely
+      // positioned so it cannot contribute to its parent's size, which is what breaks
+      // the feedback loop that once produced a three-gigapixel buffer here.
+      const resize = () => {
+        const rect = box.getBoundingClientRect()
+        field.resize(Math.max(1, rect.width), Math.max(1, rect.height))
       }
 
-      projected.forEach((point, index) => {
-        const tone = TONE[readiness[index] ?? 'far']
-        const onChain = lit(index)
-        const isHovered = index === hovered
+      const draw = () => {
+        points.current = field.draw({ time, ...frameState.current })
+      }
 
-        const rgb = isHovered ? ICE : onChain && chain !== null ? ICE : tone.rgb
-        const alpha = Math.min(0.95, point.alpha * tone.alpha * (onChain ? 1 : muted))
-        const radius = Math.max(0.5, point.radius * tone.scale * (isHovered ? 1.9 : 1))
+      const loop = () => {
+        time += 0.016
+        draw()
+        raf = requestAnimationFrame(loop)
+      }
 
-        context.fillStyle = `rgba(${rgb},${alpha.toFixed(3)})`
-        context.beginPath()
-        context.arc(point.x, point.y, radius, 0, Math.PI * 2)
-        context.fill()
-
-        // A ring on the lesson under the pointer, so the target is unmistakable even
-        // where the graph is dense.
-        if (isHovered) {
-          context.strokeStyle = `rgba(${ICE},0.55)`
-          context.lineWidth = 1
-          context.beginPath()
-          context.arc(point.x, point.y, radius + 6, 0, Math.PI * 2)
-          context.stroke()
-          context.lineWidth = 0.8
-        }
-      })
-    }
-
-    const loop = () => {
-      time += 0.005
-      draw()
-      raf = requestAnimationFrame(loop)
-    }
-
-    resize()
-    draw()
-    if (!still) raf = requestAnimationFrame(loop)
-
-    const observer = new ResizeObserver(() => {
       resize()
       draw()
-    })
-    observer.observe(box)
+      if (!still) raf = requestAnimationFrame(loop)
+
+      // With motion stilled nothing repaints on its own, so the highlight has to be
+      // driven by whatever changed it.
+      const repaint = () => {
+        if (still) draw()
+      }
+      box.addEventListener('pointermove', repaint)
+      box.addEventListener('focusin', repaint)
+
+      const observer = new ResizeObserver(() => {
+        resize()
+        draw()
+      })
+      observer.observe(box)
+
+      teardown = () => {
+        cancelAnimationFrame(raf)
+        observer.disconnect()
+        box.removeEventListener('pointermove', repaint)
+        box.removeEventListener('focusin', repaint)
+        field.dispose()
+      }
+    })()
 
     return () => {
-      cancelAnimationFrame(raf)
-      observer.disconnect()
+      cancelled = true
+      teardown?.()
     }
-  }, [graph, readiness, chain, hovered, extent])
+  }, [graph, extent])
 
   const locate = useCallback((event: React.PointerEvent<HTMLCanvasElement>) => {
     const surface = canvas.current
