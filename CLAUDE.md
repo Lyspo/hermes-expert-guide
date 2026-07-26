@@ -58,6 +58,32 @@ travel with the repo.
 
 ## Where things stand
 
+> ### ⚠ The visual direction is unresolved, and the author is not convinced
+>
+> On 2026-07-26 a long redesign exploration ran and **did not converge**. The author's
+> words: *"I feel like we're going down a rabbit hole that is not convincing. Everything
+> design related is confusing and I'm not sure about."*
+>
+> Thirteen prototypes are preserved in `research/design/explorations/` and the full
+> record — what was tried, what was rejected and why, the review findings, and four
+> suggestions for unblocking it — is in **`research/design/05-direction-exploration.md`.
+> Read that before touching anything design-related.**
+>
+> **Nothing in that exploration is approved.** The "Substrate" world in `design.md` and
+> `decisions.md` 009 is what the site still ships, and it is coherent and complete —
+> but the author has said plainly they do not like it visually. Both things are true at
+> once, and neither is settled.
+>
+> Two live decisions from that session that *are* binding:
+> - **The no-JavaScript non-negotiable was dropped by explicit decision.** Non-negotiable
+>   #3 at the top of this file is therefore stale. It has not been rewritten because the
+>   direction it would serve is undecided; the current build still honours it.
+> - **Flow may be restructured freely** — the 51-discrete-pages model is not sacred.
+>
+> Do not open the next design session by building a fourteenth prototype.
+
+
+
 Live at [hermes-expert-guide.vercel.app](https://hermes-expert-guide.vercel.app). CI green.
 
 **Done.** Research corpus (`research/01`–`09` plus `curriculum-map.md`). Design direction

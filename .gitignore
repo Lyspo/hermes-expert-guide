@@ -45,3 +45,6 @@ scratch/
 # machine-local permission grants written by the harness
 .claude/settings.local.json
 .env*
+
+# transient state from the design-question server
+.impeccable/questions/

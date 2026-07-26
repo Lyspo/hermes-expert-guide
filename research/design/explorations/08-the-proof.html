@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>4 · THE PROOF</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600&family=Anton&family=Martian+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0C0C0E;--pane:#131317;--line:#22232A;--fg:#F2F2F4;--mid:#8E8F99;--low:#54555F;
+--ok:#4ADE80;--bad:#FB5D6B;--src:#7DA6FF;--unk:#FFC94D}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:'Schibsted Grotesk',system-ui,sans-serif;font-size:17px;line-height:1.6}
+.m{font-family:'Martian Mono',monospace}
+.d{font-family:Anton,Impact,sans-serif;font-weight:400;letter-spacing:.005em;text-transform:uppercase}
+
+.bar{position:fixed;top:0;left:0;right:0;height:38px;background:rgba(12,12,14,.86);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);display:flex;align-items:center;z-index:20;font-size:.6rem;letter-spacing:.07em;text-transform:uppercase}
+.bar div{padding:0 14px;height:100%;display:flex;align-items:center;gap:7px;color:var(--low);border-right:1px solid var(--line);white-space:nowrap}
+.bar b{color:var(--fg);font-weight:500}
+.bar .sp{flex:1;border:0}
+.pill{width:7px;height:7px;border-radius:50%}
+
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:0 5vw;max-width:88rem;margin:0 auto}
+.hero h1{font-size:clamp(3rem,10vw,9rem);line-height:.86;letter-spacing:-.01em}
+.hero h1 .out{-webkit-text-stroke:1.5px var(--low);color:transparent}
+.hero .sub{margin-top:2.6rem;max-width:52ch;color:var(--mid);font-size:1.15rem;line-height:1.55}
+.hero .sub b{color:var(--fg);font-weight:600}
+.enter{margin-top:3rem;font-size:.7rem;letter-spacing:.12em;color:var(--ok);border:0;background:none;cursor:pointer}
+.enter:hover{color:var(--fg)}
+
+/* claims: every sentence carries its own verdict, and you can open it */
+.body{max-width:88rem;margin:0 auto;padding:0 5vw 24vh;display:grid;grid-template-columns:minmax(0,1fr) 26rem;gap:4vw}
+@media(max-width:70rem){.body{grid-template-columns:1fr}.ev{display:none}}
+h2.sec{font-size:clamp(1.8rem,4vw,3rem);line-height:1;margin:5rem 0 1.6rem}
+p.txt{color:#C3C6CC;margin-bottom:1.2rem;max-width:62ch;font-size:1.05rem;line-height:1.7}
+.c{border-bottom:1px dashed var(--low);cursor:pointer;transition:.15s;padding-bottom:1px}
+.c:hover{border-bottom-style:solid}
+.c[data-v="ok"]{border-color:var(--ok)} .c[data-v="bad"]{border-color:var(--bad)} .c[data-v="unk"]{border-color:var(--unk)}
+.c.on{background:rgba(125,166,255,.12)}
+.c sup{font-family:'Martian Mono',monospace;font-size:.52rem;color:var(--src);margin-left:2px;vertical-align:super}
+
+.ev{position:sticky;top:76px;align-self:start;height:calc(100vh - 110px);border:1px solid var(--line);background:var(--pane);display:flex;flex-direction:column}
+.evh{padding:12px 14px;border-bottom:1px solid var(--line);font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--low);display:flex;justify-content:space-between}
+.evb{flex:1;overflow-y:auto;padding:16px 14px}
+.evb .none{color:var(--low);font-size:.78rem;line-height:1.8;padding-top:26vh;text-align:center}
+.vd{display:inline-flex;align-items:center;gap:6px;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px}
+.vd.ok{color:var(--ok)} .vd.bad{color:var(--bad)} .vd.unk{color:var(--unk)}
+.claimtxt{font-size:.95rem;line-height:1.5;margin-bottom:14px}
+.src{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.src .lbl{font-size:.56rem;letter-spacing:.08em;text-transform:uppercase;color:var(--low);margin-bottom:6px}
+.code{background:#0A0A0C;border:1px solid var(--line);padding:10px 12px;font-family:'Martian Mono',monospace;
+  font-size:.64rem;line-height:1.8;overflow-x:auto;white-space:pre}
+.code .hl{background:rgba(74,222,128,.14);display:block;margin:0 -12px;padding:0 12px}
+.k{color:var(--src)}
+</style></head><body>
+
+<div class="bar m">
+  <div><span class="pill" style="background:var(--ok)"></span>verified <b>396</b></div>
+  <div><span class="pill" style="background:var(--bad)"></span>contradicted <b>16</b></div>
+  <div><span class="pill" style="background:var(--unk)"></span>unverifiable <b>2</b></div>
+  <div class="sp"></div>
+  <div>every sentence is clickable · <b>414 claims</b></div>
+</div>
+
+<section class="hero">
+  <h1 class="d">Nothing here<br>is <span class="out">asserted.</span><br>All of it<br>is shown.</h1>
+  <p class="sub">Every factual sentence in this guide carries a verdict and a source you can open in place. <b>Click any underlined claim</b> — the evidence panel shows the file, the line and the commit, or tells you plainly that nobody has checked.</p>
+  <button class="enter m" onclick="document.getElementById('s1').scrollIntoView()">[ :: BEGIN COLLATION :: ]</button>
+</section>
+
+<div class="body">
+  <main>
+    <h2 class="sec d" id="s1">The loop that writes itself</h2>
+    <p class="txt">Self-improvement is sold as a disposition. What ships is three mechanical parts: <span class="c" data-v="ok" data-k="counter">a counter that increments once per tool-calling iteration<sup>SRC</sup></span>, a threshold, and <span class="c" data-v="ok" data-k="fork">a forked agent that is forbidden from writing to your session<sup>SRC</sup></span>.</p>
+    <p class="txt"><span class="c" data-v="bad" data-k="cadence">The documentation says the review runs roughly every ten agent turns<sup>DOC</sup></span> — which is an approximation of an iteration count, and the difference is why the loop can fire twice inside one request and never at all across an afternoon of chatting.</p>
+    <p class="txt">When it fires, you see <span class="c" data-v="ok" data-k="notice">one line, printed after your answer<sup>CAP</sup></span>. <span class="c" data-v="unk" data-k="reliability">How reliably it fires across installs is not something anyone has measured<sup>GAP</sup></span>.</p>
+
+    <h2 class="sec d">The gate that did not fire</h2>
+    <p class="txt"><span class="c" data-v="bad" data-k="approve">Dangerous commands are documented as triggering an approval prompt<sup>DOC</sup></span>, but on a default install <span class="c" data-v="ok" data-k="observed">a recursive delete on a host path executed with no prompt at all<sup>CAP</sup></span>. Only the hardline blocklist and your own deny globs are deterministic.</p>
+  </main>
+
+  <aside class="ev">
+    <div class="evh"><span>evidence</span><span id="evk">—</span></div>
+    <div class="evb" id="evb"><p class="none">Click a claim.<br>Its source opens here.</p></div>
+  </aside>
+</div>
+
+<script>
+const E={
+ counter:{v:'ok',l:'verified against source',t:'The counter increments once per tool-calling iteration.',
+  src:'agent/conversation_loop.py @ d372fda',
+  code:`if (agent._skill_nudge_interval > 0
+        and "skill_manage" in agent.valid_tool_names):
+<span class="hl">    agent._iters_since_skill += 1</span>`},
+ fork:{v:'ok',l:'verified against source',t:'The fork cannot write to your session.',
+  src:'agent/background_review.py @ d372fda',
+  code:`<span class="hl">review_agent._persist_disabled = True
+review_agent._session_db = None</span>
+# the curator-takeover root cause`},
+ cadence:{v:'bad',l:'contradicted by source',t:'"The background review runs roughly every ten agent turns."',
+  src:'docs/features/curator · contradicted',
+  code:`docs   ▸ every ~10 agent turns
+source ▸ every 10 tool-call iterations
+<span class="hl">capture ▸ fired twice in 4 user messages</span>`},
+ notice:{v:'ok',l:'verbatim from capture',t:'The notification string, exactly.',
+  src:'capture 4a1f · v0.19.0',
+  code:`<span class="hl">💾 Self-improvement review: Skill 'x' created.</span>
+docs claim: 💾 Skill 'foo' patched
+            ^ prefix missing, verb wrong`},
+ reliability:{v:'unk',l:'nobody has checked',t:'How reliably autonomous skill creation fires.',
+  src:'research gap #7 · open',
+  code:`account A ▸ "fired from day one"
+account B ▸ "never saw it"
+capture   ▸ fired once, fresh install
+<span class="hl">n = 1. This is not a measurement.</span>`},
+ approve:{v:'bad',l:'contradicted by capture',t:'"Dangerous commands trigger an approval prompt."',
+  src:'docs/security · contradicted',
+  code:`documented ▸ pattern matched → prompt
+actual     ▸ pattern matched → LLM assesses
+<span class="hl">           → may auto-approve, silently</span>`},
+ observed:{v:'ok',l:'observed directly',t:'A recursive delete ran with no prompt.',
+  src:'capture 4a1f §11 · default install',
+  code:`❯ rm -rf /tmp/scratch
+┊ 🔧 shell
+<span class="hl">✓ 0.4s        — no prompt shown</span>`}};
+const evb=document.getElementById('evb'), evk=document.getElementById('evk');
+document.querySelectorAll('.c').forEach(c=>c.onclick=()=>{
+  document.querySelectorAll('.c.on').forEach(x=>x.classList.remove('on'));c.classList.add('on');
+  const e=E[c.dataset.k];if(!e)return;evk.textContent=c.dataset.k;
+  evb.innerHTML=`<div class="vd ${e.v} m">${e.v==='ok'?'✓':e.v==='bad'?'✕':'?'} ${e.l}</div>
+    <p class="claimtxt">${e.t}</p>
+    <div class="src"><p class="lbl m">${e.src}</p><div class="code">${e.code}</div></div>`});
+</script></body></html>

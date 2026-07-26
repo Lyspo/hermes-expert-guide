@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>3 · THE TRACE</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Martian+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#08090B;--pane:#0E1014;--line:#1B2026;--fg:#EDF0F2;--mid:#8B939C;--low:#4B545C;
+--t1:#6EE7B7;--t2:#60A5FA;--t3:#FBBF24;--t4:#F472B6;--no:#FF5A6A}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--fg);font-family:'Familjen Grotesk',system-ui,sans-serif;font-size:16px}
+.m{font-family:'Martian Mono',monospace}
+
+.top{height:44px;display:flex;align-items:center;gap:0;border-bottom:1px solid var(--line);background:var(--pane)}
+.top div{padding:0 16px;height:100%;display:flex;align-items:center;font-size:.62rem;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--low);border-right:1px solid var(--line);white-space:nowrap}
+.top b{color:var(--fg);font-weight:500;margin-left:6px}
+.top .sp{flex:1;border:0}
+
+.wrap{display:grid;grid-template-columns:1fr 27rem;height:calc(100vh - 44px)}
+@media(max-width:64rem){.wrap{grid-template-columns:1fr}}
+
+/* ── the trace: navigation is time, and you zoom rather than scroll ────── */
+.tr{position:relative;overflow:hidden;border-right:1px solid var(--line)}
+.ruler{height:26px;border-bottom:1px solid var(--line);position:relative;background:var(--pane)}
+.ruler span{position:absolute;top:7px;font-size:.58rem;color:var(--low);transform:translateX(-50%)}
+.ruler i{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+.lanes{position:absolute;inset:26px 0 0 0;overflow:hidden}
+.lane{position:relative;height:38px;border-bottom:1px solid #12161A}
+.lane .nm{position:absolute;left:10px;top:11px;font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;color:var(--low);z-index:2;pointer-events:none}
+.span{position:absolute;top:8px;height:22px;border-radius:1px;cursor:pointer;
+  display:flex;align-items:center;padding:0 8px;font-size:.6rem;color:#06120C;font-weight:600;
+  white-space:nowrap;overflow:hidden;transition:filter .15s,transform .15s;font-family:'Martian Mono',monospace}
+.span:hover{filter:brightness(1.25);transform:translateY(-1px)}
+.span.a{background:var(--t1)} .span.b{background:var(--t2)} .span.c{background:var(--t3)} .span.d{background:var(--t4)}
+.span.on{outline:2px solid #fff;outline-offset:1px}
+.hintbar{position:absolute;left:0;right:0;bottom:0;padding:10px 14px;border-top:1px solid var(--line);
+  background:var(--pane);font-size:.6rem;color:var(--low);letter-spacing:.05em;display:flex;justify-content:space-between}
+
+/* ── the panel: the lesson attached to the span you opened ────────────── */
+.side{overflow-y:auto;background:var(--bg)}
+.sh{position:sticky;top:0;background:var(--bg);padding:16px 22px;border-bottom:1px solid var(--line);z-index:2}
+.sh .k{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--low)}
+.sh h2{font-size:1.35rem;letter-spacing:-.02em;font-weight:700;margin-top:6px;line-height:1.15}
+.sb{padding:20px 22px 14vh}
+.sb p{color:#B6C0C7;font-size:.97rem;line-height:1.62;margin-bottom:.9rem}
+.sb b{color:var(--fg);font-weight:600}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:.68rem;margin:1.2rem 0;
+  padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.kv dt{color:var(--low)} .kv dd{color:var(--fg)}
+.warn{border-left:2px solid var(--no);padding-left:12px;color:#D8A5AB;font-size:.86rem;margin:1rem 0}
+.empty{color:var(--low);font-size:.8rem;padding:22vh 22px;text-align:center;line-height:1.8}
+</style></head><body>
+
+<div class="top">
+  <div><span class="m">trace</span><b class="m">4a1f</b></div>
+  <div><span class="m">hermes</span><b class="m">v0.19.0</b></div>
+  <div><span class="m">duration</span><b class="m">174s</b></div>
+  <div><span class="m">iterations</span><b class="m">14</b></div>
+  <div class="sp"></div>
+  <div><span class="m">51 lessons attached to 88 spans</span></div>
+</div>
+
+<div class="wrap">
+  <section class="tr">
+    <div class="ruler" id="ruler"></div>
+    <div class="lanes" id="lanes"></div>
+    <div class="hintbar"><span>scroll to zoom · drag to pan · click a span to open its lesson</span><span id="zl">1.0×</span></div>
+  </section>
+  <aside class="side" id="side">
+    <div class="empty">A real 174-second run, span by span.<br>The curriculum is attached to it.<br><br>Click any block.</div>
+  </aside>
+</div>
+
+<script>
+const LANES=[['agent',[
+  ['a',0,174,'run_conversation','loop'],
+]],['tools',[
+  ['b',4,14,'read_file conversation_loop.py','read'],
+  ['b',19,11,'read_file turn_finalizer.py','read'],
+  ['b',32,9,'grep _iters_since_skill','grep'],
+  ['b',44,26,'execute_code','exec'],
+  ['b',74,18,'read_file background_review.py','read'],
+]],['counter',[
+  ['c',4,10,'+1','ctr'],['c',19,10,'+2','ctr'],['c',32,9,'+3','ctr'],['c',44,26,'+4…+8','ctr'],['c',74,18,'+9','ctr'],['c',96,12,'+10 ▲','fire'],
+]],['response',[
+  ['a',110,22,'final response delivered','answer'],
+]],['fork',[
+  ['d',134,30,'background_review (daemon)','fork'],
+  ['d',166,8,'💾 skill created','write'],
+]]];
+
+const PAGES={
+ loop:{k:'module 01 · the agent loop',t:'One loop, and the one rule it obeys',
+  b:`<p>Receive input. Assemble <b>one</b> system prompt. Call the model. Dispatch tool calls in parallel. Persist. Repeat until the model stops asking for tools.</p>
+  <p>The word doing the work is "one". Once a conversation starts, nothing may rebuild that prompt — the project's own notes call prompt caching <b>sacred</b>.</p>
+  <dl class="kv"><dt>span</dt><dd>0.0s → 174.0s</dd><dt>iterations</dt><dd>14</dd><dt>rule</dt><dd>prompt assembled once</dd></dl>`},
+ read:{k:'module 04 · tools',t:'Tools go out in parallel',
+  b:`<p>When the model asks for several tools at once they go to a thread pool and execute concurrently — which is why a task that reads six files feels like one operation.</p>
+  <p>Concurrency needs a governor: a thread-safe <b>iteration budget</b> shared between a parent and every subagent. Without one, a model will happily call <code>list_dir</code> four hundred times.</p>`},
+ grep:{k:'module 04 · tools',t:'The narrow waist',b:`<p>Every core tool's definition is sent on <b>every</b> API call. A tool is not free because it went unused — it costs its description every turn, all session. That is why the core is deliberately narrow and why the ecosystem is skills and MCP servers rather than forks.</p>`},
+ exec:{k:'module 04 · tools',t:'execute_code refunds iterations',b:`<p>Calls to <code>execute_code</code> refund against the iteration budget. A short script is <b>cheaper</b> than the same work done through twenty individual tool calls — the budget quietly teaches the agent to batch.</p>`},
+ ctr:{k:'module 06 · the loop',t:'The counter counts iterations, not turns',
+  b:`<p>It increments inside the tool-calling loop, once per API-call iteration. Not once per message you send.</p>
+  <p>Ask three casual questions and it may never fire; ask the agent to trace a bug across six files and it fires inside that single request.</p>
+  <div class="warn">The documentation says "roughly every ten agent turns". The source counts iterations. This trace advanced the counter nine times inside four user messages.</div>`},
+ fire:{k:'module 06 · the loop',t:'Threshold reached',
+  b:`<p>At ten, the turn finalizer takes an interest — but it checks three things first: the counter has reached the interval, <b>a final response exists</b>, and the turn was not interrupted.</p>
+  <dl class="kv"><dt>at</dt><dd>96.0s</dd><dt>threshold</dt><dd>10 iterations</dd><dt>resets on</dt><dd>skill_manage</dd></dl>`},
+ answer:{k:'module 06 · ordering',t:'Your answer goes out first',
+  b:`<p>Note the order in the trace: the response span <b>closes before</b> the fork span opens. You cannot be kept waiting by the self-improvement machinery, because it is not consulted until the thing you asked for exists.</p>
+  <p>Interrupt a turn and nothing spawns at all — the counter simply stays where it is.</p>`},
+ fork:{k:'module 06 · isolation',t:'The fork, and its four walls',
+  b:`<p>A daemon thread replaying a snapshot of the conversation. Four restrictions, all applied at spawn, none advisory.</p>
+  <dl class="kv"><dt>tools</dt><dd>skills + memory only</dd><dt>persist</dt><dd>disabled</dd><dt>session_db</dt><dd>None</dd><dt>approvals</dt><dd>auto-denied</dd></dl>
+  <div class="warn">No span returns from this lane to the response lane. That absence is the point — it prevents the review's own instructions landing in your session.</div>`},
+ write:{k:'module 06 · the write',t:'Where the write lands',
+  b:`<p>One line, printed after the fact:</p>
+  <p class="m" style="color:var(--t1);font-size:.8rem">💾 Self-improvement review: Skill 'debugging-imports' created.</p>
+  <p>The documented string is <b>💾 Skill 'foo' patched</b>. Both the prefix and the verb are wrong. Files land in <code>~/.hermes/skills/&lt;namespace&gt;/</code>, owner-only.</p>`}};
+
+const lanes=document.getElementById('lanes'), ruler=document.getElementById('ruler'),
+      side=document.getElementById('side'), zl=document.getElementById('zl');
+let zoom=1, pan=0, W=()=>lanes.clientWidth, DUR=174;
+const px=s=>((s/DUR)*W()*zoom)-pan;
+
+LANES.forEach(([name,items])=>{
+  const l=document.createElement('div');l.className='lane';
+  l.innerHTML=`<span class="nm">${name}</span>`;
+  items.forEach(([cls,st,du,label,key])=>{
+    const s=document.createElement('div');s.className='span '+cls;s.dataset.st=st;s.dataset.du=du;s.dataset.key=key;
+    s.textContent=label;s.onclick=()=>open(s,key);l.appendChild(s)});
+  lanes.appendChild(l)});
+
+function open(el,key){
+  document.querySelectorAll('.span.on').forEach(e=>e.classList.remove('on'));el.classList.add('on');
+  const p=PAGES[key]; if(!p)return;
+  side.innerHTML=`<div class="sh"><p class="k m">${p.k}</p><h2>${p.t}</h2></div><div class="sb">${p.b}</div>`;
+}
+function draw(){
+  document.querySelectorAll('.span').forEach(s=>{
+    const x=px(+s.dataset.st), w=Math.max(3,(+s.dataset.du/DUR)*W()*zoom);
+    s.style.left=x+'px'; s.style.width=w+'px'; s.style.opacity=(x+w<70||x>W())?0:1});
+  ruler.innerHTML='';
+  const stepS=zoom>3?10:zoom>1.6?20:40;
+  for(let t=0;t<=DUR;t+=stepS){const x=px(t);if(x<0||x>W())continue;
+    ruler.insertAdjacentHTML('beforeend',`<i style="left:${x}px"></i><span style="left:${x}px">${t}s</span>`)}
+  zl.textContent=zoom.toFixed(1)+'×';
+}
+lanes.addEventListener('wheel',e=>{e.preventDefault();
+  const before=(e.offsetX+pan)/zoom; zoom=Math.min(9,Math.max(1,zoom*(e.deltaY<0?1.12:0.89)));
+  pan=Math.max(0,before*zoom-e.offsetX); draw()},{passive:false});
+let dg=false,lx=0;
+lanes.addEventListener('pointerdown',e=>{dg=true;lx=e.clientX});
+addEventListener('pointerup',()=>dg=false);
+addEventListener('pointermove',e=>{if(!dg)return;pan=Math.max(0,pan-(e.clientX-lx));lx=e.clientX;draw()});
+addEventListener('resize',draw); draw();
+</script></body></html>

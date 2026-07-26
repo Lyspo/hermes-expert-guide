@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PLATE 01 — GENERAL ASSEMBLY</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@600;700;800&family=Archivo:wght@400;500;600&family=Martian+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#0F1317; --plate:#1B2228; --plate2:#141A20; --plate3:#0F151A;
+  --edge:#46545F; --edge2:#2C3841;
+  --ink:#EDF2F4; --mid:#93A5B0; --low:#5B6B76;
+  --brass:#E0A83C; --oxide:#C9483B; --verd:#4E9E8B;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--ground)}
+body{color:var(--ink);font-family:Archivo,system-ui,sans-serif}
+.m{font-family:'Martian Mono',monospace}
+.x{font-family:'Archivo Expanded',Archivo,sans-serif}
+
+/* ── the sheet: this is a plate in a manual and it never pretends otherwise ─ */
+.sheet{position:fixed;inset:18px;border:1px solid var(--edge2);pointer-events:none;z-index:8}
+.tb{position:fixed;top:18px;left:18px;right:18px;height:36px;display:flex;align-items:center;
+  border-bottom:1px solid var(--edge2);z-index:9;background:var(--ground)}
+.tb div{padding:0 15px;height:100%;display:flex;align-items:center;gap:9px;font-size:.6rem;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--low);border-right:1px solid var(--edge2);white-space:nowrap}
+.tb b{color:var(--ink);font-weight:500}
+.tb .sp{flex:1;border:0}
+.fb{position:fixed;bottom:18px;left:18px;right:18px;height:46px;display:flex;align-items:center;
+  border-top:1px solid var(--edge2);z-index:9;background:var(--ground)}
+.fb div{padding:0 15px;height:100%;display:flex;align-items:center;gap:8px;font-size:.58rem;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--low);border-right:1px solid var(--edge2)}
+.fb .sp{flex:1;border:0}
+.fb i{width:15px;height:2px;display:block}
+
+/* ── the drawing is the hero: full bleed, and the type sits on it ─────── */
+#stage{position:fixed;inset:54px 18px 64px 18px;z-index:2}
+svg{width:100%;height:100%;display:block}
+.part{cursor:pointer}
+.part .face{transition:fill .18s}
+.part:hover .face,.part.on .face{fill:#242D35}
+.part:hover .out,.part.on .out{stroke:var(--brass)}
+.part .out{transition:stroke .18s}
+.balloon circle{fill:var(--ground);stroke:var(--edge);stroke-width:1.2;transition:stroke .18s}
+.balloon text{fill:var(--mid);font-family:'Martian Mono',monospace;font-size:11px;transition:fill .18s}
+.part:hover .balloon circle,.part.on .balloon circle{stroke:var(--brass)}
+.part:hover .balloon text,.part.on .balloon text{fill:var(--brass)}
+.lead{stroke:var(--edge2);stroke-width:1;transition:stroke .18s}
+.part:hover .lead,.part.on .lead{stroke:var(--brass)}
+.tag{font-family:'Martian Mono',monospace;font-size:11.5px;fill:var(--mid);letter-spacing:.04em;transition:fill .18s}
+.tag2{font-family:'Martian Mono',monospace;font-size:9.5px;fill:var(--low);letter-spacing:.04em}
+.part:hover .tag,.part.on .tag{fill:var(--ink)}
+
+/* ── display type layered over the drawing, at real scale ────────────── */
+.hero{position:fixed;left:52px;top:50%;transform:translateY(-50%);z-index:6;max-width:38rem;
+  pointer-events:none;transition:.6s cubic-bezier(.22,1,.3,1)}
+.hero.gone{opacity:0;transform:translateY(-50%) translateX(-26px)}
+.hero .no{font-family:'Martian Mono',monospace;font-size:.62rem;letter-spacing:.16em;color:var(--brass)}
+.hero h1{font-size:clamp(3rem,7.4vw,7.2rem);line-height:.82;letter-spacing:-.045em;font-weight:800;margin-top:18px}
+.hero h1 em{font-style:normal;font-family:'Martian Mono',monospace;font-size:.72em;letter-spacing:-.02em;color:var(--ink)}
+.hero p{color:var(--mid);margin-top:1.7rem;font-size:1.05rem;line-height:1.55;max-width:33ch}
+.hero button{pointer-events:auto;margin-top:2.1rem;background:var(--brass);border:0;color:#12181C;
+  font-family:'Martian Mono',monospace;font-size:.64rem;letter-spacing:.13em;padding:14px 22px;cursor:pointer;
+  transition:.18s;font-weight:600}
+.hero button:hover{background:var(--ink)}
+
+/* ── spec sheet ───────────────────────────────────────────────────────── */
+.spec{position:fixed;right:18px;top:54px;bottom:64px;width:27rem;background:var(--plate2);
+  border-left:1px solid var(--edge);z-index:7;display:flex;flex-direction:column;
+  transform:translateX(calc(100% + 20px));transition:transform .44s cubic-bezier(.22,1,.3,1)}
+.spec.on{transform:none}
+.sh{padding:20px 24px;border-bottom:1px solid var(--edge2);display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.sh .no{font-family:'Martian Mono',monospace;font-size:.58rem;letter-spacing:.11em;color:var(--brass)}
+.sh h2{font-size:1.7rem;letter-spacing:-.03em;font-weight:800;line-height:1.02;margin-top:7px}
+.sh .cl{background:none;border:1px solid var(--edge2);color:var(--low);width:28px;height:28px;cursor:pointer;flex:none}
+.sh .cl:hover{color:var(--ink);border-color:var(--edge)}
+.sb{flex:1;overflow-y:auto;padding:22px 24px 30px}
+.sb::-webkit-scrollbar{width:5px}.sb::-webkit-scrollbar-thumb{background:#2C363E}
+.sb p{color:#BDC9D0;font-size:.97rem;line-height:1.64;margin-bottom:1rem}
+.sb b{color:var(--ink);font-weight:600}
+.rig{border:1px solid var(--edge2);background:#171E23;padding:17px;margin:1.3rem 0}
+.rig .cap{font-family:'Martian Mono',monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--low);margin-bottom:13px}
+.ticks{display:flex;gap:3px}.ticks i{flex:1;height:24px;background:#11171B;border:1px solid var(--edge2)}
+.ticks i.on{background:var(--brass);border-color:var(--brass)}
+.ticks i.fire{background:var(--oxide);border-color:var(--oxide)}
+.rr{display:flex;gap:8px;margin-top:11px}
+.rr button{flex:1;background:#11171B;border:1px solid var(--edge2);color:var(--mid);
+  font-family:'Martian Mono',monospace;font-size:.6rem;padding:9px;cursor:pointer}
+.rr button:hover{color:var(--ink);border-color:var(--edge)}
+.rr button.act{color:var(--oxide);border-color:#4B2E2B}
+.ro{font-family:'Martian Mono',monospace;font-size:.6rem;color:var(--mid);margin-top:11px}
+.ro b{color:var(--brass)} .ro.hot b{color:var(--oxide)}
+.spec dl{display:grid;grid-template-columns:auto 1fr;gap:7px 15px;font-family:'Martian Mono',monospace;font-size:.63rem;
+  border-top:1px solid var(--edge2);border-bottom:1px solid var(--edge2);padding:14px 0;margin:1.3rem 0}
+.spec dt{color:var(--low)} .spec dd{color:var(--ink)}
+.lessons a{display:flex;gap:11px;align-items:baseline;padding:10px 0;border-bottom:1px solid #222A31;
+  color:var(--mid);text-decoration:none;font-size:.92rem}
+.lessons a:hover{color:var(--ink)}
+.lessons a span{font-family:'Martian Mono',monospace;font-size:.55rem;color:var(--low);flex:none}
+
+/* sheet tabs — the drawing set, not a nav bar */
+.tb .tab{cursor:pointer;transition:color .16s,box-shadow .16s}
+.tb .tab:hover{color:var(--mid)}
+.tb .tab.on{color:var(--brass);box-shadow:inset 0 -2px 0 var(--brass)}
+
+/* threshold wipe between sheets — a scene change with weight, not a crossfade */
+.wipe{position:fixed;inset:0;background:var(--ground);z-index:20;pointer-events:none;
+  transform:scaleX(0);transform-origin:left center}
+.wipe.in{transform:scaleX(1);transition:transform .34s cubic-bezier(.7,0,.3,1)}
+.wipe.out{transform:scaleX(0);transform-origin:right center;transition:transform .34s cubic-bezier(.7,0,.3,1)}
+
+/* the parts assemble along the axis on entry — transform and opacity only */
+.part{opacity:0;transform:translateY(-26px)}
+.part.seated{opacity:1;transform:none;transition:opacity .5s cubic-bezier(.2,1,.3,1),transform .62s cubic-bezier(.2,1,.3,1)}
+
+/* ── sheet 02 · bill of materials ──────────────────────────────────────── */
+#bom{position:fixed;inset:54px 18px 64px 18px;z-index:3;display:none;flex-direction:column}
+#bom.on{display:flex}
+.bomhead{display:flex;align-items:flex-end;justify-content:space-between;padding:26px 30px 18px;border-bottom:1px solid var(--edge)}
+.bomhead h2{font-size:clamp(1.8rem,3.4vw,2.9rem);letter-spacing:-.035em;font-weight:800;line-height:.95}
+.bomhead .sub{color:var(--mid);font-size:.92rem;margin-top:10px;max-width:52ch;line-height:1.5}
+.filters{display:flex;gap:0;border:1px solid var(--edge2)}
+.filters button{background:none;border:0;border-right:1px solid var(--edge2);color:var(--low);
+  font-family:'Martian Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;
+  padding:9px 13px;cursor:pointer;transition:.15s}
+.filters button:last-child{border-right:0}
+.filters button:hover{color:var(--mid)}
+.filters button.on{color:var(--ground);background:var(--brass)}
+.bomscroll{flex:1;overflow-y:auto;padding:0 30px 30px}
+.bomscroll::-webkit-scrollbar{width:6px}.bomscroll::-webkit-scrollbar-thumb{background:#2C363E}
+table{width:100%;border-collapse:collapse;font-family:'Martian Mono',monospace;font-size:.68rem}
+thead th{position:sticky;top:0;background:var(--ground);text-align:left;color:var(--low);font-weight:400;
+  font-size:.55rem;letter-spacing:.11em;text-transform:uppercase;padding:14px 10px 10px;border-bottom:1px solid var(--edge)}
+tbody td{padding:9px 10px;border-bottom:1px solid #1C242A;color:var(--mid);vertical-align:baseline}
+tbody tr{cursor:pointer;transition:background .12s}
+tbody tr:hover{background:#171E24}
+tbody tr:hover .nm{color:var(--ink)}
+tbody tr.assy td{background:#141A20;color:var(--brass);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;
+  border-bottom:1px solid var(--edge2);padding:11px 10px}
+.item{color:var(--low)}
+.nm{color:var(--mid);font-family:Archivo,sans-serif;font-size:.88rem;transition:color .12s}
+.spec-c{color:var(--brass)} .spec-s{color:var(--low)} .spec-x{color:#2E3A44}
+.qty{text-align:right;color:var(--mid)}
+tbody tr.dim{opacity:.28}
+
+/* ── the plate develops: monospace character mass resolving into the drawing ── */
+#dev{position:fixed;inset:0;z-index:30;background:var(--ground);display:flex;
+  align-items:center;justify-content:center;flex-direction:column;transition:opacity .5s}
+#dev.done{opacity:0;pointer-events:none}
+#dev pre{font-family:'Martian Mono',monospace;font-size:9px;line-height:8.6px;letter-spacing:0;
+  color:var(--brass);white-space:pre;margin:0}
+#dev .cnt{font-family:'Martian Mono',monospace;font-size:.6rem;letter-spacing:.16em;color:var(--low);margin-top:28px}
+#dev .cnt b{color:var(--brass);font-weight:400}
+
+/* ── sheet 03 · detail view ─────────────────────────────────────────────── */
+#detail{position:fixed;inset:54px 18px 64px 18px;z-index:3;display:none;overflow-y:auto}
+#detail.on{display:block}
+#detail::-webkit-scrollbar{width:6px}#detail::-webkit-scrollbar-thumb{background:#2C363E}
+.dsheet{max-width:1420px;margin:0 auto;padding:44px 40px 16vh;
+  display:grid;grid-template-columns:minmax(0,1fr) 19rem;gap:0 54px;align-items:start}
+@media(max-width:78rem){.dsheet{grid-template-columns:1fr}.dmargin{display:none}}
+.dhead{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) 19rem;gap:54px;align-items:start;
+  border-bottom:1px solid var(--edge);padding-bottom:30px;margin-bottom:38px}
+.dhead .no{font-family:'Martian Mono',monospace;font-size:.6rem;letter-spacing:.14em;color:var(--brass)}
+.dhead h1{font-size:clamp(2.1rem,4vw,3.4rem);line-height:1;letter-spacing:-.035em;font-weight:800;margin-top:14px;max-width:24ch}
+.dhead .lede{color:var(--mid);font-size:1.08rem;line-height:1.5;margin-top:16px;max-width:54ch}
+.dhead .facts{font-family:'Martian Mono',monospace;font-size:.62rem;line-height:2;color:var(--low);
+  border-top:1px solid var(--edge2);padding-top:10px}
+.dhead .facts b{color:var(--ink);font-weight:400} .dhead .facts span{color:var(--brass)}
+
+article{min-width:0;font-size:1.0625rem;line-height:1.72;color:#C9D4DA}
+article p{margin-bottom:1.2rem;max-width:66ch}
+article b,article strong{color:var(--ink);font-weight:600}
+article em{font-style:italic;color:var(--ink)}
+article code{font-family:'Martian Mono',monospace;font-size:.84em;color:var(--brass);
+  background:#171E24;border:1px solid var(--edge2);padding:1px 5px}
+article h2{font-family:'Archivo Expanded',Archivo,sans-serif;font-size:1.7rem;letter-spacing:-.03em;font-weight:700;
+  color:var(--ink);margin:3rem 0 1rem;padding-top:1.4rem;border-top:1px solid var(--edge2);
+  scroll-margin-top:24px;display:flex;gap:15px;align-items:baseline}
+article h2 .sn{font-family:'Martian Mono',monospace;font-size:.6rem;color:var(--brass);letter-spacing:.1em;flex:none}
+article blockquote{border-left:2px solid var(--brass);padding-left:19px;margin:1.5rem 0;color:var(--mid);max-width:60ch}
+.rev{border:1px solid var(--edge2);background:#141A20;padding:19px 21px;margin:1.7rem 0;max-width:66ch}
+.rev del{display:block;color:#9A8288;text-decoration:line-through;text-decoration-color:var(--oxide);
+  text-decoration-thickness:2px;font-size:.97rem;line-height:1.5}
+.rev ins{display:block;color:var(--ink);text-decoration:none;font-weight:500;margin-top:9px;font-size:1.05rem;line-height:1.5}
+.rev .src{font-family:'Martian Mono',monospace;font-size:.6rem;color:var(--low);margin-top:13px;line-height:1.7}
+.rev .src b{color:var(--verd)}
+.term{border:1px solid var(--edge2);background:#0B0F12;padding:15px 17px;margin:1.6rem 0;max-width:66ch}
+.term .cap{font-family:'Martian Mono',monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--low);margin-bottom:10px;display:flex;justify-content:space-between}
+.term .cap b{color:var(--verd)}
+.term pre{font-family:'Martian Mono',monospace;font-size:.78rem;color:var(--ink);white-space:pre-wrap}
+.dmargin{position:sticky;top:0;align-self:start;font-family:'Martian Mono',monospace;font-size:.62rem;color:var(--low);line-height:1.9}
+.dmargin h3{font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--low);
+  border-bottom:1px solid var(--edge2);padding-bottom:7px;margin-bottom:11px;font-weight:400}
+.dmargin section{margin-bottom:24px}
+.dmargin a{display:flex;gap:9px;color:var(--mid);text-decoration:none;padding:4px 0}
+.dmargin a:hover{color:var(--ink)} .dmargin a .n{color:var(--brass);flex:none}
+.dmargin a.cur{color:var(--ink)} .dmargin a.cur .n{color:var(--oxide)}
+.dmargin dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px}
+.dmargin dt{color:var(--low)} .dmargin dd{color:var(--mid)}
+.dmargin .note{color:var(--mid);line-height:1.85;font-size:.6rem}
+.dv{border:1px solid var(--edge2);background:#12181D;margin-bottom:24px}
+.dv svg{width:100%;display:block}
+.dv .cap{padding:8px 11px;border-top:1px solid var(--edge2);font-size:.55rem;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--low)}
+.openbtn{width:100%;margin-top:16px;background:var(--brass);border:0;color:#12181C;
+  font-family:'Martian Mono',monospace;font-size:.6rem;letter-spacing:.12em;padding:12px;cursor:pointer;font-weight:600}
+.openbtn:hover{background:var(--ink)}
+</style></head><body>
+
+<div id="dev"><pre id="devart"></pre><p class="cnt">INDEXING PARTS <b id="devn">000</b> / 051</p></div>
+
+<div id="stage"><svg id="svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid meet"></svg></div>
+<div class="sheet"></div>
+
+<div class="tb">
+  <div><b class="m">HERMES-AGENT</b><span class="m">v0.19.0</span></div>
+  <div class="m">plate 01 — general assembly, exploded</div>
+  <div class="m">proj <b>isometric</b></div>
+  <div class="tab on m" data-sheet="1">sheet 01 · assembly</div>
+  <div class="tab m" data-sheet="2">sheet 02 · bill of materials</div>
+  <div class="tab m" id="tab3" data-sheet="3" style="display:none">sheet 03 · detail</div>
+  <div class="sp"></div>
+  <div class="m">rev <b>C</b> · 2026-07-26</div>
+</div>
+
+<div class="hero" id="hero">
+  <p class="no">PLATE 01 · GENERAL ASSEMBLY</p>
+  <h1 class="x">The agent,<br>taken apart<br>and <em>labelled.</em></h1>
+  <p>Six subsystems drawn as they actually sit — what is assembled once, what is injected then frozen, and what forks away and never comes back.</p>
+  <button id="go" class="m">OPEN THE ASSEMBLY</button>
+</div>
+
+<div class="spec" id="spec"></div>
+<div class="wipe" id="wipe"></div>
+<section id="detail"></section>
+
+<section id="bom">
+  <div class="bomhead">
+    <div>
+      <h2 class="x">Bill of materials</h2>
+      <p class="sub">Fifty-one parts. The number beside each one is its position in the assembly, not a decoration — read the list in order and you have read the course.</p>
+    </div>
+    <div class="filters" id="filters">
+      <button class="on" data-t="all">all 51</button>
+      <button data-t="0">newcomer</button>
+      <button data-t="1">operator</button>
+      <button data-t="2">architect</button>
+    </div>
+  </div>
+  <div class="bomscroll">
+    <table><thead><tr>
+      <th style="width:64px">item</th><th>part</th><th style="width:190px">assembly</th>
+      <th style="width:120px">spec n/o/a</th><th style="width:80px" class="qty">min</th>
+    </tr></thead><tbody id="bomrows"></tbody></table>
+  </div>
+</section>
+
+<div class="fb">
+  <div class="m"><i style="background:var(--brass)"></i>under discussion</div>
+  <div class="m"><i style="background:var(--verd)"></i>verified in source</div>
+  <div class="m"><i style="background:var(--oxide)"></i>contradicts the docs</div>
+  <div class="sp"></div>
+  <div class="m">click a part to open its specification</div>
+</div>
+
+<script>
+/* Isometric by fixed matrix rather than runtime projection: a considered plate,
+   composed once, correct at every viewport. x→(.866,.5)  y→(-.866,.5) */
+const IX=[.866,.5], IY=[-.866,.5];
+const P=(x,y,z)=>[810+ (x*IX[0]+y*IY[0])*1, 150 + (x*IX[1]+y*IY[1]) + z];
+
+const PARTS=[
+ {n:'01',t:'The system prompt',k:'assembled once per session',c:'brass',w:252,d:196,z:0,
+  sub:[[0,0,206,40],[0,52,206,40],[0,104,206,44]],
+  b:'Three tiers — <b>stable</b>, <b>context</b>, <b>volatile</b> — in that order, so the fixed head can be cached and anything variable sits at the tail. Nothing may rebuild it mid-conversation; the contributor notes call prompt caching <b>sacred</b>.',
+  s:{tiers:'3',cached:'≈73% fixed',rebuilt:'never mid-session'},
+  l:[['05/01','What is in the system prompt'],['01/02','The loop, and the one rule']]},
+ {n:'02',t:'Memory',k:'injected, then frozen',c:'verd',w:232,d:172,z:118,
+  sub:[[0,0,86,80],[100,0,86,80],[0,94,186,30]],
+  b:'Two capped markdown files read <b>once</b> at session start, plus a SQLite index of every past session searched on demand. Not a three-layer stack — the framing this guide exists to correct.',
+  s:{'MEMORY.md':'2,200 chars','USER.md':'1,375 chars','state.db':'FTS5, on demand'},
+  rig:'mem',
+  l:[['05/03','Memory is two files and an index'],['05/04','Everything you ever said, searchable']]},
+ {n:'03',t:'Tools & isolation',k:'every schema, every call',c:'brass',w:200,d:150,z:236,
+  sub:[[0,0,44,44],[54,0,44,44],[108,0,44,44],[0,54,44,44],[54,54,44,44],[108,54,44,44]],
+  b:'Each core tool costs its description on <b>every</b> API call — a tool is not free because it went unused. That is why the core is a narrow waist and the ecosystem is skills and MCP servers. Six execution backends sit beneath it.',
+  s:{backends:'6',approvals:'smart (default)',deterministic:'blocklist only'},
+  l:[['04/01','The catalogue, and how to shrink it'],['04/04','The gate, and four ways past it']]},
+ {n:'04',t:'Skills',k:'the centre of the guide',c:'brass',w:242,d:196,z:354,
+  sub:[[0,0,58,40],[68,0,58,40],[136,0,58,40],[0,50,58,40],[68,50,58,40],[136,50,58,40],[0,100,194,44]],
+  b:'A skill is a procedure in a file. The loop that writes and revises those files is three mechanisms sold as one: a counter, a forked review, and an editorial policy written as prompt text.',
+  s:{nudge:'every 10 iterations',fork:'daemon thread',writes:'~/.hermes/skills/'},
+  rig:'ctr',
+  l:[['06/01','A skill is a file'],['06/05','What actually fires'],['06/07','The curator']]},
+ {n:'05',t:'The review fork',k:'detached — nothing returns',c:'oxide',w:178,d:132,z:472,detached:true,
+  sub:[[0,0,60,40],[72,0,60,40],[0,50,132,30]],
+  b:'A daemon thread replaying a snapshot of your conversation, behind four walls: tools cut to skills and memory, <b>_persist_disabled</b>, <b>_session_db = None</b>, approvals auto-denied. It writes to the skill store and stops.',
+  s:{returns:'never',prompted:'auto-denied',recurses:'no'},
+  l:[['06/05','The arrow that does not exist'],['06/06','The editorial policy']]},
+ {n:'06',t:'The gateway',k:'twenty front doors, one chain',c:'verd',w:216,d:164,z:590,
+  sub:[[0,0,36,34],[44,0,36,34],[88,0,36,34],[132,0,36,34],[0,44,168,54]],
+  b:'One process serving twenty platforms behind a single authorization chain that <b>defaults to deny</b>. Cron lives inside it — which is why a scheduled job silently never fires when the gateway is down.',
+  s:{platforms:'20+',default:'deny',tick:'60 s'},
+  l:[['07/02','One process, many front doors'],['07/03','Who is allowed to talk to it']]}];
+
+const COL={brass:'#E0A83C',verd:'#4E9E8B',oxide:'#C9483B'};
+const svg=document.getElementById('svg');
+const pt=(x,y,z)=>{const [a,b]=P(x,y,z);return a.toFixed(1)+','+b.toFixed(1)};
+
+let out=`<defs>
+ <pattern id="hatch" width="7" height="7" patternTransform="rotate(30)" patternUnits="userSpaceOnUse">
+   <line x1="0" y1="0" x2="0" y2="7" stroke="#2E3A44" stroke-width="1"/></pattern>
+ <pattern id="hatchOn" width="7" height="7" patternTransform="rotate(30)" patternUnits="userSpaceOnUse">
+   <line x1="0" y1="0" x2="0" y2="7" stroke="#3A4A56" stroke-width="1"/></pattern>
+ <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+   <path d="M0,0 L7,3 L0,6 Z" fill="#46545F"/></marker>
+ <radialGradient id="rake" cx="0.5" cy="0.4" r="0.44">
+   <stop offset="0%" stop-color="#FFE9BC" stop-opacity="0.34"/>
+   <stop offset="45%" stop-color="#E0A83C" stop-opacity="0.11"/>
+   <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+ </radialGradient>
+</defs>`;
+
+// assembly axis — the spine every part explodes along
+out+=`<line x1="${P(0,0,-70)[0]}" y1="${P(0,0,-70)[1]}" x2="${P(0,0,700)[0]}" y2="${P(0,0,700)[1]}"
+  stroke="#39454E" stroke-width="1" stroke-dasharray="8 6"/>`;
+
+PARTS.forEach((p,i)=>{
+  const {w,d,z}=p, hw=w/2, hd=d/2, TH=13;
+  const top=[[-hw,-hd],[hw,-hd],[hw,hd],[-hw,hd]].map(([a,b])=>pt(a,b,z)).join(' ');
+  const sideL=[pt(-hw,hd,z),pt(hw,hd,z),pt(hw,hd,z+TH),pt(-hw,hd,z+TH)].join(' ');
+  const sideR=[pt(hw,hd,z),pt(hw,-hd,z),pt(hw,-hd,z+TH),pt(hw,hd,z+TH)].join(' ');
+  // sub-components on the face — the detail that makes it a drawing, not a box
+  const subs=p.sub.map(([sx,sy,sw,sh])=>{
+    const q=[[sx-hw+22,sy-hd+22],[sx-hw+22+sw,sy-hd+22],[sx-hw+22+sw,sy-hd+22+sh],[sx-hw+22,sy-hd+22+sh]]
+      .map(([a,b])=>pt(a,b,z-1)).join(' ');
+    return `<polygon points="${q}" fill="#151C22" stroke="${COL[p.c]}" stroke-opacity=".34" stroke-width="1"/>`}).join('');
+  const [bx,by]=P(hw,-hd,z); const lx=bx+96;
+  out+=`<g class="part" data-i="${i}">
+    <polygon points="${sideL}" fill="#0E141A" stroke="#2C3841" stroke-width="1"/>
+    <polygon points="${sideR}" fill="#121920" stroke="#2C3841" stroke-width="1"/>
+    <polygon class="face" points="${top}" fill="#212A31"/>
+    <polygon points="${top}" fill="url(#hatch)"/>
+    ${subs}
+    <polygon class="out" points="${top}" fill="none" stroke="${COL[p.c]}" stroke-opacity="${p.detached?1:.55}"
+      stroke-width="${p.detached?1.5:1.3}" ${p.detached?'stroke-dasharray="7 5"':''}/>
+    <polyline class="lead" points="${bx},${by} ${bx+26},${by-18} ${lx},${by-18}" fill="none"/>
+    <g class="balloon" transform="translate(${bx},${by})">
+      <circle r="13" cx="0" cy="0"/><text x="0" y="4" text-anchor="middle">${p.n}</text></g>
+    <text class="tag" x="${lx+10}" y="${by-14}">${p.t}</text>
+    <text class="tag2" x="${lx+10}" y="${by+2}">${p.k}</text>
+  </g>`;
+});
+
+// one real dimension line, because a technical plate carries measurement
+const d0=P(-330,-300,0), d1=P(-330,-300,600);
+out+=`<line x1="${d0[0]}" y1="${d0[1]}" x2="${d1[0]}" y2="${d1[1]}" stroke="#46545F" stroke-width="1"
+  marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text class="tag2" x="${d0[0]-14}" y="${(d0[1]+d1[1])/2}" fill="#5B6B76" text-anchor="end">6 SUBSYSTEMS · 51 LESSONS</text>`;
+
+out+=`<rect id="rakeRect" x="0" y="0" width="1600" height="900" fill="url(#rake)"
+  style="mix-blend-mode:soft-light;pointer-events:none"/>`;
+svg.innerHTML=out;
+
+/* The highlight is a real light source moved over the assembly, so the sheen sits
+   on the hatched faces the way it would on metal. Not a box-shadow, which is the
+   banned shortcut — the ruleset bans the shortcut, not the outcome. */
+const rake=document.querySelector('#rake');
+addEventListener('pointermove',e=>{
+  const r=svg.getBoundingClientRect();
+  rake.setAttribute('cx',((e.clientX-r.left)/r.width).toFixed(3));
+  rake.setAttribute('cy',((e.clientY-r.top)/r.height).toFixed(3));
+},{passive:true});
+
+const spec=document.getElementById('spec');
+document.querySelectorAll('.part').forEach(el=>el.onclick=()=>select(+el.dataset.i));
+function select(i){
+  document.querySelectorAll('.part.on').forEach(e=>e.classList.remove('on'));
+  document.querySelector(`.part[data-i="${i}"]`).classList.add('on');
+  const p=PARTS[i];
+  spec.innerHTML=`<div class="sh"><div><p class="no">PART ${p.n} · ${p.k.toUpperCase()}</p><h2 class="x">${p.t}</h2></div>
+    <button class="cl" onclick="closeSpec()">✕</button></div>
+    <div class="sb"><p>${p.b}</p>${p.rig?rig(p.rig):''}
+    <dl>${Object.entries(p.s).map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
+    <div class="lessons">${p.l.map(([id,t])=>`<a href="#"><span>${id}</span>${t}</a>`).join('')}</div>
+    <button class="openbtn" onclick="goSheet(3,${i})">OPEN DETAIL SHEET →</button></div>`;
+  spec.classList.add('on'); n=0; paint();
+}
+function closeSpec(){spec.classList.remove('on');document.querySelectorAll('.part.on').forEach(e=>e.classList.remove('on'))}
+function rig(kind){
+  const cap = kind==='ctr' ? 'operate it · the nudge counter' : 'operate it · MEMORY.md, 2,200 characters';
+  const a = kind==='ctr' ? 'tool call' : 'agent writes';
+  const bnt = kind==='ctr' ? 'skill_manage' : 'you edit the file';
+  return `<div class="rig"><p class="cap">${cap}</p>
+    <div class="ticks" id="tk">${'<i></i>'.repeat(10)}</div>
+    <div class="rr"><button onclick="step()">${a}</button><button class="act" onclick="rst()">${bnt}</button></div>
+    <p class="ro" id="ro"><b>0</b> / 10 · the review fires at ten</p></div>`;
+}
+let n=0;
+function paint(){const tk=document.getElementById('tk'),ro=document.getElementById('ro');if(!tk)return;
+  [...tk.children].forEach((c,i)=>c.className=i<n?(n>=10?'on fire':'on'):'');
+  ro.classList.toggle('hot',n>=10);
+  ro.innerHTML=n>=10?'<b>10</b> / 10 · fired — after your answer, never before it':`<b>${n}</b> / 10 · the review fires at ten`}
+function step(){n=Math.min(10,n+1);paint()} function rst(){n=0;paint()}
+
+const BOM=[[1, "What Hermes actually is", 8, "CCC", "First contact"], [1, "The loop, and the one rule it obeys", 10, "CCC", "First contact"], [1, "The whole surface, and what this guide leaves out", 7, "CCC", "First contact"], [1, "Reading a project that ships weekly", 6, "SCC", "First contact"], [2, "Installing it, and where everything lands", 12, "CCS", "Standing it up"], [2, "Picking a model that can actually do this", 14, "CCC", "Standing it up"], [2, "First run, and how to know it worked", 10, "CC-", "Standing it up"], [2, "What it can reach, before you let it", 12, "CCC", "Standing it up"], [3, "The status bar, and the budget it is telling you about", 11, "CCS", "Running a session"], [3, "The record, and getting back to it", 9, "CCS", "Running a session"], [3, "Interrupting, queueing, steering", 8, "CS-", "Running a session"], [3, "Two files, and which one wins", 12, "CCC", "Running a session"], [4, "The catalogue, and how to shrink it", 13, "CCC", "Tools and isolation"], [4, "The terminal tool, and the long-running job", 11, "SCS", "Tools and isolation"], [4, "Six places the agent's commands can run", 15, "SCC", "Tools and isolation"], [4, "The gate, and the four ways past it", 12, "SCC", "Tools and isolation"], [5, "The prompt, exploded", 13, "CCC", "What it knows"], [5, "Identity, and the file that belongs to the project", 10, "CCC", "What it knows"], [5, "Memory is two files and an index", 12, "CCC", "What it knows"], [5, "Everything you ever said, searchable", 8, "CCS", "What it knows"], [5, "Nine other memories, and whether you want one", 10, "SSS", "What it knows"], [6, "A skill is a file", 14, "CCC", "Skills and the improvement loop"], [6, "Why a hundred skills cost almost nothing", 9, "SCS", "Skills and the improvement loop"], [6, "Other people's skills", 12, "CCC", "Skills and the improvement loop"], [6, "Making one on purpose", 12, "CCS", "Skills and the improvement loop"], [6, "What actually fires, and what it is allowed to do", 15, "CCC", "Skills and the improvement loop"], [6, "The prompt that decides what gets remembered", 12, "CCC", "Skills and the improvement loop"], [6, "The maintenance pass nobody asked for", 13, "SCC", "Skills and the improvement loop"], [6, "Evolving without quietly getting weird", 12, "CCC", "Skills and the improvement loop"], [7, "Work that happens without you", 15, "CCC", "Unattended operation"], [7, "One process, many front doors", 11, "CCC", "Unattended operation"], [7, "Who is allowed to talk to it", 12, "CCC", "Unattended operation"], [7, "One platform, done properly", 14, "CC-", "Unattended operation"], [7, "When something else starts the work", 12, "-CC", "Unattended operation"], [7, "The bill, and where it comes from", 13, "CCC", "Unattended operation"], [8, "A function call and a work queue", 10, "CCC", "More than one agent"], [8, "Children that know nothing", 14, "SCC", "More than one agent"], [8, "A board agents can actually finish work on", 16, "-CC", "More than one agent"], [8, "Several agents on one machine", 12, "CCC", "More than one agent"], [8, "The level you are actually ready for", 10, "CCC", "More than one agent"], [9, "Tools from somewhere else", 14, "SCC", "Extension and routing"], [9, "Changing behaviour without forking", 15, "-CS", "Extension and routing"], [9, "Which model, for which part of the work", 15, "SCS", "Extension and routing"], [9, "Dashboard, desktop, editor, HTTP", 12, "SSS", "Extension and routing"], [9, "Giving it eyes, ears, and a browser", 13, "CSS", "Extension and routing"], [10, "Hardening a real deployment", 12, "SCC", "Deployment and governance"], [10, "Where the credentials are, and what the proxy does not cover", 15, "-CC", "Deployment and governance"], [10, "What Hermes writes down", 14, "-SC", "Deployment and governance"], [10, "What has actually gone wrong", 14, "SCC", "Deployment and governance"], [10, "Diagnosis, backup, rollback, update", 13, "CCS", "Deployment and governance"], [10, "Where it should not be trusted", 11, "CCC", "Deployment and governance"]];
+
+/* Sheet 02 renders the curriculum as the drawing's own parts list. The item number
+   is the reading order and the count is real — the research calls this the one case
+   where sequence numbering is earned rather than scaffolding. */
+const rowsEl=document.getElementById('bomrows');
+function renderBOM(filter){
+  let html='', lastAssy=null;
+  BOM.forEach(([mod,title,min,spec,assy],i)=>{
+    const keep = filter==='all' || spec[+filter]!=='-';
+    if(assy!==lastAssy){lastAssy=assy;
+      html+=`<tr class="assy"><td>${String(mod).padStart(2,'0')}</td><td colspan="4">${assy}</td></tr>`}
+    const sp=[...spec].map(c=>`<span class="spec-${c==='C'?'c':c==='S'?'s':'x'}">${c}</span>`).join(' ');
+    html+=`<tr class="${keep?'':'dim'}" data-i="${i}" data-mod="${mod}">
+      <td class="item">${String(i+1).padStart(3,'0')}</td>
+      <td class="nm">${title}</td>
+      <td>${assy}</td><td>${sp}</td><td class="qty">${min}</td></tr>`;
+  });
+  rowsEl.innerHTML=html;
+}
+renderBOM('all');
+/* A part in the list is the same part in the drawing: clicking one returns to the
+   assembly with that subsystem selected, so the two sheets are one object. */
+const MOD2PART={5:0,6:3,4:2,7:5};
+rowsEl.addEventListener('click',e=>{
+  const tr=e.target.closest('tr[data-mod]'); if(!tr)return;
+  const idx=MOD2PART[+tr.dataset.mod];
+  goSheet(3, idx===undefined?3:idx);
+});
+document.querySelectorAll('#filters button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#filters button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); renderBOM(b.dataset.t);
+});
+
+/* Threshold wipe between sheets — a boundary being crossed, not a crossfade. */
+const wipe=document.getElementById('wipe'), bom=document.getElementById('bom'), stage=document.getElementById('stage');
+let sheet=1;
+const detail=document.getElementById('detail'), tab3=document.getElementById('tab3');
+function goSheet(n,part){
+  if(n===sheet && part===undefined)return; sheet=n;
+  if(n===3){tab3.style.display='flex'}
+  document.querySelectorAll('.tb .tab').forEach(t=>t.classList.toggle('on',+t.dataset.sheet===n));
+  wipe.className='wipe in';
+  setTimeout(()=>{
+    stage.style.display = n===1?'block':'none';
+    bom.classList.toggle('on', n===2);
+    detail.classList.toggle('on', n===3);
+    spec.classList.remove('on');
+    document.getElementById('hero').classList.add('gone');
+    if(n===1) seat();
+    if(n===3) renderDetail(part===undefined?3:part);
+    wipe.className='wipe out';
+  },350);
+}
+document.querySelectorAll('.tb .tab').forEach(t=>t.onclick=()=>goSheet(+t.dataset.sheet));
+
+/* Parts seat along the axis, staggered top to bottom — the assembly being made. */
+function seat(){
+  document.querySelectorAll('.part').forEach((el,i)=>{
+    el.classList.remove('seated');
+    setTimeout(()=>el.classList.add('seated'), 90+i*105);
+  });
+}
+
+/* ── sheet 03 · the detail sheet ─────────────────────────────────────────────
+   The prose surface. A drawing set already answers where 2,000 words live: a
+   detail sheet for one part, with the reading column wide and the manual's own
+   marginalia beside it. The margin's thumbnail is generated from the same PARTS
+   geometry Sheet 01 draws, at its own scale — not a hand-redrawn lookalike, so it
+   cannot drift out of agreement with the assembly it came from.
+*/
+function partThumb(i){
+  const p=PARTS[i], hw=p.w/2, hd=p.d/2, TH=13, S=0.62, OX=150, OY=96;
+  const q=(x,y)=>{const a=(x*IX[0]+y*IY[0])*S+OX, b=(x*IX[1]+y*IY[1])*S+OY; return a.toFixed(1)+','+b.toFixed(1)};
+  const top=[[-hw,-hd],[hw,-hd],[hw,hd],[-hw,hd]].map(([a,b])=>q(a,b)).join(' ');
+  const sL=[q(-hw,hd),q(hw,hd),q(hw,hd)+'',q(-hw,hd)];
+  const subs=p.sub.map(([sx,sy,sw,sh])=>`<polygon points="${
+    [[sx-hw+22,sy-hd+22],[sx-hw+22+sw,sy-hd+22],[sx-hw+22+sw,sy-hd+22+sh],[sx-hw+22,sy-hd+22+sh]]
+    .map(([a,b])=>q(a,b)).join(' ')}" fill="#151C22" stroke="${COL[p.c]}" stroke-opacity=".34"/>`).join('');
+  const [bx,by]=[(hw*IX[0]+(-hd)*IY[0])*S+OX, (hw*IX[1]+(-hd)*IY[1])*S+OY];
+  return `<svg viewBox="0 0 300 192">
+   <defs><pattern id="ht${i}" width="6" height="6" patternTransform="rotate(30)" patternUnits="userSpaceOnUse">
+     <line x1="0" y1="0" x2="0" y2="6" stroke="#2E3A44"/></pattern></defs>
+   <polygon points="${top}" fill="#212A31"/><polygon points="${top}" fill="url(#ht${i})"/>
+   ${subs}
+   <polygon points="${top}" fill="none" stroke="${COL[p.c]}" stroke-opacity="${p.detached?1:.7}"
+     stroke-width="1.3" ${p.detached?'stroke-dasharray="6 4"':''}/>
+   <circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="11" fill="#0F1317" stroke="${COL[p.c]}" stroke-width="1.2"/>
+   <text x="${bx.toFixed(1)}" y="${(by+4).toFixed(1)}" text-anchor="middle"
+     font-family="'Martian Mono',monospace" font-size="9" fill="${COL[p.c]}">${p.n}</text></svg>`;
+}
+
+const LESSON={
+ item:'026', of:'051', assembly:'06 · skills and the improvement loop', est:'15 min', spec:'C C C',
+ title:'What actually fires, and what it is allowed to do.',
+ lede:'A counter that increments once per tool-loop iteration, a forked agent that runs after your answer is on screen, and the four walls that keep it out of your conversation.',
+ secs:['The counter counts iterations, not turns','Your answer goes out first','What you actually see','The fork, and its four walls'],
+ behind:8, ahead:5
+};
+
+function renderDetail(i){
+  const p=PARTS[i];
+  detail.innerHTML=`<div class="dsheet">
+   <header class="dhead">
+     <div>
+       <p class="no">SHEET 03 · DETAIL VIEW · PART ${p.n} — ${p.t.toUpperCase()}</p>
+       <h1 class="x">${LESSON.title}</h1>
+       <p class="lede">${LESSON.lede}</p>
+     </div>
+     <div class="facts">
+       <div>ITEM <b>${LESSON.item} / ${LESSON.of}</b></div>
+       <div>ASSEMBLY <b>${LESSON.assembly}</b></div>
+       <div>SPEC <span>${LESSON.spec.split(' ').join('</span> <span>')}</span></div>
+       <div>EST <b>${LESSON.est}</b></div>
+       <div>VERIFIED <b>v0.19.0</b> · 2026-07-25</div>
+       <div>SOURCE <b>[07] §2.1–2.2</b></div>
+     </div>
+   </header>
+
+   <article id="dbody">
+     <p>Self-improvement is the thing Hermes is sold on, and it is usually described as a disposition: the agent notices what worked and gets better at it. What actually ships is three mechanical parts — a counter, a threshold, and a second agent that is <b>forbidden from speaking to you</b>.</p>
+     <p>All three are small enough to hold in your head, and holding them is the difference between an agent that quietly improves and one that quietly gets strange.</p>
+
+     <h2 id="d1"><span class="sn">01</span>${LESSON.secs[0]}</h2>
+     <p>Two configuration keys, both defaulting to ten: <code>memory.nudge_interval</code> and <code>skills.creation_nudge_interval</code>. The skill counter increments inside the tool-calling loop — once per API-call iteration, every time round. Not once per message you send.</p>
+     <p>That distinction is the whole behaviour of the loop.</p>
+     <div class="rev">
+       <del>The background review runs roughly every ten agent turns.</del>
+       <ins>It runs every ten tool-calling iterations. One request that takes five tool round-trips advances the counter by five, so a long piece of real work can trip it twice.</ins>
+       <p class="src">The increment sits inside the per-turn tool-calling loop and fires per API-call iteration; the curator documentation's “~every 10 agent turns” is an approximation of that count.<br><b>agent/conversation_loop.py:118 @ d372fda</b> · corrected 2026-07-25</p>
+     </div>
+     <p>So the loop is not on a conversational clock. It is on a <em>work</em> clock. Ask three casual questions and it may never fire; ask the agent to trace a bug across six files and it will fire during that single request.</p>
+     <div class="rig">
+       <p class="cap">detail ${p.n}-a · the counter, operable</p>
+       <div class="ticks" id="tk">${'<i></i>'.repeat(10)}</div>
+       <div class="rr"><button onclick="step()">tool call</button><button class="act" onclick="rst()">skill_manage</button></div>
+       <p class="ro" id="ro"><b>0</b> / 10 · the review fires at ten</p>
+     </div>
+     <p>Two more conditions gate the increment. The counter only advances while the <code>skill_manage</code> tool is actually available, and it <b>resets whenever <code>skill_manage</code> is used</b>. Edit a skill yourself and the clock starts again from zero.</p>
+
+     <h2 id="d2"><span class="sn">02</span>${LESSON.secs[1]}</h2>
+     <p>At the end of the turn a finalizer checks three things: the counter has reached the interval, a final response exists, and the turn was not interrupted. Only then does it spawn the review.</p>
+     <p>The ordering is not incidental. The review never competes with your task for the model's attention and never delays your reply, because by the time it exists your reply has already been delivered. And because an interrupted turn produces no final response, hitting <code>Ctrl-C</code> means nothing is learned from it.</p>
+
+     <h2 id="d3"><span class="sn">03</span>${LESSON.secs[2]}</h2>
+     <p>One line, after the answer, unprompted:</p>
+     <div class="term"><p class="cap"><span>specimen · terminal output</span><b>VERBATIM</b></p>
+       <pre>💾 Self-improvement review: Skill '&lt;name&gt;' created.</pre></div>
+     <p>The published documentation shows this notice as <code>💾 Skill 'foo' patched</code>. The real string is prefixed with <b>Self-improvement review:</b>, and the observed verb was <em>created</em> rather than <em>patched</em>. That single line is the only trace the loop leaves in your terminal.</p>
+
+     <h2 id="d4"><span class="sn">04</span>${LESSON.secs[3]}</h2>
+     <p>The review is a daemon thread running a forked agent over a snapshot of your conversation. The module that implements it opens by describing itself:</p>
+     <blockquote>Writes go straight to the memory + skill stores. Main conversation and prompt cache are never touched.</blockquote>
+     <p><b>A tool whitelist.</b> Its toolset is cut to the skills tools plus memory. Any other call is refused at runtime — it cannot read your files or reach the network, because it cannot call the tools that would.</p>
+     <p><b><code>_persist_disabled = True</code></b> and <b><code>_session_db = None</code></b>. The fork shares your session id — deliberately, for the warm prompt-cache prefix — but holds no handle to the session database.</p>
+     <p><b>Approval auto-deny.</b> Any dangerous-command callback the fork triggers is answered <em>no</em> on its behalf, and logged.</p>
+   </article>
+
+   <aside class="dmargin">
+     <div class="dv">${partThumb(i)}<p class="cap">detail ${p.n} · ${p.t}, from sheet 01</p></div>
+     <section><h3>On this sheet</h3>
+       ${LESSON.secs.map((t,k)=>`<a href="#d${k+1}" class="${k===0?'cur':''}"><span class="n">0${k+1}</span>${t}</a>`).join('')}
+     </section>
+     <section><h3>Position</h3>
+       <dl><dt>comes after</dt><dd>${LESSON.behind} parts</dd>
+       <dt>built on by</dt><dd>${LESSON.ahead} later parts</dd>
+       <dt>assembly</dt><dd>${p.n} · ${p.t}</dd></dl></section>
+     <section><h3>Note</h3><p class="note">Almost everything here about the counter and the fork is read from source at a pinned commit rather than from the documentation. Where the two disagree, this sheet says so.</p></section>
+   </aside></div>`;
+  detail.scrollTop=0; n=0; paint();
+  // the margin index marks the section being read
+  const links=[...detail.querySelectorAll('.dmargin a')];
+  detail.querySelectorAll('article h2').forEach(h=>new IntersectionObserver(es=>es.forEach(e=>{
+    if(!e.isIntersecting)return;
+    links.forEach(a=>a.classList.toggle('cur',a.getAttribute('href')==='#'+e.target.id));
+  }),{root:detail,rootMargin:'0px 0px -72% 0px'}).observe(h));
+}
+
+document.getElementById('go').onclick=()=>{document.getElementById('hero').classList.add('gone');seat()};
+
+/* ── the development sequence ───────────────────────────────────────────────
+   The assembly is printed first as monospace character density — the same six
+   plates, rasterised into glyph mass — and resolves into the vector drawing.
+   Driven by elapsed time, never a frame count: a throttled clock then arrives
+   with a large delta and lands on the finished state instead of stalling half-lit.
+*/
+(function develop(){
+  const art=document.getElementById('devart'), num=document.getElementById('devn');
+  const COLS=104, ROWS=46, RAMP=' .:-=+*#%@';
+  const cells=[];
+  // same isometric geometry as the drawing, sampled onto a character grid
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    const x=(c-COLS/2)*1.55, y=(r-ROWS/2)*2.6;
+    let v=0;
+    for(let i=0;i<6;i++){
+      const pz=i*30-75, hw=44+(i===3?7:0), hd=hw*0.52;
+      const u=(x)*0.5+(y-pz)*1, w2=(-x)*0.5+(y-pz)*1;
+      if(Math.abs(u)<hd*1.9 && Math.abs(w2)<hd*1.9) v=Math.max(v, 1-(Math.abs(u)+Math.abs(w2))/(hd*3.4));
+    }
+    cells.push(v);
+  }
+  const t0=performance.now();
+  (function tick(now){
+    const p=Math.min(1,(now-t0)/1750);
+    const ease=1-Math.pow(1-p,3);
+    let out='';
+    for(let r=0;r<ROWS;r++){
+      for(let c=0;c<COLS;c++){
+        const v=cells[r*COLS+c]*ease*1.35;
+        out+= v<=0.02 ? ' ' : RAMP[Math.min(RAMP.length-1,Math.floor(v*RAMP.length))];
+      }
+      out+='\n';
+    }
+    art.textContent=out;
+    num.textContent=String(Math.floor(ease*51)).padStart(3,'0');
+    if(p<1) requestAnimationFrame(tick);
+    else setTimeout(()=>{document.getElementById('dev').classList.add('done');seat()},260);
+  })(t0);
+})();
+
+</script></body></html>

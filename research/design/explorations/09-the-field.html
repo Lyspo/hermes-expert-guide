@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>5 · THE FIELD</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Martian+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050607;--fg:#EAF0F2;--mid:#8593A0;--low:#4A5560;--line:#161C22;
+--hot:#FF4E5F;--cool:#4DE1B0;--ref:#5AA6FF}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--fg);font-family:'Bricolage Grotesque',system-ui,sans-serif}
+.m{font-family:'Martian Mono',monospace}
+canvas{position:fixed;inset:0;display:block}
+
+.hud{position:fixed;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between}
+.hud .row{display:flex;justify-content:space-between;padding:22px 26px;font-size:.6rem;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--low)}
+.hud b{color:var(--fg);font-weight:500}
+
+.title{position:fixed;left:26px;top:50%;transform:translateY(-50%);max-width:30rem;pointer-events:none;
+  transition:opacity .5s,transform .5s}
+.title.gone{opacity:0;transform:translateY(-50%) translateX(-18px)}
+.title h1{font-size:clamp(2.4rem,5.6vw,4.6rem);line-height:.96;letter-spacing:-.035em;font-weight:800}
+.title p{color:var(--mid);margin-top:1.3rem;font-size:1.02rem;line-height:1.55;max-width:34ch}
+.title .go{margin-top:1.8rem;font-size:.66rem;letter-spacing:.12em;color:var(--cool);pointer-events:auto;
+  background:none;border:0;cursor:pointer;font-family:'Martian Mono',monospace}
+
+.card{position:fixed;right:26px;top:50%;transform:translateY(-50%);width:25rem;background:rgba(8,10,12,.9);
+  border:1px solid var(--line);padding:22px;pointer-events:auto;opacity:0;transition:opacity .35s,transform .35s;
+  transform:translateY(-50%) translateX(14px)}
+.card.on{opacity:1;transform:translateY(-50%) translateX(0)}
+.card .k{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--low)}
+.card h2{font-size:1.5rem;letter-spacing:-.025em;font-weight:800;margin:6px 0 10px;line-height:1.1}
+.card p{color:#B3BEC6;font-size:.94rem;line-height:1.6;margin-bottom:.8rem}
+.card b{color:var(--fg)}
+.stat{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:.66rem;border-top:1px solid var(--line);
+  padding-top:12px;margin-top:12px;font-family:'Martian Mono',monospace}
+.stat dt{color:var(--low)} .stat dd{color:var(--fg)}
+.card .lessons{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.card .lessons a{display:block;font-size:.86rem;color:var(--mid);text-decoration:none;padding:5px 0;border-bottom:1px solid #10151A}
+.card .lessons a:hover{color:var(--fg)}
+.card .lessons a span{font-family:'Martian Mono',monospace;font-size:.58rem;color:var(--low);margin-right:8px}
+</style></head><body>
+<canvas id="c"></canvas>
+
+<div class="title" id="title">
+  <h1>The agent has an interior. Fly through it.</h1>
+  <p>Six subsystems, the real edges between them, and every lesson sitting where it belongs. Not a sidebar — a place.</p>
+  <button class="go m" id="go">[ :: ENTER THE FIELD :: ]</button>
+</div>
+
+<div class="card" id="card"></div>
+
+<div class="hud">
+  <div class="row"><span class="m">hermes-agent <b>v0.19.0</b> · interior map</span><span class="m">6 subsystems · <b>51</b> lessons</span></div>
+  <div class="row"><span class="m" id="hint">drag to orbit · scroll to move through · click a node</span><span class="m" id="fps">—</span></div>
+</div>
+
+<script>
+const cv=document.getElementById('c'), x=cv.getContext('2d');
+const NODES=[
+ {id:'prompt',n:'The system prompt',c:'#6EE7B7',r:26,p:[-0.62,-0.2,-0.18],
+  k:'module 05',b:'Assembled <b>once</b>, in three tiers — stable, context, volatile. Everything fixed goes first so it can be cached; anything that varies goes last. This is the rule the whole architecture bends around.',
+  s:{tiers:'3',cached:'~73% fixed',rebuild:'never mid-session'},
+  l:[['05/01','What is in the system prompt'],['01/02','The loop, and the one rule']]},
+ {id:'memory',n:'Memory',c:'#5AA6FF',r:22,p:[-0.28,-0.5,0.28],
+  k:'module 05',b:'Two capped markdown files injected as a frozen snapshot, plus a SQLite index of every past session searched on demand. <b>Not</b> a three-layer stack.',
+  s:{'MEMORY.md':'2,200 chars','USER.md':'1,375 chars','state.db':'FTS5, searched'},
+  l:[['05/03','Memory is two files and an index'],['05/04','Everything you ever said, searchable']]},
+ {id:'skills',n:'Skills',c:'#FF4E5F',r:30,p:[0.3,-0.44,-0.22],
+  k:'module 06 · the centre',b:'A skill is a procedure in a file. The loop that writes and revises those files is a counter, a forked review, and an editorial policy — three mechanisms usually described as one piece of magic.',
+  s:{nudge:'every 10 iterations',fork:'daemon thread',writes:'~/.hermes/skills/','returns':'never'},
+  l:[['06/01','A skill is a file'],['06/05','What actually fires'],['06/07','The curator']]},
+ {id:'tools',n:'Tools & isolation',c:'#FFC94D',r:24,p:[0.64,0.06,0.2],
+  k:'module 04',b:'Every core tool costs its description on <b>every</b> API call, which is why the core is a narrow waist and the ecosystem is skills and MCP servers. Six execution backends sit behind it.',
+  s:{backends:'6',approvals:'smart by default',prompted:'not always'},
+  l:[['04/01','The catalogue, and how to shrink it'],['04/04','The gate, and four ways past it']]},
+ {id:'gateway',n:'The gateway',c:'#C792EA',r:20,p:[0.26,0.48,-0.26],
+  k:'module 07',b:'One process, twenty platforms, one authorization chain that <b>defaults to deny</b>. Cron lives inside it, which is why a scheduled job silently never fires when the gateway is down.',
+  s:{platforms:'20+',default:'deny',tick:'60s'},
+  l:[['07/02','One process, many front doors'],['07/03','Who is allowed to talk to it']]},
+ {id:'workers',n:'Many agents',c:'#4DE1B0',r:23,p:[-0.34,0.44,0.24],
+  k:'module 08',b:'Two orchestration models that are easy to confuse: transient subagents that fork and join, and a durable board where work is claimed and survives a restart.',
+  s:{delegate:'lost on restart',kanban:'reclaimed',since:'v0.13.0'},
+  l:[['08/01','Two ways to hand off work'],['08/03','The board that survives']]}];
+const EDGES=[[0,1],[0,2],[0,3],[2,3],[2,5],[3,4],[4,5],[1,2],[3,5]];
+
+let FIT=2.2;
+let W,H,DPR,rx=.26,ry=-.30,dist=2.7,tgt=2.7,hover=-1,active=-1,drag=false,lx=0,ly=0,t=0,started=false;
+function size(){DPR=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;
+  // Reserve the right third for the detail card and the left for the title, then
+  // scale so the widest node still lands inside what is left.
+  FIT = Math.min(1.9, 1.9 * Math.min(1, (W-560)/980));
+  cv.width=W*DPR;cv.height=H*DPR;x.setTransform(DPR,0,0,DPR,0,0)}
+size();addEventListener('resize',size);
+
+function proj(p){
+  const [a,b,c]=p;
+  let X=a*Math.cos(ry)-c*Math.sin(ry), Z=a*Math.sin(ry)+c*Math.cos(ry);
+  let Y=b*Math.cos(rx)-Z*Math.sin(rx); Z=b*Math.sin(rx)+Z*Math.cos(rx);
+  const f=1/(dist+Z*.9), s=Math.min(W,H);
+  return {x:W/2+X*s*f*FIT, y:H/2+Y*s*f*FIT, z:Z, f};
+}
+function frame(){
+  t+=.0035; dist+=(tgt-dist)*.07;
+  x.clearRect(0,0,W,H);
+  const pts=NODES.map((n,i)=>{const q=proj([n.p[0]+Math.sin(t+i)*.012,n.p[1]+Math.cos(t*1.3+i)*.012,n.p[2]]);q.n=n;return q});
+
+  EDGES.forEach(([a,b])=>{const p=pts[a],q=pts[b];
+    const lit=active===a||active===b||hover===a||hover===b;
+    const g=x.createLinearGradient(p.x,p.y,q.x,q.y);
+    g.addColorStop(0,p.n.c+(lit?'99':'22')); g.addColorStop(1,q.n.c+(lit?'99':'22'));
+    x.strokeStyle=g; x.lineWidth=lit?1.4:.8; x.beginPath();x.moveTo(p.x,p.y);x.lineTo(q.x,q.y);x.stroke()});
+
+  pts.map((p,i)=>({p,i})).sort((a,b)=>b.p.z-a.p.z).forEach(({p,i})=>{
+    const r=p.n.r*p.f*2.1, on=active===i||hover===i;
+    // rendered halo, not a css glow: the light comes from the object
+    const g=x.createRadialGradient(p.x,p.y,0,p.x,p.y,r*(on?4.2:2.8));
+    g.addColorStop(0,p.n.c+(on?'55':'26')); g.addColorStop(1,p.n.c+'00');
+    x.fillStyle=g; x.beginPath();x.arc(p.x,p.y,r*(on?4.2:2.8),0,7);x.fill();
+    x.fillStyle=p.n.c; x.beginPath();x.arc(p.x,p.y,r,0,7);x.fill();
+    x.fillStyle=on?'#fff':'rgba(234,240,242,.62)';
+    x.font=`${on?600:400} ${Math.max(9.5,11*p.f*2.4)}px 'Martian Mono',monospace`;
+    x.fillText(p.n.n.toUpperCase(),p.x+r+9,p.y+4);
+    p.__r=r});
+  window.__pts=pts;
+  requestAnimationFrame(frame);
+}
+frame();
+
+const card=document.getElementById('card');
+function show(i){active=i;const n=NODES[i];
+  card.innerHTML=`<p class="k m">${n.k}</p><h2>${n.n}</h2><p>${n.b}</p>
+   <dl class="stat">${Object.entries(n.s).map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
+   <div class="lessons">${n.l.map(([id,t])=>`<a href="#"><span>${id}</span>${t}</a>`).join('')}</div>`;
+  card.classList.add('on')}
+cv.addEventListener('pointermove',e=>{
+  drag&&(ry+=(e.clientX-lx)*.005, rx+=(e.clientY-ly)*.005, lx=e.clientX, ly=e.clientY);
+  hover=-1;(window.__pts||[]).forEach((p,i)=>{if(Math.hypot(p.x-e.clientX,p.y-e.clientY)<p.__r+22)hover=i});
+  cv.style.cursor=hover>=0?'pointer':'grab'});
+cv.addEventListener('pointerdown',e=>{drag=true;lx=e.clientX;ly=e.clientY});
+addEventListener('pointerup',()=>drag=false);
+cv.addEventListener('click',()=>{if(hover>=0){show(hover)}else{active=-1;card.classList.remove('on')}});
+addEventListener('wheel',e=>{tgt=Math.min(5.5,Math.max(1.9,tgt+e.deltaY*.0022))},{passive:true});
+document.getElementById('go').onclick=()=>{document.getElementById('title').classList.add('gone');started=true};
+let last=performance.now(),fr=0;
+setInterval(()=>{document.getElementById('fps').textContent=fr+' fps';fr=0},1000);
+(function tick(){fr++;requestAnimationFrame(tick)})();
+</script></body></html>

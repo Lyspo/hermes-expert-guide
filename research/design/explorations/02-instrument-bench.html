@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>B · The Bench</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Expanded:wght@600;700&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --panel:#D8D4CB;      /* instrument housing */
+  --face:#EFEDE7;       /* dial face */
+  --ink:#1A1A18;
+  --dim:#6E6B64;
+  --edge:#B4AFA4;
+  --act:#E8501E;        /* the control that acts */
+  --safe:#2F6F4E;       /* latched safe */
+  --warn:#D9A521;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:#C9C5BC;color:var(--ink)}
+body{font-family:Archivo,system-ui,sans-serif;font-size:16px;line-height:1.5}
+.mono{font-family:'Spline Sans Mono',monospace}
+
+.bench{max-width:78rem;margin:0 auto;padding:4vh 3vw 12vh}
+.plate{background:var(--panel);border:1px solid var(--edge);border-radius:3px;
+  box-shadow:inset 0 1px 0 #EDEAE3, 0 1px 2px rgba(0,0,0,.14)}
+
+/* ── header: a real instrument placard ─────────────────────────────────── */
+.placard{display:flex;justify-content:space-between;align-items:flex-end;padding:1.5rem 1.8rem;border-bottom:1px solid var(--edge)}
+.placard h1{font-family:'Archivo Expanded',Archivo,sans-serif;font-weight:700;font-size:clamp(1.6rem,3vw,2.4rem);letter-spacing:-.02em;line-height:1}
+.placard .sub{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-top:.5rem}
+.serial{font-size:.7rem;color:var(--dim)}
+
+/* ── the bench: mechanisms as operable instruments ─────────────────────── */
+.rack{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--edge)}
+@media(max-width:56rem){.rack{grid-template-columns:1fr}}
+.unit{background:var(--panel);padding:1.6rem}
+.unit h3{font-size:.72rem;letter-spacing:.11em;text-transform:uppercase;color:var(--dim)}
+.dialwrap{margin:1.2rem auto .8rem;width:150px;height:150px;position:relative}
+.dial{width:100%;height:100%;border-radius:50%;background:var(--face);
+  border:1px solid var(--edge);box-shadow:inset 0 2px 6px rgba(0,0,0,.10)}
+.needle{position:absolute;left:50%;top:50%;width:2px;height:58px;background:var(--act);
+  transform-origin:bottom center;transform:translate(-50%,-100%) rotate(-120deg);
+  transition:transform .5s cubic-bezier(.34,1.4,.5,1)}
+.hub{position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--ink)}
+.readout{text-align:center;font-size:1.5rem;font-weight:500}
+.readout small{display:block;font-size:.68rem;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin-top:.2rem}
+.ctl{display:flex;gap:.5rem;margin-top:1.1rem}
+.btn{flex:1;background:var(--face);border:1px solid var(--edge);border-radius:2px;padding:.55rem;
+  font-family:'Spline Sans Mono',monospace;font-size:.72rem;cursor:pointer;
+  box-shadow:0 1px 0 var(--edge);transition:transform .08s,background .15s}
+.btn:active{transform:translateY(1px);box-shadow:none}
+.btn.act{background:var(--act);color:#fff;border-color:#B93F14}
+
+/* toggle that latches */
+.switch{display:flex;align-items:center;gap:.7rem;margin-top:1.1rem;cursor:pointer}
+.slot{width:46px;height:24px;background:#BDB8AD;border-radius:2px;position:relative;border:1px solid var(--edge);box-shadow:inset 0 1px 3px rgba(0,0,0,.2)}
+.knob{position:absolute;top:2px;left:2px;width:20px;height:18px;background:var(--face);border:1px solid var(--edge);border-radius:1px;transition:left .16s cubic-bezier(.3,1.5,.6,1)}
+.switch.on .knob{left:22px}
+.switch.on .slot{background:var(--safe)}
+.switch span{font-size:.72rem;letter-spacing:.06em}
+
+/* ── the wall: curriculum as a shelf you fill ──────────────────────────── */
+.wall{margin-top:2.5rem}
+.shelf{display:grid;grid-template-columns:11rem 1fr;gap:1.4rem;padding:1rem 1.8rem;border-bottom:1px solid var(--edge);align-items:center}
+.shelf:hover{background:#DEDAD1}
+.shelf .name{font-weight:600;font-size:.95rem}
+.shelf .name small{display:block;font-weight:400;color:var(--dim);font-size:.72rem;margin-top:.15rem}
+.units{display:flex;gap:3px}
+.u{flex:1;height:30px;background:#C4BFB4;border:1px solid var(--edge);border-radius:1px;position:relative;cursor:pointer;transition:background .18s,transform .18s}
+.u:hover{transform:translateY(-3px)}
+.u.done{background:var(--ink)}
+.u.here{background:var(--act)}
+</style>
+</head>
+<body>
+<div class="bench">
+  <div class="plate">
+    <div class="placard">
+      <div>
+        <p class="sub mono">Prototype B · flow model: the bench you operate</p>
+        <h1>Every mechanism<br>has a face you can turn.</h1>
+      </div>
+      <span class="serial mono">HERMES v0.19.0 · UNIT 26/51</span>
+    </div>
+
+    <div class="rack">
+      <div class="unit">
+        <h3 class="mono">Nudge counter</h3>
+        <div class="dialwrap"><div class="dial"></div><div class="needle" id="n1"></div><div class="hub"></div></div>
+        <div class="readout mono"><span id="v1">0</span><small>of 10 iterations</small></div>
+        <div class="ctl">
+          <button class="btn" onclick="step()">tool call</button>
+          <button class="btn act" onclick="reset()">skill_manage</button>
+        </div>
+      </div>
+
+      <div class="unit">
+        <h3 class="mono">Memory · MEMORY.md</h3>
+        <div class="dialwrap"><div class="dial"></div><div class="needle" id="n2" style="transform:translate(-50%,-100%) rotate(31deg)"></div><div class="hub"></div></div>
+        <div class="readout mono"><span>1,474</span><small>of 2,200 characters</small></div>
+        <div class="ctl"><button class="btn" onclick="write()">agent writes</button></div>
+      </div>
+
+      <div class="unit">
+        <h3 class="mono">Approvals</h3>
+        <div class="dialwrap"><div class="dial"></div><div class="needle" id="n3" style="transform:translate(-50%,-100%) rotate(-60deg);background:var(--warn)"></div><div class="hub"></div></div>
+        <div class="readout mono"><span id="v3">smart</span><small>risk-assessed</small></div>
+        <div class="switch" id="sw" onclick="latch()"><div class="slot"><div class="knob"></div></div><span class="mono">manual mode</span></div>
+      </div>
+    </div>
+
+    <div class="wall">
+      <div class="shelf"><div class="name">First contact<small>4 units · 31 min</small></div>
+        <div class="units"><i class="u done"></i><i class="u done"></i><i class="u done"></i><i class="u done"></i></div></div>
+      <div class="shelf"><div class="name">Skills &amp; the loop<small>8 units · 96 min</small></div>
+        <div class="units"><i class="u done"></i><i class="u done"></i><i class="u done"></i><i class="u done"></i><i class="u here"></i><i class="u"></i><i class="u"></i><i class="u"></i></div></div>
+      <div class="shelf"><div class="name">Unattended<small>6 units · 77 min</small></div>
+        <div class="units"><i class="u"></i><i class="u"></i><i class="u"></i><i class="u"></i><i class="u"></i><i class="u"></i></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let c=0;
+const ang=v=>-120+(v/10)*240;
+function draw(){document.getElementById('n1').style.transform=`translate(-50%,-100%) rotate(${ang(c)}deg)`;
+  document.getElementById('v1').textContent=c;}
+function step(){c=Math.min(10,c+1);draw();if(c===10)setTimeout(()=>{alert('Counter reached 10 → background review spawns, after your answer.');},350)}
+function reset(){c=0;draw()}
+function write(){const n=document.getElementById('n2');n.style.transform='translate(-50%,-100%) rotate(58deg)'}
+function latch(){const s=document.getElementById('sw');s.classList.toggle('on');
+  document.getElementById('v3').textContent=s.classList.contains('on')?'manual':'smart';
+  document.getElementById('n3').style.transform=s.classList.contains('on')?'translate(-50%,-100%) rotate(90deg)':'translate(-50%,-100%) rotate(-60deg)';}
+draw();
+</script>
+</body>
+</html>

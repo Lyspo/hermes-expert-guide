@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THE ASSEMBLY</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@500;600;700&family=Archivo:wght@400;500;600&family=Martian+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* pigment and metal on graphite — a material, never emissive light */
+  --plate:#191E22; --plate2:#20272C; --ground:#12161A; --edge:#33404A;
+  --ink:#E8EEF1; --mid:#94A5AF; --low:#5E6E79;
+  --brass:#D8A441;   /* the mechanism under discussion */
+  --oxide:#C4483C;   /* change, and the path that is refused */
+  --verd:#4E9E8B;    /* verified against a source */
+  --steel:#7C93A3;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--ground);color:var(--ink);font-family:Archivo,system-ui,sans-serif;font-size:16px}
+.m{font-family:'Martian Mono',monospace}
+.x{font-family:'Archivo Expanded',Archivo,sans-serif}
+
+/* ── drawing chrome: this is a plate in a manual, and it says so ───────── */
+.sheet{position:fixed;inset:20px;border:1px solid var(--edge);pointer-events:none;z-index:5}
+.sheet::before,.sheet::after{content:'';position:absolute;background:var(--edge)}
+.sheet::before{left:-1px;top:34px;width:100%;height:1px}
+.sheet::after{left:-1px;bottom:52px;width:100%;height:1px}
+.tl{position:fixed;top:20px;left:20px;right:20px;height:34px;display:flex;align-items:center;z-index:6}
+.tl div{padding:0 14px;height:100%;display:flex;align-items:center;gap:8px;font-size:.6rem;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--low);border-right:1px solid var(--edge)}
+.tl b{color:var(--ink);font-weight:500}
+.tl .sp{flex:1;border:0}
+.bl{position:fixed;bottom:20px;left:20px;right:20px;height:52px;display:flex;align-items:center;z-index:6}
+.bl div{padding:0 14px;font-size:.58rem;letter-spacing:.09em;text-transform:uppercase;color:var(--low);border-right:1px solid var(--edge);height:100%;display:flex;align-items:center;gap:10px}
+.bl .sp{flex:1;border:0}
+.key{display:flex;align-items:center;gap:6px}
+.key i{width:16px;height:2px;display:block}
+
+canvas{position:fixed;inset:0;display:block;cursor:grab}
+canvas.drag{cursor:grabbing}
+
+/* ── callouts: leader line + label, the drawing's own annotation grammar ─ */
+.callout{position:fixed;pointer-events:auto;cursor:pointer;z-index:4;transform:translateY(-50%)}
+.callout .lbl{font-family:'Martian Mono',monospace;font-size:.62rem;letter-spacing:.05em;color:var(--mid);
+  border-bottom:1px solid var(--edge);padding-bottom:3px;white-space:nowrap;transition:.18s}
+.callout .sub{font-size:.55rem;color:var(--low);margin-top:3px;font-family:'Martian Mono',monospace}
+.callout:hover .lbl,.callout.on .lbl{color:var(--ink);border-color:var(--brass)}
+.callout .n{color:var(--brass);margin-right:7px}
+
+/* ── the opening title, set like a cover plate ────────────────────────── */
+.cover{position:fixed;left:56px;top:50%;transform:translateY(-50%);max-width:31rem;z-index:7;transition:.55s}
+.cover.gone{opacity:0;transform:translateY(-50%) translateX(-20px);pointer-events:none}
+.cover .no{font-family:'Martian Mono',monospace;font-size:.6rem;letter-spacing:.14em;color:var(--brass)}
+.cover h1{font-size:clamp(2.3rem,4.6vw,3.9rem);line-height:.98;letter-spacing:-.03em;font-weight:700;margin-top:14px}
+.cover p{color:var(--mid);margin-top:1.2rem;font-size:1rem;line-height:1.6;max-width:36ch}
+.cover button{margin-top:1.9rem;background:none;border:1px solid var(--edge);color:var(--brass);
+  font-family:'Martian Mono',monospace;font-size:.62rem;letter-spacing:.12em;padding:11px 18px;cursor:pointer;transition:.18s}
+.cover button:hover{background:var(--brass);color:var(--ground);border-color:var(--brass)}
+
+/* ── the detail panel: a specification sheet, not a tooltip ───────────── */
+.spec{position:fixed;right:20px;top:54px;bottom:72px;width:26.5rem;background:var(--plate);
+  border-left:1px solid var(--edge);z-index:6;display:flex;flex-direction:column;
+  transform:translateX(calc(100% + 24px));transition:transform .42s cubic-bezier(.22,1,.3,1)}
+.spec.on{transform:none}
+.sh{padding:18px 22px;border-bottom:1px solid var(--edge);display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.sh .no{font-family:'Martian Mono',monospace;font-size:.58rem;letter-spacing:.1em;color:var(--brass)}
+.sh h2{font-size:1.55rem;letter-spacing:-.025em;font-weight:700;line-height:1.08;margin-top:6px}
+.sh button{background:none;border:1px solid var(--edge);color:var(--low);width:26px;height:26px;cursor:pointer;flex:none;font-size:.8rem}
+.sh button:hover{color:var(--ink);border-color:var(--steel)}
+.sb{flex:1;overflow-y:auto;padding:20px 22px 28px}
+.sb::-webkit-scrollbar{width:5px}.sb::-webkit-scrollbar-thumb{background:#2B343B}
+.sb p{color:#BCC8CF;font-size:.97rem;line-height:1.62;margin-bottom:.95rem}
+.sb b{color:var(--ink);font-weight:600}
+
+/* an inline mechanism you can operate — the reason to be here rather than reading */
+.rig{border:1px solid var(--edge);background:var(--plate2);padding:16px;margin:1.2rem 0}
+.rig .cap{font-family:'Martian Mono',monospace;font-size:.55rem;letter-spacing:.09em;text-transform:uppercase;color:var(--low);margin-bottom:12px}
+.ticks{display:flex;gap:3px;margin-bottom:10px}
+.ticks i{flex:1;height:22px;background:#171D21;border:1px solid var(--edge)}
+.ticks i.on{background:var(--brass);border-color:var(--brass)}
+.ticks i.fire{background:var(--oxide);border-color:var(--oxide)}
+.rigrow{display:flex;gap:8px;margin-top:10px}
+.rigrow button{flex:1;background:#171D21;border:1px solid var(--edge);color:var(--mid);
+  font-family:'Martian Mono',monospace;font-size:.6rem;padding:8px;cursor:pointer;transition:.14s}
+.rigrow button:hover{color:var(--ink);border-color:var(--steel)}
+.rigrow button.act{color:var(--oxide);border-color:#4A2E2C}
+.readout{font-family:'Martian Mono',monospace;font-size:.6rem;color:var(--mid);margin-top:10px}
+.readout b{color:var(--brass)}
+.readout.hot b{color:var(--oxide)}
+
+.spec dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-family:'Martian Mono',monospace;
+  font-size:.63rem;border-top:1px solid var(--edge);border-bottom:1px solid var(--edge);padding:13px 0;margin:1.2rem 0}
+.spec dt{color:var(--low)} .spec dd{color:var(--ink)}
+.lessons a{display:flex;gap:10px;align-items:baseline;padding:9px 0;border-bottom:1px solid #232B31;
+  color:var(--mid);text-decoration:none;font-size:.9rem;transition:.14s}
+.lessons a:hover{color:var(--ink)}
+.lessons a span{font-family:'Martian Mono',monospace;font-size:.55rem;color:var(--low);flex:none}
+</style></head><body>
+
+<canvas id="c"></canvas>
+<div class="sheet"></div>
+
+<div class="tl">
+  <div><b class="m">HERMES-AGENT</b><span class="m">v0.19.0</span></div>
+  <div class="m">plate 01 — general assembly, exploded</div>
+  <div class="m">projection <b>isometric</b></div>
+  <div class="sp"></div>
+  <div class="m">scale <b id="sc">1:1</b></div>
+  <div class="m">rot <b id="rt">30°</b></div>
+</div>
+
+<div class="cover" id="cover">
+  <p class="no">PLATE 01 · GENERAL ASSEMBLY</p>
+  <h1 class="x">The agent, taken apart and labelled.</h1>
+  <p>Six subsystems drawn as they actually sit: what is assembled once, what is injected, what forks away and never returns. Turn the assembly. Open a part.</p>
+  <button id="go" class="m">[ OPEN THE ASSEMBLY ]</button>
+</div>
+
+<div class="spec" id="spec"></div>
+
+<div class="bl">
+  <div><span class="key m"><i style="background:var(--brass)"></i>under discussion</span></div>
+  <div><span class="key m"><i style="background:var(--verd)"></i>verified in source</span></div>
+  <div><span class="key m"><i style="background:var(--oxide)"></i>contradicts the docs</span></div>
+  <div class="sp"></div>
+  <div class="m">drag to rotate · click a part</div>
+</div>
+
+<script>
+const PARTS=[
+ {n:'01',t:'The system prompt',c:'brass',y:-2.5,w:1.35,d:.95,
+  k:'assembled once per session',
+  b:'Three tiers — <b>stable</b>, <b>context</b>, <b>volatile</b> — assembled in that order so the fixed head can be cached and anything variable sits at the tail. Nothing may rebuild it mid-conversation; the contributor notes call prompt caching <b>sacred</b>.',
+  s:{tiers:'3',cached:'≈73% fixed',rebuilt:'never mid-session'},
+  l:[['05/01','What is in the system prompt'],['01/02','The loop, and the one rule']]},
+ {n:'02',t:'Memory',c:'verd',y:-1.5,w:1.1,d:.8,
+  k:'injected, then frozen',
+  b:'Two capped markdown files read <b>once</b> at session start, plus a SQLite index of every past session searched on demand. Not a three-layer stack — the widely repeated framing that this guide exists to correct.',
+  s:{'MEMORY.md':'2,200 chars','USER.md':'1,375 chars','state.db':'FTS5, on demand'},
+  rig:'mem',
+  l:[['05/03','Memory is two files and an index'],['05/04','Everything you ever said, searchable']]},
+ {n:'03',t:'Tools & isolation',c:'steel',y:-0.5,w:1.25,d:.9,
+  k:'every schema, every call',
+  b:'Each core tool costs its description on <b>every</b> API call — a tool is not free because it went unused. That is why the core is a narrow waist and the ecosystem is skills and MCP servers rather than forks. Six execution backends sit beneath it.',
+  s:{backends:'6',approvals:'smart (default)',deterministic:'blocklist only'},
+  l:[['04/01','The catalogue, and how to shrink it'],['04/04','The gate, and four ways past it']]},
+ {n:'04',t:'Skills',c:'brass',y:.5,w:1.4,d:1,
+  k:'the centre of the guide',
+  b:'A skill is a procedure in a file. The loop that writes and revises those files is three mechanisms usually sold as one: a counter, a forked review, and an editorial policy written as prompt text.',
+  s:{nudge:'every 10 iterations',fork:'daemon thread',writes:'~/.hermes/skills/'},
+  rig:'ctr',
+  l:[['06/01','A skill is a file'],['06/05','What actually fires'],['06/07','The curator']]},
+ {n:'05',t:'The review fork',c:'oxide',y:1.5,w:1.05,d:.75,
+  k:'detached — nothing returns',
+  b:'A daemon thread replaying a snapshot of your conversation, behind four walls: tools cut to skills and memory, <b>_persist_disabled</b>, <b>_session_db = None</b>, approvals auto-denied. It writes to the skill store and stops.',
+  s:{returns:'never',prompted:'auto-denied',recurses:'no'},
+  l:[['06/05','The arrow that does not exist'],['06/06','The editorial policy']]},
+ {n:'06',t:'The gateway',c:'steel',y:2.5,w:1.2,d:.85,
+  k:'twenty front doors, one chain',
+  b:'One process serving twenty platforms behind a single authorization chain that <b>defaults to deny</b>. Cron lives inside it — which is why a scheduled job silently never fires when the gateway is down.',
+  s:{platforms:'20+',default:'deny',tick:'60 s'},
+  l:[['07/02','One process, many front doors'],['07/03','Who is allowed to talk to it']]}];
+
+const COL={brass:'#D8A441',verd:'#4E9E8B',oxide:'#C4483C',steel:'#7C93A3'};
+const cv=document.getElementById('c'), g=cv.getContext('2d');
+let W,H,DPR,rot=.52,tRot=.52,sep=1,tSep=0,hover=-1,active=-1,drag=false,lx=0,open=false;
+
+function size(){DPR=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;
+  cv.width=W*DPR;cv.height=H*DPR;g.setTransform(DPR,0,0,DPR,0,0)}
+size();addEventListener('resize',size);
+
+/**
+ * Isometric projection with a measured fit.
+ *
+ * Hand-tuned scale and centre constants were re-guessed four times and still put the
+ * assembly off the plate. Instead: project into unit space, measure what the whole
+ * drawing actually occupies this frame, and fit that box into the area left over
+ * beside the callout gutter and the spec sheet. Rotating or exploding can no longer
+ * push the subject off the sheet, at any viewport.
+ */
+let FIT={u:80,cx:0,cy:0};
+function raw(x,y,z){
+  const a=x*Math.cos(rot)-z*Math.sin(rot), b=x*Math.sin(rot)+z*Math.cos(rot);
+  return [(a-b)*0.98, ((a+b)*0.5+y*sep*0.92)];
+}
+function fit(){
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  PARTS.forEach(p=>[[-p.w,-p.d],[p.w,-p.d],[p.w,p.d],[-p.w,p.d]].forEach(([X,Z])=>{
+    const [a,b]=raw(X,p.y,Z); x0=Math.min(x0,a);x1=Math.max(x1,a);y0=Math.min(y0,b);y1=Math.max(y1,b)}));
+  const boxW = W - (spec.classList.contains('on') ? 500 : 240) - 300, boxH = H - 190;
+  const u = Math.min(boxW/Math.max(.001,x1-x0), boxH/Math.max(.001,y1-y0));
+  FIT={u, cx: 96 + boxW/2 - ((x0+x1)/2)*u, cy: H/2 - ((y0+y1)/2)*u};
+}
+function iso(x,y,z){const [a,b]=raw(x,y,z);return [FIT.cx+a*FIT.u, FIT.cy+b*FIT.u]}
+function plate(p,i){
+  const {w,d,y}=p, col=COL[p.c], lit=(hover===i||active===i);
+  const c=[iso(-w,y,-d),iso(w,y,-d),iso(w,y,d),iso(-w,y,d)];
+  // face
+  g.beginPath();c.forEach((q,k)=>k?g.lineTo(...q):g.moveTo(...q));g.closePath();
+  g.fillStyle=lit?'#242C32':'#1B2126'; g.fill();
+  // hatching gives the surface material without a texture image or a glow
+  g.save();g.clip();
+  g.strokeStyle=lit?col+'3A':'#262F36';g.lineWidth=1;
+  const [x0,y0]=c[0];
+  const hs=Math.max(5,FIT.u*0.075);
+  for(let k=-46;k<46;k++){g.beginPath();g.moveTo(x0+k*hs-160,y0-200);g.lineTo(x0+k*hs+60,y0+200);g.stroke()}
+  g.restore();
+  // edge
+  g.beginPath();c.forEach((q,k)=>k?g.lineTo(...q):g.moveTo(...q));g.closePath();
+  g.strokeStyle=lit?col:'#3B4750';g.lineWidth=lit?1.8:1;g.stroke();
+  // thickness
+  const t=iso(-w,y+.09,d),t2=iso(w,y+.09,d),t3=iso(w,y+.09,-d);
+  g.beginPath();g.moveTo(...c[3]);g.lineTo(...t);g.lineTo(...t2);g.lineTo(...c[2]);g.closePath();
+  g.fillStyle=lit?'#1C2329':'#161B20';g.fill();g.strokeStyle=lit?col+'88':'#333F48';g.stroke();
+  g.beginPath();g.moveTo(...c[2]);g.lineTo(...t2);g.lineTo(...t3);g.lineTo(...c[1]);g.closePath();
+  g.fillStyle=lit?'#171D22':'#131820';g.fill();g.stroke();
+  p.__c=c; p.__anchor=c.reduce((m,q)=>q[0]>m[0]?q:m,c[0]);
+}
+function draw(){
+  rot+=(tRot-rot)*.10; sep+=(tSep-sep)*.07;
+  fit();
+  g.clearRect(0,0,W,H);
+  // assembly axis — the spine the parts explode along
+  const a=iso(0,-3.4,0), b=iso(0,3.4,0);
+  g.setLineDash([5,7]);g.strokeStyle='#39454E';g.lineWidth=1;
+  g.beginPath();g.moveTo(...a);g.lineTo(...b);g.stroke();g.setLineDash([]);
+  PARTS.forEach((p,i)=>plate(p,i));
+  placeCallouts();
+  requestAnimationFrame(draw);
+}
+function placeCallouts(){
+  const GUT = W - (spec.classList.contains('on') ? 470 : 190);
+  PARTS.forEach((p,i)=>{
+    const el=p.__el; if(!el||!p.__anchor)return;
+    const [ax,ay]=p.__anchor;
+    const lx2=Math.max(ax+40, Math.min(GUT, ax+90));
+    // leader: a short dogleg from the part's own corner out to its label, which is
+    // how an assembly drawing points at a thing. Not a tooltip.
+    g.strokeStyle=(hover===i||active===i)?COL[p.c]:'#3A4650'; g.lineWidth=1;
+    g.beginPath(); g.moveTo(ax,ay); g.lineTo(ax+22,ay-16); g.lineTo(lx2,ay-16); g.stroke();
+    g.beginPath(); g.arc(ax,ay,2.5,0,7); g.fillStyle=(hover===i||active===i)?COL[p.c]:'#3A4650'; g.fill();
+    el.style.left=(lx2+8)+'px'; el.style.top=(ay-16)+'px';
+    el.classList.toggle('on',hover===i||active===i);
+  });
+}
+PARTS.forEach((p,i)=>{
+  const el=document.createElement('div');el.className='callout';
+  el.innerHTML=`<div class="lbl"><span class="n">${p.n}</span>${p.t}</div><div class="sub">${p.k}</div>`;
+  el.onmouseenter=()=>hover=i; el.onmouseleave=()=>hover=-1; el.onclick=()=>select(i);
+  document.body.appendChild(el); p.__el=el;
+});
+
+const spec=document.getElementById('spec');
+function select(i){
+  active=i; const p=PARTS[i];
+  spec.innerHTML=`<div class="sh"><div><p class="no">PART ${p.n} · ${p.k.toUpperCase()}</p><h2 class="x">${p.t}</h2></div>
+    <button onclick="closeSpec()">✕</button></div>
+    <div class="sb"><p>${p.b}</p>${p.rig?rig(p.rig):''}
+    <dl>${Object.entries(p.s).map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
+    <div class="lessons">${p.l.map(([id,t])=>`<a href="#"><span>${id}</span>${t}</a>`).join('')}</div></div>`;
+  spec.classList.add('on'); wire();
+}
+function closeSpec(){active=-1;spec.classList.remove('on')}
+function rig(kind){
+  if(kind==='ctr')return `<div class="rig"><p class="cap">operate it · nudge counter</p>
+    <div class="ticks" id="tk">${'<i></i>'.repeat(10)}</div>
+    <div class="rigrow"><button onclick="step()">tool call</button><button class="act" onclick="rst()">skill_manage</button></div>
+    <p class="readout" id="ro"><b>0</b> / 10 · the review fires at ten</p></div>`;
+  return `<div class="rig"><p class="cap">operate it · MEMORY.md, 2,200 characters</p>
+    <div class="ticks" id="tk">${'<i></i>'.repeat(10)}</div>
+    <div class="rigrow"><button onclick="step()">agent writes</button><button class="act" onclick="rst()">you edit the file</button></div>
+    <p class="readout" id="ro"><b>0</b> / 10 · at the cap it errors, it does not truncate</p></div>`;
+}
+let n=0;
+function wire(){n=0;paint()}
+function paint(){const tk=document.getElementById('tk'),ro=document.getElementById('ro');if(!tk)return;
+  [...tk.children].forEach((c,i)=>{c.className=i<n?(n>=10?'on fire':'on'):''});
+  ro.classList.toggle('hot',n>=10);
+  ro.innerHTML=n>=10?'<b>10</b> / 10 · fired — after your answer, never before it':`<b>${n}</b> / 10 · the review fires at ten`}
+function step(){n=Math.min(10,n+1);paint()} function rst(){n=0;paint()}
+
+cv.addEventListener('pointerdown',e=>{drag=true;lx=e.clientX;cv.classList.add('drag')});
+addEventListener('pointerup',()=>{drag=false;cv.classList.remove('drag')});
+addEventListener('pointermove',e=>{
+  if(drag){tRot+=(e.clientX-lx)*.006;lx=e.clientX;document.getElementById('rt').textContent=Math.round(tRot*57.3%360)+'°';return}
+  hover=-1;
+  PARTS.forEach((p,i)=>{if(!p.__c)return;
+    const c=p.__c, x=e.clientX, y=e.clientY;
+    let inside=false;
+    for(let a=0,b=3;a<4;b=a++){const [xa,ya]=c[a],[xb,yb]=c[b];
+      if((ya>y)!==(yb>y)&&x<(xb-xa)*(y-ya)/(yb-ya)+xa)inside=!inside}
+    if(inside)hover=i});
+  cv.style.cursor=hover>=0?'pointer':(drag?'grabbing':'grab')});
+cv.addEventListener('click',()=>{if(hover>=0)select(hover)});
+addEventListener('wheel',e=>{tSep=Math.min(1.9,Math.max(.12,tSep+e.deltaY*.0012));
+  document.getElementById('sc').textContent=(tSep).toFixed(1)+':1'},{passive:true});
+document.getElementById('go').onclick=()=>{document.getElementById('cover').classList.add('gone');tSep=1;open=true};
+draw();
+</script></body></html>

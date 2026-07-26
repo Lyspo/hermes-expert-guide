@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2 · THE LOOP</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@600;700;800&family=Archivo:wght@400;500;600&family=Chivo+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0A0B0D;--pane:#111316;--line:#1F2429;--fg:#F0F2F3;--mid:#8A939B;--low:#525C64;
+--w:#7CFF9E;--r:#FF4D5E;--b:#5B9DFF}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:Archivo,system-ui,sans-serif;font-size:17px;line-height:1.6}
+.m{font-family:'Chivo Mono',monospace}
+.x{font-family:'Archivo Expanded',Archivo,sans-serif}
+
+/* the whole page is watched; the watcher is visible */
+.watch{position:fixed;top:0;right:0;width:22rem;height:100vh;background:var(--pane);border-left:1px solid var(--line);
+  display:flex;flex-direction:column;z-index:10}
+@media(max-width:64rem){.watch{display:none}}
+.wh{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.wh .t{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--low)}
+.live{display:flex;align-items:center;gap:6px;font-size:.6rem;color:var(--w)}
+.live i{width:5px;height:5px;border-radius:50%;background:var(--w);animation:bl 1.4s infinite}
+@keyframes bl{50%{opacity:.25}}
+.wb{flex:1;overflow-y:auto;padding:18px}
+.fname{font-size:.62rem;color:var(--b);letter-spacing:.04em;margin-bottom:8px}
+.file{border:1px solid var(--line);background:#0C0E10;padding:12px 14px;font-size:.68rem;line-height:1.85;margin-bottom:18px}
+.file .row{display:grid;grid-template-columns:16px 1fr;gap:6px}
+.file .row.add{background:rgba(124,255,158,.07);margin:0 -14px;padding:2px 14px}
+.file .row.add span:first-child{color:var(--w)}
+.file .row.del span:first-child{color:var(--r)}
+.file .row.del{opacity:.55;text-decoration:line-through;text-decoration-color:var(--r)}
+.cap{font-size:.6rem;color:var(--low);letter-spacing:.05em;line-height:1.6}
+.ctr{display:flex;gap:3px;margin:10px 0 6px}
+.ctr i{flex:1;height:16px;background:#171B1F;border:1px solid var(--line)}
+.ctr i.on{background:var(--b);border-color:var(--b)}
+.fire{color:var(--r)}
+
+/* the reading column */
+main{max-width:52rem;margin:0;padding:12vh 4vw 20vh 6vw}
+h1{font-size:clamp(2.6rem,6vw,5rem);line-height:.96;letter-spacing:-.035em;font-weight:800}
+h1 .u{color:var(--low)}
+.lede{color:var(--mid);font-size:1.2rem;line-height:1.55;margin-top:1.6rem;max-width:46ch}
+section{margin-top:8rem;scroll-margin-top:20vh}
+h2{font-size:1.9rem;letter-spacing:-.025em;font-weight:700;margin-bottom:1rem}
+p{color:#BFC8CE;margin-bottom:1.1rem;max-width:60ch}
+b{color:var(--fg);font-weight:600}
+.tag{display:inline-block;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--low);
+  border:1px solid var(--line);padding:3px 8px;margin-bottom:1rem}
+.pulse{animation:pl 1.2s ease-out}
+@keyframes pl{0%{background:rgba(124,255,158,.16)}100%{background:transparent}}
+</style></head><body>
+
+<aside class="watch">
+  <div class="wh"><span class="t m">this site's own memory</span><span class="live m"><i></i>watching</span></div>
+  <div class="wb">
+    <p class="fname m">~/.guide/USER.md</p>
+    <div class="file m" id="user">
+      <div class="row"><span>1</span><span>## Reader</span></div>
+      <div class="row"><span>2</span><span class="cap">— nothing observed yet —</span></div>
+    </div>
+    <p class="fname m">~/.guide/MEMORY.md</p>
+    <div class="file m" id="mem">
+      <div class="row"><span>1</span><span>## What worked</span></div>
+      <div class="row"><span>2</span><span class="cap">— nothing observed yet —</span></div>
+    </div>
+    <p class="fname m">nudge counter</p>
+    <div class="ctr" id="ctr"></div>
+    <p class="cap m" id="ctrl">0 / 10 · the review fires at ten</p>
+    <p class="cap m" style="margin-top:18px;border-top:1px solid var(--line);padding-top:12px">
+      Everything above is written by this page, about you, while you read. It is capped, inspectable and
+      deletable — exactly like the agent's. Scroll and watch it fill.</p>
+  </div>
+</aside>
+
+<main>
+  <h1 class="x">This guide does to you <span class="u">what the agent does to itself.</span></h1>
+  <p class="lede">Hermes watches a session, writes down what it learned, and is different next time. So does this page — and unlike the agent, it shows you the file while it writes.</p>
+
+  <section data-obs="reads about the loop" data-user="prefers: mechanism before vocabulary">
+    <span class="tag m">module 06 · the loop</span>
+    <h2 class="x">A counter, a threshold, a fork.</h2>
+    <p>Self-improvement is sold as a disposition — the agent notices what worked and gets better. What ships is three mechanical parts: a counter, a threshold, and a second agent that is <b>forbidden from speaking to you</b>.</p>
+    <p>The counter increments inside the tool-calling loop, once per API-call iteration. Not once per message. A single request that takes five round-trips advances it by five, so a long piece of real work can trip it twice.</p>
+  </section>
+
+  <section data-obs="lingers on isolation" data-user="track: architect — reads for blast radius">
+    <span class="tag m">module 06 · isolation</span>
+    <h2 class="x">Four walls, all of them code.</h2>
+    <p>The fork's toolset is cut to skills and memory. <b>_persist_disabled</b> is set and its handle to the session database is <b>None</b>. Any approval prompt it triggers is auto-denied. Its own nudge intervals are zero, so a review cannot spawn a review.</p>
+    <p>Nothing it produces re-enters your conversation. That absence prevents a named failure: without it, the review's own instruction would land in your session and the agent would read it back as an order.</p>
+  </section>
+
+  <section data-obs="checks the evidence" data-user="verifies claims against sources">
+    <span class="tag m">module 04 · approvals</span>
+    <h2 class="x">The gate that did not fire.</h2>
+    <p>On a default install a recursive delete on a host path executed with <b>no prompt at all</b>. Under <b>approvals.mode: smart</b> an LLM risk-assesses and may auto-approve; only the hardline blocklist and your own deny globs are deterministic.</p>
+  </section>
+
+  <section data-obs="reaches the end" data-user="completed a full module — ready for module 07">
+    <span class="tag m">what happens now</span>
+    <h2 class="x">It fired. Here is the diff.</h2>
+    <p>The counter on the right just reached ten and the review ran — after this paragraph rendered, never before it. It wrote to its own memory, and you can read exactly what it wrote and why. That is the entire product, performed on you rather than described.</p>
+  </section>
+</main>
+
+<script>
+const userF=document.getElementById('user'), memF=document.getElementById('mem'),
+      ctr=document.getElementById('ctr'), ctrl=document.getElementById('ctrl');
+for(let i=0;i<10;i++){ctr.appendChild(document.createElement('i'))}
+let n=0, ul=2, ml=2;
+const bump=()=>{n=Math.min(10,n+3);[...ctr.children].forEach((c,i)=>c.classList.toggle('on',i<n));
+  ctrl.innerHTML=n>=10?'<span class="fire">10 / 10 · review fired · memory written</span>':n+' / 10 · the review fires at ten'};
+const add=(f,txt,cls)=>{
+  const ln = f===userF ? ++ul : ++ml;
+  const d=document.createElement('div');d.className='row '+(cls||'add');
+  d.innerHTML=`<span>${ln}</span><span>${txt}</span>`;f.appendChild(d);
+  d.classList.add('pulse');f.scrollTop=1e9};
+
+const seen=new Set();
+document.querySelectorAll('section').forEach(s=>{
+  new IntersectionObserver(es=>es.forEach(e=>{
+    if(!e.isIntersecting||seen.has(e.target))return;
+    seen.add(e.target);
+    if(seen.size===1){userF.lastElementChild.remove();memF.lastElementChild.remove()}
+    add(userF,e.target.dataset.user);
+    add(memF,'observed: '+e.target.dataset.obs);
+    bump();
+  }),{threshold:.45}).observe(s)});
+</script></body></html>

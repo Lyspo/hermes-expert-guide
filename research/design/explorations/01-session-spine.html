@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A · The Session</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gloock&family=Schibsted+Grotesk:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F2F0EA; --ink:#14120E; --dim:#6B6659; --rule:#CFCABB;
+  --live:#C2410C;      /* the agent acting */
+  --claim:#1D4ED8;     /* a claim under examination */
+  --grid:#E4E0D6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased}
+body{font-family:'Schibsted Grotesk',system-ui,sans-serif;font-size:17px;line-height:1.55}
+.mono{font-family:'Spline Sans Mono',monospace}
+
+/* ── the spine: a real session, always present, always scrubbable ───────── */
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 30rem;min-height:100vh}
+@media(max-width:60rem){.stage{grid-template-columns:1fr}}
+
+.reading{padding:5vh 6vw 30vh;max-width:44rem}
+.eyebrow{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+h1{font-family:Gloock,Georgia,serif;font-size:clamp(2.6rem,5.4vw,4.4rem);line-height:1.02;letter-spacing:-.02em;margin:.5rem 0 0}
+h1 em{color:var(--live);font-style:normal;border-bottom:3px solid var(--live);padding-bottom:.04em}
+.lede{font-size:1.28rem;line-height:1.45;color:var(--dim);margin-top:1.4rem;max-width:34ch}
+
+/* the session panel — the guide's spine, not a sidebar */
+.session{position:sticky;top:0;height:100vh;border-left:1px solid var(--rule);background:
+  repeating-linear-gradient(to bottom,transparent 0 27px,var(--grid) 27px 28px);
+  display:flex;flex-direction:column}
+.session-head{padding:1.1rem 1.4rem;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline;background:var(--paper)}
+.session-title{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.clock{font-size:.78rem;color:var(--live)}
+.feed{flex:1;overflow:hidden;position:relative;padding:1rem 1.4rem}
+.line{font-size:.82rem;line-height:1.75;opacity:.22;transition:opacity .35s}
+.line.on{opacity:1}
+.line.tool{color:var(--dim)}
+.line.write{color:var(--live)}
+.line b{font-weight:500}
+.scrub{padding:1rem 1.4rem 1.4rem;border-top:1px solid var(--rule);background:var(--paper)}
+.track{height:2px;background:var(--rule);position:relative;cursor:pointer}
+.track i{position:absolute;inset:0 auto 0 0;background:var(--live);width:12%}
+.marks{display:flex;justify-content:space-between;margin-top:.55rem;font-size:.65rem;color:var(--dim)}
+.marks span{cursor:pointer}
+.marks span.hit{color:var(--live)}
+
+/* ── the flow: lessons are moments in the session ──────────────────────── */
+.moments{margin-top:4rem;border-top:1px solid var(--ink)}
+.moment{border-bottom:1px solid var(--rule);padding:1.6rem 0;display:grid;grid-template-columns:4.5rem 1fr;gap:1.4rem;cursor:pointer;transition:background .2s}
+.moment:hover{background:#EAE7DE}
+.at{font-size:.72rem;color:var(--live);padding-top:.3rem}
+.moment h3{font-size:1.18rem;font-weight:500;letter-spacing:-.01em}
+.moment p{font-size:.95rem;color:var(--dim);margin-top:.35rem;max-width:52ch}
+.moment .why{font-size:.72rem;color:var(--dim);margin-top:.6rem}
+.moment .why b{color:var(--ink);font-weight:500}
+
+/* ── the correction, native to this world ──────────────────────────────── */
+.collate{margin-top:4rem;padding:2rem;border:1px solid var(--ink);background:#EDEAE1}
+.collate .eyebrow{color:var(--claim)}
+.witness{display:grid;grid-template-columns:2.5rem 1fr;gap:1rem;padding:.9rem 0;border-bottom:1px dotted var(--rule)}
+.witness:last-child{border:0}
+.sig{font-size:.75rem;color:var(--claim);font-weight:500}
+.reading-txt{font-size:1rem;line-height:1.5}
+.reading-txt.wrong{color:var(--dim);text-decoration:line-through;text-decoration-color:var(--live);text-decoration-thickness:1.5px}
+</style>
+</head>
+<body>
+<div class="stage">
+  <main class="reading">
+    <p class="eyebrow">Prototype A · flow model: the session is the spine</p>
+    <h1>Watch it work.<br>Stop where you <em>disagree</em>.</h1>
+    <p class="lede">The guide is one real recorded session, running beside you at all times. Lessons are not pages — they are the moments in it you stopped at.</p>
+
+    <div class="moments">
+      <div class="moment">
+        <div class="at mono">00:41</div>
+        <div>
+          <h3>The counter counts iterations, not turns</h3>
+          <p>Watch the tool loop run five times inside one request. The nudge counter is advancing while you read this — not once per message, once per round-trip.</p>
+          <p class="why mono">stopped here because <b>the docs say "every ten turns" and the source says otherwise</b></p>
+        </div>
+      </div>
+      <div class="moment">
+        <div class="at mono">02:07</div>
+        <div>
+          <h3>Your answer goes out first</h3>
+          <p>The reply lands. Only then does the finalizer check the counter. You will see the order happen rather than be told about it.</p>
+          <p class="why mono">stopped here because <b>the ordering is a guarantee you can rely on in an incident review</b></p>
+        </div>
+      </div>
+      <div class="moment">
+        <div class="at mono">02:11</div>
+        <div>
+          <h3>The fork, and its four walls</h3>
+          <p>A second agent spawns off-screen. Four restrictions are applied at spawn, and none of them are advisory.</p>
+          <p class="why mono">stopped here because <b>this is the only part that writes to your disk unasked</b></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="collate">
+      <p class="eyebrow">Where the witnesses disagree · 00:41</p>
+      <div class="witness">
+        <div class="sig mono">DOC</div>
+        <div class="reading-txt wrong">The background review runs roughly every ten agent turns.</div>
+      </div>
+      <div class="witness">
+        <div class="sig mono">SRC</div>
+        <div class="reading-txt">It runs every ten tool-calling <i>iterations</i>. One request taking five round-trips advances the counter by five.</div>
+      </div>
+      <div class="witness">
+        <div class="sig mono">OBS</div>
+        <div class="reading-txt">Fired twice in a single 9-minute session on a fresh install.</div>
+      </div>
+    </div>
+  </main>
+
+  <aside class="session">
+    <div class="session-head">
+      <span class="session-title mono">Session 4a1f · v0.19.0</span>
+      <span class="clock mono" id="clock">00:41</span>
+    </div>
+    <div class="feed" id="feed"></div>
+    <div class="scrub">
+      <div class="track" id="track"><i id="fill"></i></div>
+      <div class="marks mono">
+        <span class="hit">00:41 counter</span><span>02:07 answer</span><span>02:11 fork</span><span>02:14 write</span>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+const LINES=[
+ ['tool','⏵ read_file <b>agent/conversation_loop.py</b>'],
+ ['tool','⏵ read_file <b>agent/turn_finalizer.py</b>'],
+ ['tool','⏵ grep <b>_iters_since_skill</b> · 4 hits'],
+ ['','the counter advances once per API-call iteration —'],
+ ['','not once per user message. Threshold is ten.'],
+ ['tool','⏵ read_file <b>agent/background_review.py</b>'],
+ ['','final response delivered to user'],
+ ['tool','⏵ spawn <b>background_review</b> (daemon thread)'],
+ ['write','💾 Self-improvement review: Skill \'debugging-imports\' created.'],
+];
+const feed=document.getElementById('feed');
+LINES.forEach((l,i)=>{const d=document.createElement('div');d.className='line '+l[0];d.innerHTML=l[1];feed.appendChild(d)});
+const lines=[...feed.children];
+const track=document.getElementById('track'),fill=document.getElementById('fill'),clock=document.getElementById('clock');
+function set(p){
+  fill.style.width=(p*100)+'%';
+  const n=Math.round(p*lines.length);
+  lines.forEach((el,i)=>el.classList.toggle('on',i<n));
+  const t=Math.round(p*174);clock.textContent='0'+Math.floor(t/60)+':'+String(t%60).padStart(2,'0');
+}
+set(.12);
+let drag=false;
+const at=e=>{const r=track.getBoundingClientRect();set(Math.min(1,Math.max(0,(e.clientX-r.left)/r.width)))};
+track.addEventListener('pointerdown',e=>{drag=true;at(e)});
+addEventListener('pointermove',e=>drag&&at(e));
+addEventListener('pointerup',()=>drag=false);
+</script>
+</body>
+</html>

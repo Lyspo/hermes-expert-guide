@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SHEET 03 · DETAIL — PART 04</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@600;700;800&family=Archivo:wght@400;500;600&family=Martian+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{--ground:#0F1317;--pane:#161C21;--edge:#46545F;--edge2:#2C3841;
+ --ink:#EDF2F4;--read:#C9D4DA;--mid:#93A5B0;--low:#5B6B76;
+ --brass:#E0A83C;--oxide:#C9483B;--verd:#4E9E8B}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--ground);scroll-behavior:smooth}
+body{color:var(--ink);font-family:Archivo,system-ui,sans-serif}
+.m{font-family:'Martian Mono',monospace}
+.x{font-family:'Archivo Expanded',Archivo,sans-serif}
+
+/* the sheet chrome persists across every drawing in the set */
+.tb{position:fixed;top:0;left:0;right:0;height:38px;display:flex;align-items:center;z-index:20;
+  background:rgba(15,19,23,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--edge2)}
+.tb div{padding:0 15px;height:100%;display:flex;align-items:center;gap:9px;font-size:.6rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--low);border-right:1px solid var(--edge2);white-space:nowrap}
+.tb b{color:var(--ink);font-weight:500}
+.tb .on{color:var(--brass);box-shadow:inset 0 -2px 0 var(--brass)}
+.tb .sp{flex:1;border:0}
+.prog{position:fixed;top:38px;left:0;height:2px;background:var(--brass);z-index:21;width:0}
+
+/* ── the detail sheet: a wide reading column, a real margin, a section view ── */
+.sheet{max-width:1500px;margin:0 auto;padding:80px 40px 22vh;
+  display:grid;grid-template-columns:minmax(0,1fr) 20rem;gap:56px}
+@media(max-width:78rem){.sheet{grid-template-columns:1fr;gap:0}.margin{display:none}}
+
+.head{grid-column:1/-1;border-bottom:1px solid var(--edge);padding-bottom:34px;margin-bottom:44px;
+  display:grid;grid-template-columns:minmax(0,1fr) 20rem;gap:56px;align-items:end}
+.head .no{font-family:'Martian Mono',monospace;font-size:.6rem;letter-spacing:.14em;color:var(--brass)}
+.head h1{font-size:clamp(2.2rem,4.4vw,3.7rem);line-height:.98;letter-spacing:-.035em;font-weight:800;margin-top:16px;max-width:19ch}
+.head .lede{color:var(--mid);font-size:1.12rem;line-height:1.5;margin-top:20px;max-width:52ch}
+.head .facts{font-family:'Martian Mono',monospace;font-size:.63rem;line-height:2.1;color:var(--low)}
+.head .facts b{color:var(--ink);font-weight:400}
+.head .facts span{color:var(--brass)}
+
+/* reading column — the whole point is that this is genuinely good to read */
+article{min-width:0;font-size:1.0625rem;line-height:1.72;color:var(--read)}
+article p{margin-bottom:1.25rem;max-width:68ch}
+article b,article strong{color:var(--ink);font-weight:600}
+article em{font-style:italic;color:var(--ink)}
+article code{font-family:'Martian Mono',monospace;font-size:.84em;color:var(--brass);
+  background:#171E24;border:1px solid var(--edge2);padding:1px 5px}
+h2{font-family:'Archivo Expanded',Archivo,sans-serif;font-size:1.75rem;letter-spacing:-.03em;font-weight:700;
+  color:var(--ink);margin:3.4rem 0 1.1rem;padding-top:1.5rem;border-top:1px solid var(--edge2);
+  scroll-margin-top:80px;display:flex;gap:16px;align-items:baseline}
+h2 .sn{font-family:'Martian Mono',monospace;font-size:.62rem;color:var(--brass);letter-spacing:.1em;flex:none}
+blockquote{border-left:2px solid var(--brass);padding:2px 0 2px 20px;margin:1.6rem 0;color:var(--mid);
+  font-size:1.02rem;max-width:62ch}
+
+/* the correction device, native here: struck, replaced, sourced */
+.rev{border:1px solid var(--edge2);background:#141A20;padding:20px 22px;margin:1.8rem 0;max-width:68ch}
+.rev del{display:block;color:#9A8288;text-decoration:line-through;text-decoration-color:var(--oxide);
+  text-decoration-thickness:2px;font-size:.98rem;line-height:1.5}
+.rev ins{display:block;color:var(--ink);text-decoration:none;font-weight:500;margin-top:10px;font-size:1.06rem;line-height:1.5}
+.rev .src{font-family:'Martian Mono',monospace;font-size:.6rem;color:var(--low);margin-top:14px;line-height:1.7}
+.rev .src b{color:var(--verd)}
+
+/* terminal output sits on its own plane, as the manual's specimen panel */
+.term{border:1px solid var(--edge2);background:#0B0F12;padding:16px 18px;margin:1.7rem 0;max-width:68ch}
+.term .cap{font-family:'Martian Mono',monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--low);margin-bottom:11px;display:flex;justify-content:space-between}
+.term .cap b{color:var(--verd)}
+.term pre{font-family:'Martian Mono',monospace;font-size:.78rem;color:var(--ink);white-space:pre-wrap}
+
+/* an operable mechanism, inline, where the prose describes it */
+.rig{border:1px solid var(--edge2);background:#171E23;padding:18px;margin:1.9rem 0;max-width:68ch}
+.rig .cap{font-family:'Martian Mono',monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--low);margin-bottom:13px}
+.ticks{display:flex;gap:3px}.ticks i{flex:1;height:26px;background:#11171B;border:1px solid var(--edge2)}
+.ticks i.on{background:var(--brass);border-color:var(--brass)}
+.ticks i.fire{background:var(--oxide);border-color:var(--oxide)}
+.rr{display:flex;gap:8px;margin-top:12px}
+.rr button{flex:1;background:#11171B;border:1px solid var(--edge2);color:var(--mid);
+  font-family:'Martian Mono',monospace;font-size:.62rem;padding:10px;cursor:pointer}
+.rr button:hover{color:var(--ink);border-color:var(--edge)}
+.rr button.act{color:var(--oxide);border-color:#4B2E2B}
+.ro{font-family:'Martian Mono',monospace;font-size:.62rem;color:var(--mid);margin-top:12px}
+.ro b{color:var(--brass)}.ro.hot b{color:var(--oxide)}
+
+/* ── the margin: the manual's own marginalia, and it is sticky ─────────── */
+.margin{position:sticky;top:80px;align-self:start;max-height:calc(100vh-100px);overflow-y:auto;
+  font-family:'Martian Mono',monospace;font-size:.62rem;color:var(--low);line-height:1.9}
+.margin::-webkit-scrollbar{width:4px}.margin::-webkit-scrollbar-thumb{background:#2C363E}
+.margin h3{font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--low);
+  border-bottom:1px solid var(--edge2);padding-bottom:8px;margin-bottom:12px;font-weight:400}
+.margin section{margin-bottom:26px}
+.margin a{display:flex;gap:9px;color:var(--mid);text-decoration:none;padding:5px 0}
+.margin a:hover{color:var(--ink)}
+.margin a .n{color:var(--brass);flex:none}
+.margin a.cur{color:var(--ink)}
+.margin a.cur .n{color:var(--oxide)}
+.margin .note{color:var(--mid);line-height:1.85;font-size:.6rem}
+.margin dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px}
+.margin dt{color:var(--low)} .margin dd{color:var(--mid)}
+
+/* the detail view: a fragment of the assembly, drawn at this sheet's scale */
+.detail{border:1px solid var(--edge2);background:#12181D;margin-bottom:26px}
+.detail svg{width:100%;display:block}
+.detail .cap{padding:9px 12px;border-top:1px solid var(--edge2);font-size:.55rem;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--low)}
+</style></head><body>
+
+<div class="tb">
+  <div><b class="m">HERMES-AGENT</b><span class="m">v0.19.0</span></div>
+  <div class="m">sheet 01 · assembly</div>
+  <div class="m">sheet 02 · bill of materials</div>
+  <div class="m on">sheet 03 · detail — part 04</div>
+  <div class="sp"></div>
+  <div class="m">item <b>026</b> / 051</div>
+</div>
+<div class="prog" id="prog"></div>
+
+<div class="sheet">
+  <header class="head">
+    <div>
+      <p class="no">SHEET 03 · DETAIL VIEW · PART 04 — SKILLS</p>
+      <h1 class="x">What actually fires, and what it is allowed to do.</h1>
+      <p class="lede">A counter that increments once per tool-loop iteration, a forked agent that runs after your answer is on screen, and the four walls that keep it out of your conversation.</p>
+    </div>
+    <div class="facts">
+      <div>ITEM <b>026 / 051</b></div>
+      <div>ASSEMBLY <b>06 · skills and the improvement loop</b></div>
+      <div>SPEC <span>C</span> <span>C</span> <span>C</span> · all tracks</div>
+      <div>EST <b>15 min</b></div>
+      <div>VERIFIED <b>v0.19.0</b> · 2026-07-25</div>
+      <div>SOURCE <b>[07] §2.1–2.2</b></div>
+    </div>
+  </header>
+
+  <article id="body">
+    <p>Self-improvement is the thing Hermes is sold on, and it is usually described as a disposition: the agent notices what worked and gets better at it. What actually ships is three mechanical parts — a counter, a threshold, and a second agent that is <b>forbidden from speaking to you</b>.</p>
+    <p>All three are small enough to hold in your head, and holding them is the difference between an agent that quietly improves and one that quietly gets strange.</p>
+
+    <h2 id="s1"><span class="sn">01</span>The counter counts iterations, not turns</h2>
+    <p>Two configuration keys, both defaulting to ten: <code>memory.nudge_interval</code> and <code>skills.creation_nudge_interval</code>. The skill counter increments inside the tool-calling loop — once per API-call iteration, every time round. Not once per message you send.</p>
+    <p>That distinction is the whole behaviour of the loop.</p>
+
+    <div class="rev">
+      <del>The background review runs roughly every ten agent turns.</del>
+      <ins>It runs every ten tool-calling iterations. One request that takes five tool round-trips advances the counter by five, so a long piece of real work can trip it twice.</ins>
+      <p class="src">The increment sits inside the per-turn tool-calling loop and fires per API-call iteration; the curator documentation's “~every 10 agent turns” is an approximation of that count.<br><b>agent/conversation_loop.py:118 @ d372fda</b> · corrected 2026-07-25</p>
+    </div>
+
+    <p>So the loop is not on a conversational clock. It is on a <em>work</em> clock. Ask three casual questions and it may never fire; ask the agent to trace a bug across six files and it will fire during that single request. This is the right design — the sessions worth learning from are exactly the tool-heavy ones — but it means the feature is close to invisible if you only ever chat.</p>
+
+    <div class="rig">
+      <p class="cap">detail 04-a · the counter, operable</p>
+      <div class="ticks" id="tk"></div>
+      <div class="rr"><button onclick="step()">tool call</button><button class="act" onclick="rst()">skill_manage</button></div>
+      <p class="ro" id="ro"><b>0</b> / 10 · the review fires at ten</p>
+    </div>
+
+    <p>Two more conditions gate the increment. The counter only advances while the <code>skill_manage</code> tool is actually available to the agent, and it <b>resets whenever <code>skill_manage</code> is used</b>. Edit a skill yourself and the clock starts again from zero.</p>
+
+    <h2 id="s2"><span class="sn">02</span>Your answer goes out first</h2>
+    <p>At the end of the turn a finalizer checks three things: the counter has reached the interval, a final response exists, and the turn was not interrupted. Only then does it spawn the review.</p>
+    <p>The ordering is not incidental. The review never competes with your task for the model's attention and never delays your reply, because by the time it exists your reply has already been delivered. And because an interrupted turn produces no final response, hitting <code>Ctrl-C</code> on a run means nothing is learned from it.</p>
+
+    <h2 id="s3"><span class="sn">03</span>What you actually see</h2>
+    <p>One line, after the answer, unprompted:</p>
+    <div class="term">
+      <p class="cap"><span>specimen · terminal output</span><b>VERBATIM</b></p>
+      <pre>💾 Self-improvement review: Skill '&lt;name&gt;' created.</pre>
+    </div>
+    <p>The published documentation shows this notice as <code>💾 Skill 'foo' patched</code>. The real string is prefixed with <b>Self-improvement review:</b>, and on a fresh profile the observed verb was <em>created</em> rather than <em>patched</em> — which is what the review's own editorial policy predicts, since there was nothing yet to patch.</p>
+    <p>That single line is the only trace the loop leaves in your terminal. The counter is internal state and is never printed.</p>
+
+    <h2 id="s4"><span class="sn">04</span>The fork, and its four walls</h2>
+    <p>The review is a daemon thread running a forked agent over a snapshot of your conversation. The module that implements it opens by describing itself:</p>
+    <blockquote>Writes go straight to the memory + skill stores. Main conversation and prompt cache are never touched.</blockquote>
+    <p>Four restrictions are set on that fork, and each one closes a specific door. <b>A tool whitelist</b> — its toolset is cut to the skills tools plus memory. Any other call is refused at runtime. It cannot read your files or reach the network, because it cannot call the tools that would.</p>
+    <p><b><code>_persist_disabled = True</code></b> and <b><code>_session_db = None</code></b>. The fork shares your session id — deliberately, so it hits the same warm prompt-cache prefix — but it holds no handle to the session database and is barred from writing to it.</p>
+    <p><b>Approval auto-deny.</b> Any dangerous-command approval callback the fork triggers is answered <em>no</em> on its behalf, and logged. There is no configuration that makes an unattended background review able to run a command that would have asked you first.</p>
+  </article>
+
+  <aside class="margin">
+    <div class="detail">
+      <svg viewBox="0 0 300 190">
+        <defs><pattern id="h2" width="6" height="6" patternTransform="rotate(30)" patternUnits="userSpaceOnUse">
+          <line x1="0" y1="0" x2="0" y2="6" stroke="#2E3A44"/></pattern></defs>
+        <polygon points="150,34 254,86 150,138 46,86" fill="#212A31"/>
+        <polygon points="150,34 254,86 150,138 46,86" fill="url(#h2)"/>
+        <polygon points="150,34 254,86 150,138 46,86" fill="none" stroke="#E0A83C" stroke-opacity=".8" stroke-width="1.3"/>
+        <polygon points="46,86 150,138 150,150 46,98" fill="#0E141A" stroke="#2C3841"/>
+        <polygon points="150,138 254,86 254,98 150,150" fill="#121920" stroke="#2C3841"/>
+        <g fill="#151C22" stroke="#E0A83C" stroke-opacity=".34">
+          <polygon points="150,52 186,70 150,88 114,70"/><polygon points="196,76 232,94 196,112 160,94"/>
+          <polygon points="104,76 140,94 104,112 68,94"/></g>
+        <circle cx="254" cy="86" r="11" fill="#0F1317" stroke="#E0A83C" stroke-width="1.2"/>
+        <text x="254" y="90" text-anchor="middle" font-family="'Martian Mono',monospace" font-size="9" fill="#E0A83C">04</text>
+      </svg>
+      <p class="cap">detail 04 · skills, from sheet 01</p>
+    </div>
+
+    <section>
+      <h3>On this sheet</h3>
+      <a href="#s1" class="cur"><span class="n">01</span>The counter counts iterations</a>
+      <a href="#s2"><span class="n">02</span>Your answer goes out first</a>
+      <a href="#s3"><span class="n">03</span>What you actually see</a>
+      <a href="#s4"><span class="n">04</span>The fork, and its four walls</a>
+    </section>
+
+    <section>
+      <h3>Position</h3>
+      <dl><dt>comes after</dt><dd>8 parts</dd><dt>built on by</dt><dd>5 later parts</dd>
+      <dt>assembly</dt><dd>06 · skills</dd></dl>
+    </section>
+
+    <section>
+      <h3>Note</h3>
+      <p class="note">Almost everything here about the counter and the fork is read from source at a pinned commit rather than from the documentation. Where the two disagree, this sheet says so.</p>
+    </section>
+  </aside>
+</div>
+
+<script>
+const tk=document.getElementById('tk'), ro=document.getElementById('ro');
+for(let i=0;i<10;i++)tk.appendChild(document.createElement('i'));
+let n=0;
+function paint(){[...tk.children].forEach((c,i)=>c.className=i<n?(n>=10?'on fire':'on'):'');
+  ro.classList.toggle('hot',n>=10);
+  ro.innerHTML=n>=10?'<b>10</b> / 10 · fired — after your answer, never before it':`<b>${n}</b> / 10 · the review fires at ten`}
+function step(){n=Math.min(10,n+1);paint()} function rst(){n=0;paint()}
+
+/* reading position, on the sheet's own progress rule */
+const prog=document.getElementById('prog');
+addEventListener('scroll',()=>{
+  const h=document.body.scrollHeight-innerHeight;
+  prog.style.width=(scrollY/Math.max(1,h)*100)+'%';
+},{passive:true});
+
+/* the margin index marks the section being read */
+const links=[...document.querySelectorAll('.margin a')];
+const seen=new Set();
+document.querySelectorAll('h2').forEach(h=>new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.boundingClientRect.top<120||e.isIntersecting)seen.add(e.target.id); else seen.delete(e.target.id);
+  const cur=['s1','s2','s3','s4'].filter(id=>seen.has(id)).pop()||'s1';
+  links.forEach(a=>a.classList.toggle('cur',a.getAttribute('href')==='#'+cur));
+}),{rootMargin:'0px 0px -78% 0px'}).observe(h));
+</script></body></html>

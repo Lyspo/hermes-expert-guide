@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>D · Collation</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Martian+Mono:wght@400;600&family=Spline+Sans+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B0F12;          /* the instrument, not a marketing dark */
+  --pane:#12181C;
+  --rail:#0E1418;
+  --line:#1E272D;
+  --line2:#2A363E;
+  --fg:#DDE6EA;
+  --mid:#8CA0AB;
+  --low:#5C6D77;
+
+  /* functional colour — four meanings, none decorative */
+  --was:#FF5C6B;         /* the claim that fails */
+  --is:#37D39A;          /* what the software does */
+  --ref:#4EA8FF;         /* a source you can open */
+  --warn:#FFB020;        /* unresolved */
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg);color:var(--fg)}
+body{font-family:'Spline Sans Mono',ui-monospace,monospace;font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased}
+.g{font-family:'Bricolage Grotesque',system-ui,sans-serif}
+.mm{font-family:'Martian Mono',monospace;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase}
+
+/* ── chrome: a tool's status bar, carrying real counts ─────────────────── */
+.bar{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:0;height:36px;
+  background:var(--rail);border-bottom:1px solid var(--line);font-size:.7rem}
+.cell{padding:0 14px;height:100%;display:flex;align-items:center;gap:8px;border-right:1px solid var(--line);color:var(--mid);white-space:nowrap}
+.cell b{color:var(--fg);font-weight:500}
+.cell.on{color:var(--is)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--is)}
+.spacer{flex:1;border:0}
+
+/* ── masthead ──────────────────────────────────────────────────────────── */
+.head{padding:8vh 4vw 5vh;max-width:100rem;margin:0 auto;border-bottom:1px solid var(--line)}
+h1{font-size:clamp(2.4rem,6.2vw,5.4rem);line-height:.95;letter-spacing:-.04em;font-weight:800;max-width:16ch}
+h1 .st{color:var(--low);
+  /* Drawn as a background so it survives wrapping: an absolutely-positioned bar
+     collapses to a dot the moment the inline runs onto a second line. */
+  background-image:linear-gradient(var(--was),var(--was));
+  background-repeat:no-repeat;background-position:0 54%;background-size:0% 5px;
+  -webkit-box-decoration-break:clone;box-decoration-break:clone;
+  animation:cut .8s .45s cubic-bezier(.2,.9,.2,1) forwards}
+@keyframes cut{to{background-size:100% 5px}}
+.sub{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:500;color:var(--mid);max-width:60ch;margin-top:1.8rem;font-size:1.12rem;line-height:1.6;letter-spacing:-.01em}
+.sub b{color:var(--fg);font-weight:500}
+
+/* ── the collation table: a diff, because that is how this audience reads a contradiction ── */
+.sheet{max-width:100rem;margin:0 auto;padding:0 4vw 12vh}
+.grp{border-bottom:1px solid var(--line)}
+.grph{display:flex;align-items:center;gap:12px;padding:2.4rem 0 1rem}
+.grph .n{color:var(--low)}
+.grph h2{font-size:1.5rem;letter-spacing:-.02em;font-weight:700}
+.grph .tail{flex:1;height:1px;background:var(--line)}
+.grph .cnt{color:var(--warn)}
+
+.claim{border:1px solid var(--line);background:var(--pane);margin-bottom:10px;overflow:hidden}
+.claim .ch{display:flex;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--line);color:var(--low);background:#0F161A}
+.claim .ch .id{color:var(--ref)}
+.row{display:grid;grid-template-columns:44px 30px 1fr;align-items:baseline;
+  padding:11px 14px 11px 0;border-bottom:1px solid #161E23}
+.row:last-child{border-bottom:0}
+.row .ln{color:#3B4A53;text-align:right;padding-right:12px;font-size:.72rem;user-select:none}
+.row .sg{font-weight:700}
+.row .tx{font-size:.94rem;line-height:1.45;padding-right:1rem}
+
+.row.minus{background:rgba(255,92,107,.055)}
+.row.minus .sg{color:var(--was)} .row.minus .tx{color:#C39AA0;text-decoration:line-through;text-decoration-color:rgba(255,92,107,.5)}
+.row.plus{background:rgba(55,211,154,.055)}
+.row.plus .sg{color:var(--is)} .row.plus .tx{color:var(--fg);font-weight:500}
+.row.meta .sg{color:#3B4A53} .row.meta .tx{color:var(--low);font-size:.78rem}
+.row.meta a{color:var(--ref);text-decoration:none;border-bottom:1px solid rgba(78,168,255,.3)}
+
+/* the bit that makes it an instrument rather than a document */
+.probe{display:flex;gap:0;border-top:1px solid var(--line);background:#0D1317}
+.probe div{padding:9px 14px;border-right:1px solid var(--line);color:var(--low);font-size:.7rem}
+.probe div b{color:var(--mid);font-weight:400}
+.probe .live{color:var(--is)}
+
+/* ── the map: curriculum ranked by how wrong the received wisdom is ────── */
+.map{max-width:100rem;margin:0 auto;padding:0 4vw 14vh}
+.maph{display:flex;align-items:baseline;gap:14px;padding:3rem 0 1.4rem}
+.maph h2{font-size:1.9rem;letter-spacing:-.025em;font-weight:700}
+.maph p{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--mid);font-size:.9rem}
+.mrow{display:grid;grid-template-columns:2.5rem 15rem 1fr 7rem;gap:14px;align-items:center;
+  padding:12px 10px;border-top:1px solid var(--line);cursor:pointer;transition:background .15s}
+.mrow:hover{background:var(--pane)}
+.mrow .idx{color:#3B4A53;font-size:.72rem}
+.mrow .nm{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:500;font-size:1rem}
+.mrow .nm small{display:block;color:var(--low);font-size:.68rem;margin-top:2px}
+.spectrum{display:flex;gap:2px;height:26px;align-items:flex-end}
+.spectrum i{flex:1;background:var(--line2);border-radius:0}
+.spectrum i.c1{background:#3A4C55}.spectrum i.c2{background:var(--warn)}.spectrum i.c3{background:var(--was)}
+.mrow .st{text-align:right;font-size:.7rem;color:var(--low)}
+.mrow .st.hot{color:var(--was)}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="cell"><span class="dot"></span><b>hermes-agent</b> v0.19.0</div>
+  <div class="cell">sources <b>4</b> · docs · repo@d372fda · binary · capture</div>
+  <div class="cell">claims <b>412</b></div>
+  <div class="cell" style="color:var(--was)">contested <b style="color:var(--was)">16</b></div>
+  <div class="cell" style="color:var(--warn)">unresolved <b style="color:var(--warn)">2</b></div>
+  <div class="cell spacer"></div>
+  <div class="cell on">collation complete · 2026-07-26</div>
+</div>
+
+<header class="head">
+  <h1 class="g">Every guide to this agent <span class="st">repeats the docs.</span> This one collates them.</h1>
+  <p class="sub">Four sources describe Hermes and they contradict each other on <b>sixteen material points</b>. Below is the diff — what the documentation claims, what the shipped binary and a captured session actually do, and the file and commit you can check it against. <b>You navigate by disagreement:</b> start where the gap is widest, because that is where believing the wrong thing costs you the most.</p>
+</header>
+
+<section class="sheet">
+  <div class="grp">
+    <div class="grph"><span class="n mm">module 06</span><h2 class="g">The self-improvement loop</h2><span class="tail"></span><span class="cnt mm">7 contested</span></div>
+
+    <article class="claim">
+      <div class="ch mm"><span>claim <span class="id">#C-0412</span> · nudge cadence</span><span>severity: high</span></div>
+      <div class="row minus"><span class="ln">01</span><span class="sg">−</span><span class="tx">The background review runs roughly every ten agent turns.</span></div>
+      <div class="row plus"><span class="ln">01</span><span class="sg">+</span><span class="tx">It fires every ten tool-calling iterations. One request that takes five round-trips advances the counter by five, so a long piece of real work can trip it twice.</span></div>
+      <div class="row meta"><span class="ln"></span><span class="sg">@</span><span class="tx">agent/conversation_loop.py:118 @ <a href="#">d372fda</a> · confirmed twice in capture 4a1f</span></div>
+      <div class="probe">
+        <div>counter <b class="live" id="ctr">07</b> / 10</div>
+        <div>resets on <b>skill_manage</b></div>
+        <div>fork <b>daemon thread</b></div>
+        <div>writes to <b>~/.hermes/skills/</b></div>
+        <div>returns to session <b style="color:var(--was)">never</b></div>
+      </div>
+    </article>
+
+    <article class="claim">
+      <div class="ch mm"><span>claim <span class="id">#C-0388</span> · notification string</span><span>severity: low</span></div>
+      <div class="row minus"><span class="ln">02</span><span class="sg">−</span><span class="tx">💾 Skill 'foo' patched</span></div>
+      <div class="row plus"><span class="ln">02</span><span class="sg">+</span><span class="tx">💾 Self-improvement review: Skill 'foo' created.</span></div>
+      <div class="row meta"><span class="ln"></span><span class="sg">@</span><span class="tx">capture 4a1f, verbatim · docs wrong on prefix and on verb</span></div>
+    </article>
+  </div>
+
+  <div class="grp">
+    <div class="grph"><span class="n mm">module 04</span><h2 class="g">Approvals &amp; isolation</h2><span class="tail"></span><span class="cnt mm">5 contested · 1 unresolved</span></div>
+    <article class="claim">
+      <div class="ch mm"><span>claim <span class="id">#C-0117</span> · dangerous commands</span><span style="color:var(--was)">severity: critical</span></div>
+      <div class="row minus"><span class="ln">01</span><span class="sg">−</span><span class="tx">Dangerous commands trigger an approval prompt before they run.</span></div>
+      <div class="row plus"><span class="ln">01</span><span class="sg">+</span><span class="tx">Under the default approvals.mode: smart an LLM risk-assesses and may auto-approve. A recursive delete on a host path executed with no prompt at all.</span></div>
+      <div class="row meta"><span class="ln"></span><span class="sg">@</span><span class="tx">capture 4a1f §11, default install · set approvals.mode: manual for deterministic prompts</span></div>
+      <div class="probe">
+        <div>mode <b class="live">smart</b></div><div>prompted <b style="color:var(--was)">no</b></div>
+        <div>timeout <b>300s</b> · fails closed</div><div>hardline blocklist <b>enforced in code</b></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="map">
+  <div class="maph"><h2 class="g">Read it by where it breaks.</h2><p>— not ten modules in a sidebar. Bars show contested claims per lesson; red is where the received wisdom fails hardest.</p></div>
+  <div class="mrow"><span class="idx mm">06</span>
+    <div class="nm">Skills &amp; the loop<small>8 lessons · 96 min</small></div>
+    <div class="spectrum"><i class="c3" style="height:100%"></i><i class="c3" style="height:88%"></i><i class="c2" style="height:62%"></i><i class="c3" style="height:94%"></i><i class="c2" style="height:55%"></i><i class="c1" style="height:30%"></i><i class="c1" style="height:22%"></i><i style="height:12%"></i></div>
+    <span class="st hot mm">7 contested</span></div>
+  <div class="mrow"><span class="idx mm">04</span>
+    <div class="nm">Tools &amp; isolation<small>4 lessons · 58 min</small></div>
+    <div class="spectrum"><i class="c3" style="height:96%"></i><i class="c2" style="height:58%"></i><i class="c2" style="height:44%"></i><i class="c1" style="height:26%"></i><i style="height:14%"></i><i style="height:10%"></i><i style="height:10%"></i><i style="height:8%"></i></div>
+    <span class="st hot mm">5 contested</span></div>
+  <div class="mrow"><span class="idx mm">05</span>
+    <div class="nm">What it knows<small>5 lessons · 61 min</small></div>
+    <div class="spectrum"><i class="c2" style="height:64%"></i><i class="c2" style="height:48%"></i><i class="c1" style="height:28%"></i><i style="height:12%"></i><i style="height:10%"></i><i style="height:8%"></i><i style="height:8%"></i><i style="height:6%"></i></div>
+    <span class="st mm">3 contested</span></div>
+  <div class="mrow"><span class="idx mm">03</span>
+    <div class="nm">Running a session<small>4 lessons · 47 min</small></div>
+    <div class="spectrum"><i class="c1" style="height:32%"></i><i style="height:12%"></i><i style="height:10%"></i><i style="height:8%"></i><i style="height:8%"></i><i style="height:6%"></i><i style="height:6%"></i><i style="height:6%"></i></div>
+    <span class="st mm">1 contested</span></div>
+</section>
+
+<script>
+// the counter in the probe strip is live: it is the mechanism the claim is about
+let c=0; setInterval(()=>{c=(c+1)%11; const e=document.getElementById('ctr');
+  e.textContent=String(c).padStart(2,'0'); e.style.color=c===10?'var(--was)':'var(--is)';},520);
+</script>
+</body>
+</html>
