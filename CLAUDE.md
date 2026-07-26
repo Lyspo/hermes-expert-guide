@@ -81,12 +81,23 @@ travel with the repo.
 > once, and neither is settled.
 >
 > Two live decisions from that session that *are* binding:
-> - **The no-JavaScript non-negotiable was dropped by explicit decision.** Non-negotiable
->   #3 at the top of this file is therefore stale. It has not been rewritten because the
->   direction it would serve is undecided; the current build still honours it.
+> - **The no-JavaScript non-negotiable was dropped by explicit decision**, and
+>   non-negotiable #3 at the top of this file has now been rewritten to what actually
+>   binds: server-render the content, enhance with JavaScript. The existing fallbacks
+>   were kept rather than torn out.
 > - **Flow may be restructured freely** — the 51-discrete-pages model is not sacred.
 >
 > Do not open the next design session by building a fourteenth prototype.
+>
+> **Update, 2026-07-26 — the conversation this asked for has happened.** Ten real sites
+> were put in front of the author and each got a specific reaction; the record and the
+> direction it points at are in **`research/design/06-direction-calibration.md`**. Read
+> that with `05`. The headline: the two favourites (activetheory.net, igloo.inc) are
+> *already sanctioned* by `01-reference-sites.md`, and a note in that session wrongly
+> told the author otherwise. The ruleset bans `box-shadow` glow and gradient chrome —
+> effects painted onto a dark surface. It does not ban luminance that comes out of real
+> geometry, real lighting or real procedural glyph density, which is what both
+> favourites actually do. That distinction is why thirteen prototypes did not converge.
 
 
 

@@ -1,5 +1,17 @@
 # Direction exploration — unresolved
 
+> **Superseded in part, 2026-07-26.** The unblocking step this file recommends —
+> "more examples of sites the author actually admires, with what specifically works" —
+> was carried out. The reactions, and the direction they point at, are in
+> [`06-direction-calibration.md`](06-direction-calibration.md). **Read that first.**
+>
+> It also corrects an error that mattered: Active Theory, the author's joint-favourite,
+> was described in this session as sitting in banned cluster #2. It does not.
+> `01-reference-sites.md` already evaluated it and filed it as a technique that
+> *survives* the slop list. The banned-cluster label belongs to prototype
+> `09-the-field.html` — this project's own near-black + neon + CSS-glow execution of the
+> idea — not to the reference. The rule bans the shortcut, not the look.
+
 **Status: the visual direction is NOT settled. The author is not convinced by any of it.**
 
 This file records an exploration that ran on 2026-07-26 and did not converge. It is
