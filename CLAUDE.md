@@ -113,9 +113,29 @@ creates a stacking context; a `z-50` dialog rendered inside the header is confin
 and the main content — a later sibling on the same layer — paints straight over it. The
 symptom was a see-through palette with lesson prose showing through its own result rows.
 
-**Not built.** The mastery layer (`decisions.md` 010). `/map`
-and its OGL field. Wiring `Workspace`'s `prompt` prop to a `console:` frontmatter field,
-so a lesson can open the console on the frame it teaches. The simulations beyond SIM-1's engine — the map specifies eight and
+**The mastery layer.** `src/lib/mastery.ts` (pure: the 22-release ladder, skill paths,
+uptime) plus storage v2. A lesson is mastered in one of two ways, declared in its
+frontmatter and mutually exclusive:
+
+- `objective:` names a console scenario from `src/lib/term/objectives.ts`. The predicate
+  reads what the console actually printed, so it cannot be satisfied by recognising a
+  sentence. Ids are validated in `content-collections.ts` — a typo fails the build
+  rather than gating a lesson forever.
+- `check:` is one question posed as the software's own numbered approval prompt. It
+  carries a `source`, validated to be a corpus reference, because a comprehension gate's
+  correct answer is a claim and an especially load-bearing one.
+
+Authored so far: 4 objectives (`01/04`, `03/01`, `04/04`, `06/05`) and 3 checks (all of
+module 04). The remaining 44 lessons have neither and simply do not advance the ladder.
+
+**In `MasteryGate`, `answered` must be checked before `mastered`.** A correct answer
+writes to storage, which re-renders with `mastered` true; testing that first replaced the
+explanation with the compact "Mastered" panel in the same frame it appeared, so the
+reader saw a reward and never saw why they were right.
+
+**Not built.** `/map` and its OGL field. The generated `SOUL.md` completion artefact.
+Wiring `Workspace`'s `prompt` prop to a `console:` frontmatter field, so a lesson can
+open the console on the frame it teaches. The simulations beyond SIM-1's engine — the map specifies eight and
 one flagship replay exists. A colophon. The landing page's GSAP scroll narrative.
 Lighthouse CI.
 

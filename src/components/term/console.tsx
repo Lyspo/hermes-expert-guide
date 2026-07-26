@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { statusBar } from '@/lib/term/format'
 import { exec, initialTerm, type Line, type TermState } from '@/lib/term/machine'
+import { objectiveById } from '@/lib/term/objectives'
 import * as S from '@/lib/term/sources'
 
 /**
@@ -44,7 +45,13 @@ const APPROVAL_BOX_LINES = new Set([...S.APPROVAL_PROMPT.lines, S.APPROVAL_HINT]
 export function Console({
   prompt,
   fallback,
+  objectiveId,
+  onMet,
 }: {
+  /** A console objective this lesson is mastered by satisfying. */
+  objectiveId?: string
+  /** Called once, on the transition from unsatisfied to satisfied. */
+  onMet?: () => void
   /** Optional first input, run on mount so a lesson can open on the frame it teaches. */
   prompt?: string
   /**
@@ -73,6 +80,11 @@ export function Console({
   const scroller = useRef<HTMLDivElement>(null)
   const field = useRef<HTMLInputElement>(null)
 
+  const objective = objectiveId === undefined ? undefined : objectiveById(objectiveId)
+  // Satisfied at least once this session. An objective is a thing you did, so undoing
+  // it by typing something else afterwards would be nonsense.
+  const [met, setMet] = useState(false)
+
   // Hydration detection without an effect: `false` on the server, `true` once React is
   // running on the client. The subscribe callback never fires because the answer cannot
   // change after mount.
@@ -91,11 +103,20 @@ export function Console({
 
   const submit = useCallback(
     (value: string) => {
-      setState((current) => exec(current, value))
+      // Computed outside the updater, deliberately. Evaluating the objective inside
+      // `setState` would run a side effect during the render phase and fire twice under
+      // StrictMode; an event handler already has the current state in hand.
+      const next = exec(state, value)
+      setState(next)
       setInput('')
       setSelected(0)
+
+      if (objective && !met && objective.done(next)) {
+        setMet(true)
+        onMet?.()
+      }
     },
-    []
+    [state, objective, met, onMet]
   )
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -185,6 +206,21 @@ export function Console({
 
         {state.pending && <ApprovalMenu selected={selected} />}
       </div>
+
+      {/* The objective, if this lesson has one. Stated up front rather than revealed on
+          success: a reader who does not know what they are being asked to do is being
+          given a puzzle, and this is a guide. The hint says how, never what to observe. */}
+      {objective && (
+        <div className="shrink-0 border-t border-[color-mix(in_srgb,var(--color-ice)_9%,transparent)] px-4 py-2">
+          <p className="flex items-baseline gap-2 text-[0.72rem] leading-[1.6]">
+            <span aria-hidden="true" className={met ? 'text-ice' : 'text-ice-dim'}>
+              {met ? '✔' : '□'}
+            </span>
+            <span className={met ? 'text-ice' : 'text-ice-dim'}>{objective.label}</span>
+          </p>
+          {!met && <p className="mt-0.5 pl-5 text-[0.68rem] text-ice-dim">{objective.hint}</p>}
+        </div>
+      )}
 
       {!state.pending && (
         <div className="flex shrink-0 flex-wrap gap-x-3 gap-y-1 border-t border-[color-mix(in_srgb,var(--color-ice)_9%,transparent)] px-4 py-2">

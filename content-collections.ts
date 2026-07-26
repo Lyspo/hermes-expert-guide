@@ -8,6 +8,7 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { parse as parseYaml } from 'yaml'
 import { posixPath } from './src/lib/path'
+import { OBJECTIVE_IDS } from './src/lib/term/objectives'
 
 /**
  * Per-track relevance. A lesson declares what it is *for* each reader rather
@@ -76,6 +77,35 @@ const lessons = defineCollection({
     hermesVersion: z.string(),
     updated: z.string(),
     draft: z.boolean().default(false),
+    /**
+     * How this lesson is mastered. Both forms are optional; a lesson with neither
+     * can still be marked read, it simply does not advance the version ladder.
+     *
+     * `objective` names a console scenario the reader has to actually drive — the
+     * strongest form, because it cannot be passed by recognising a sentence. Ids are
+     * declared in `src/lib/term/objectives.ts` and validated against that list below,
+     * so a typo fails the build rather than silently gating a lesson forever.
+     *
+     * `check` is the fallback where no console scenario exists: one question posed as
+     * the software's own approval prompt. It carries a `source` for the same reason
+     * every other claim does — a comprehension gate whose correct answer is unsourced
+     * is a claim, and an especially load-bearing one, since the reader is being told
+     * they were wrong.
+     */
+    objective: z.string().optional(),
+    check: z
+      .object({
+        question: z.string(),
+        /** Exactly four, because the prompt this borrows its shape from has four. */
+        options: z.array(z.string()).length(4),
+        /** 1-based, matching what the reader types. */
+        answer: z.number().int().min(1).max(4),
+        /** Why the right answer is right. Shown after answering, either way. */
+        because: z.string(),
+        /** Corpus citation, e.g. "[09] §14". */
+        source: z.string(),
+      })
+      .optional(),
     content: z.string(),
   }),
   transform: async (doc, ctx) => {
@@ -144,6 +174,26 @@ const lessons = defineCollection({
         } else if (!ids.has(prerequisite)) {
           problems.push(`${lesson.id}: prerequisite "${prerequisite}" does not exist`)
         }
+      }
+    }
+
+    // An objective naming an id that does not exist would gate its lesson forever with
+    // no way to satisfy it — invisible at runtime, and obvious here.
+    for (const lesson of lessons) {
+      if (lesson.objective && !OBJECTIVE_IDS.includes(lesson.objective)) {
+        problems.push(
+          `${lesson.id}: objective "${lesson.objective}" is not declared in src/lib/term/objectives.ts`,
+        )
+      }
+      // A check whose correct answer cites nothing is the one unsourced claim that
+      // matters most, because the reader is being told they were wrong.
+      if (lesson.check && !/^\[\d{2}\] §/.test(lesson.check.source)) {
+        problems.push(
+          `${lesson.id}: check cites "${lesson.check.source}", which is not a corpus reference`,
+        )
+      }
+      if (lesson.check && lesson.objective) {
+        problems.push(`${lesson.id}: has both an objective and a check; pick one`)
       }
     }
 

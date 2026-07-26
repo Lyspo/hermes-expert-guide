@@ -14,6 +14,22 @@ prerequisites:
   - hermes/02-standing-it-up/04-blast-radius-before-you-continue
 hermesVersion: v0.19.0
 updated: '2026-07-25'
+check:
+  question: >-
+    You move execution to Docker so the agent is isolated from the host. What
+    happens to the dangerous-command check?
+  options:
+    - It still runs, now evaluated against the container
+    - It runs, but only for paths mounted from the host
+    - It is skipped entirely
+    - It becomes stricter, because the backend is remote
+  answer: 3
+  because: >-
+    Four of the six backends - docker, singularity, modal and daytona - skip the
+    dangerous-command check. Not relaxed: skipped. Your own approvals.deny rules
+    are enforced only on host-reaching backends, which is local, SSH, and Docker
+    with a host mount.
+  source: '[02] §7'
 ---
 
 One config key decides where every command the agent runs actually lands:

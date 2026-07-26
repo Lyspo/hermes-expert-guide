@@ -28,12 +28,17 @@ export function Workspace({
   children,
   provenance,
   prompt,
+  objectiveId,
+  lessonId,
 }: {
   children: React.ReactNode
   /** Verified-against, last-checked, duration. Rendered in the console pane's header. */
   provenance: React.ReactNode
   /** Optional opening input, so a lesson can land on the frame it teaches. */
   prompt?: string
+  /** A console objective this lesson is mastered by satisfying. */
+  objectiveId?: string
+  lessonId?: string
 }) {
   return (
     <div className="plane mx-auto grid max-w-[104rem] grid-cols-1 gap-x-[calc(var(--step)*1.5)] px-6 py-[calc(var(--step)*3)] xl:grid-cols-[minmax(0,44rem)_minmax(30rem,1fr)] xl:px-[calc(var(--step)*2)]">
@@ -58,6 +63,8 @@ export function Workspace({
             <div className="mt-[calc(var(--step)*0.5)] min-h-0 flex-1">
               <ConsoleMount
                 {...(prompt === undefined ? {} : { prompt })}
+                {...(objectiveId === undefined ? {} : { objectiveId })}
+                {...(lessonId === undefined ? {} : { lessonId })}
                 fallback={<StaticTranscript />}
               />
             </div>

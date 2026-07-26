@@ -93,6 +93,94 @@ test.describe('the command palette', () => {
   })
 })
 
+test.describe('mastery', () => {
+  const CHECKED = '/hermes/04-tools-and-isolation/03-execution-backends-and-isolation/'
+  const OBJECTIVE = '/hermes/01-first-contact/04-versions-and-what-goes-stale/'
+
+  test('a correct answer writes a skill that survives a navigation', async ({ page }) => {
+    await page.goto(CHECKED)
+
+    const gate = page.getByRole('listbox', { name: 'Answer' })
+    await expect(gate).toBeVisible()
+
+    // Click the option by name rather than clicking the listbox and typing. Clicking a
+    // listbox lands on whichever option is under its centre point and commits it, which
+    // is a real behaviour and a terrible way to write a test.
+    await page.getByRole('option', { name: /It is skipped entirely/ }).click()
+
+    await expect(page.getByRole('status')).toContainText('Mastered')
+    // The explanation is shown, and it carries its citation.
+    await expect(page.getByRole('status')).toContainText('[02] §7')
+
+    // The whole point of a mastery layer is that it accumulates. Storage is the only
+    // thing carrying it, so crossing a page boundary is the real test.
+    await page.goto('/profile/')
+    await expect(page.getByRole('heading', { level: 1, name: 'Your agent' })).toBeVisible()
+    await expect(page.getByText('execution-backends-and-isolation')).toBeVisible()
+    await expect(page.getByText('tools-and-isolation/')).toBeVisible()
+    await expect(page.getByText('1 of 51 lessons mastered', { exact: false })).toBeVisible()
+  })
+
+  test('a wrong answer explains itself and grants nothing', async ({ page }) => {
+    await page.goto(CHECKED)
+
+    await page.getByRole('option', { name: /now evaluated against the container/ }).click()
+
+    await expect(page.getByRole('status')).toContainText('Not this time')
+    // The correction is the point, so it appears either way.
+    await expect(page.getByRole('status')).toContainText('skip the dangerous-command check')
+
+    await page.goto('/profile/')
+    await expect(page.getByText('0 of 51 lessons mastered', { exact: false })).toBeVisible()
+    await expect(page.getByText('Empty.', { exact: false })).toBeVisible()
+  })
+
+  test('a console objective is stated up front and ticks when it is actually done', async ({
+    page,
+  }) => {
+    await page.goto(OBJECTIVE)
+
+    // Stated before it is satisfied. A reader who does not know what is being asked has
+    // been given a puzzle rather than a lesson.
+    await expect(page.getByText('Confirm against the software that')).toBeVisible()
+
+    const input = page.getByRole('textbox', { name: 'Console input' })
+    await input.fill('hermes daemon start')
+    await input.press('Enter')
+    // Half done: the predicate wants the real command surface checked too.
+    await page.goto('/profile/')
+    await expect(page.getByText('0 of 51 lessons mastered', { exact: false })).toBeVisible()
+
+    await page.goto(OBJECTIVE)
+    await page.getByRole('textbox', { name: 'Console input' }).fill('hermes daemon start')
+    await page.getByRole('textbox', { name: 'Console input' }).press('Enter')
+    await page.getByRole('textbox', { name: 'Console input' }).fill('hermes --help')
+    await page.getByRole('textbox', { name: 'Console input' }).press('Enter')
+
+    await page.goto('/profile/')
+    await expect(page.getByText('1 of 51 lessons mastered', { exact: false })).toBeVisible()
+    await expect(page.getByText('versions-and-what-goes-stale')).toBeVisible()
+  })
+
+  test('the profile has no WCAG 2.1 AA violations', async ({ page }) => {
+    await page.goto('/profile/')
+    await expect(page.getByRole('heading', { level: 1, name: 'Your agent' })).toBeVisible()
+
+    const { violations } = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .analyze()
+
+    const readable = violations.map((violation) => ({
+      rule: violation.id,
+      impact: violation.impact,
+      help: violation.help,
+      nodes: violation.nodes.map((node) => node.target.join(' ')),
+    }))
+
+    expect(readable, JSON.stringify(readable, null, 2)).toEqual([])
+  })
+})
+
 test.describe('the console', () => {
   test('boots on a verbatim frame and carries its provenance', async ({ page }) => {
     await page.goto(LESSON)

@@ -8,6 +8,7 @@ import { Workspace } from '@/components/term/workspace'
 import { getModule } from '@/lib/content'
 import { jsonLd, lessonSchema } from '@/lib/schema'
 import { LessonProgress } from '@/components/personalization/lesson-progress'
+import { MasteryGate } from '@/components/personalization/mastery-gate'
 
 // This route tree serves one guide. A second guide gets its own directory, which
 // keeps its URLs short and its static params independent. Every lesson URL is
@@ -60,6 +61,8 @@ export default async function LessonPage({ params }: { params: Params }) {
         dangerouslySetInnerHTML={jsonLd(lessonSchema(lesson, parentModule))}
       />
     <Workspace
+      lessonId={lesson.id}
+      {...(lesson.objective ? { objectiveId: lesson.objective } : {})}
       /* What this lesson was checked against, sitting on the instrument that shows the
          frames. A version chip beside a console is provenance; the same chip in a
          margin is decoration. */
@@ -130,6 +133,11 @@ export default async function LessonPage({ params }: { params: Params }) {
         <hr className="border-ice-faint mt-[var(--step)] mb-[calc(var(--step)*1.5)]" />
 
         <MDXContent code={lesson.mdx} components={mdxComponents} />
+
+        {/* A lesson gated by a console objective says so in its own pane rather than
+            here, because the doing happens there. Only the question form needs room in
+            the prose column. */}
+        {lesson.check && <MasteryGate lessonId={lesson.id} check={lesson.check} />}
 
         <nav className="border-ice-faint mt-[calc(var(--step)*2.5)] flex justify-between gap-[calc(var(--step)*2)] border-t pt-[var(--step)] text-[0.9375rem]">
           {previous ? (

@@ -14,6 +14,21 @@ prerequisites:
   - hermes/03-running-a-session/04-configuration-you-will-actually-touch
 hermesVersion: v0.19.0
 updated: '2026-07-25'
+check:
+  question: >-
+    You want the agent to stop using the browser entirely, everywhere. What do
+    you actually configure?
+  options:
+    - Remove the individual browser tools one by one
+    - disabled_toolsets in config.yaml
+    - A per-platform allowlist on each gateway
+    - approvals.deny globs matching browser commands
+  answer: 2
+  because: >-
+    The toolset is the unit of control, not the tool. disabled_toolsets in
+    config.yaml applies globally; per-platform restriction is a separate and
+    narrower lever, and approvals.deny governs commands rather than capability.
+  source: '[01] §6'
 ---
 
 The tool catalogue is small on purpose, and knowing why is more useful than memorising
