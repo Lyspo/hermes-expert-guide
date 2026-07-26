@@ -408,20 +408,31 @@ grep -rho 'id="[a-z-]*"' content/guides/ --include=*.mdx | sort -u
 cheatsheets are done, and five of the eight replays are done.** What is actually left, in
 rough order of value:
 
-1. **The visual direction**, which is the only thing genuinely blocking the project's
-   stated ambition and is not an engineering task. See the warning at the top of this
-   file. Do not open by building.
-2. **Lighthouse CI.** LCP and CLS are still unmeasured, so `design.md`'s performance
-   budgets remain intentions rather than gates. This is now the largest untruth a reader
-   of this file could take away — the accessibility half of that old gap is closed
-   (Playwright and an axe sweep both run in CI), the performance half is not.
-3. **A colophon.** Specified in the map, never started.
-4. **The three unbuilt replays**, none of which is simply outstanding work: SIM-4 is
+1. **The composition pass on the lit field**, which is what the handoff at the top of
+   this file points at. The direction survived its first build; the execution has physics
+   and no composition. `06-direction-calibration.md` ends with five named, unbuilt things
+   — typography inside the field, a composed frame, a structural overlay, a moment, and
+   hierarchy beyond radius. **Start from that list, not from a blank, and not from a
+   fourteenth prototype.**
+2. **The unresolved question underneath it:** none of the direction has been tried next
+   to two thousand words of prose. The map is the easy case — a map is *meant* to be a
+   field. A lesson page is the real test and has not been attempted.
+3. **Lighthouse CI.** LCP and CLS are still unmeasured, so the performance half of the
+   old verification gap is still open. The accessibility half is closed — Playwright and
+   an axe sweep both run in CI.
+4. **A colophon.** Specified in the map, never started.
+5. **The three unbuilt replays**, none of which is simply outstanding work: SIM-4 is
    blocked on a capture, SIM-1 and SIM-8 would duplicate their hosts. Revisit only if a
    capture arrives or those lessons change shape.
 
 All six plates are built (VIZ-1 to VIZ-6). Ignore any line above claiming otherwise;
 regenerate rather than trust, with `grep -rl "<Viz" content/guides/`.
+
+**Two sessions ran in parallel on 2026-07-27** — a Windows one on the lit field, the
+console, the palette and the mastery gate, and a Mac one on the replays. They touched
+disjoint files and the replay work is orthogonal to the design question; the author's
+verdict above ("if you're only working on the functionality aspect for now, all good")
+is what sanctioned continuing on functionality while the direction was open.
 
 Two things about module 6 worth not rediscovering:
 
