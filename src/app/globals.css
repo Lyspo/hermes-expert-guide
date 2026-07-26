@@ -85,6 +85,59 @@
     z-index: 1;
   }
 
+  /* ---------------------------------------------------------------------------
+     The lesson's third zone.
+
+     Undocked — and always below 2xl — the console is its own full-width row under
+     the prose and the margin. Docked at 2xl it becomes a third column, sticky and
+     full height, and the grid widens to hold it.
+
+     Placement rather than movement: the console is rendered once and never remounts,
+     so docking it mid-lesson keeps its scrollback, its session and any approval it
+     was waiting on. A remount would throw all three away, and a reader who docks the
+     console *because* something interesting is on screen would lose exactly the thing
+     they wanted to keep looking at.
+     --------------------------------------------------------------------------- */
+  .lesson-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: var(--step);
+    max-width: 84rem;
+  }
+
+  @media (width >= 64rem) {
+    .lesson-layout {
+      grid-template-columns: minmax(0, 44rem) minmax(0, 17rem);
+    }
+  }
+
+  .lesson-console-cell {
+    grid-column: 1 / -1;
+  }
+
+  @media (width >= 96rem) {
+    .lesson-layout[data-console-dock='on'] {
+      max-width: 110rem;
+      grid-template-columns: minmax(0, 44rem) minmax(0, 17rem) minmax(28rem, 1fr);
+    }
+
+    .lesson-layout[data-console-dock='on'] .lesson-console-cell {
+      grid-column: 3;
+      grid-row: 1;
+      position: sticky;
+      top: calc(var(--step) * 1.5);
+      /* Subtracts the header so the console's own status bar cannot sit below the
+         fold — that bar is the thing several lessons are actually about. */
+      height: calc(100dvh - 4rem - var(--step) * 3);
+    }
+
+    /* Docked it sits beside the prose rather than after it, so the gap that separated
+       it from the lesson above is wrong. */
+    .lesson-layout[data-console-dock='on'] .lesson-console {
+      margin-top: 0;
+    }
+  }
+
   /* A nearer, flatter surface for terminal output. Hairline edge, no shadow —
      depth is declared once, and here it is declared by luminance. */
   .transcript {

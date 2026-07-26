@@ -27,7 +27,10 @@ export function LessonConsole({
   return (
     <section
       aria-labelledby="lesson-console"
-      className="mt-[calc(var(--step)*2.5)] border-t border-ice-faint pt-[var(--step)]"
+      // `h-full` and a flex column so the pane fills the docked cell when there is one
+      // and collapses to its own content when there is not. The docked top margin is
+      // cleared in globals.css rather than with a nested arbitrary variant here.
+      className="lesson-console flex h-full flex-col border-t border-ice-faint pt-[var(--step)] mt-[calc(var(--step)*2.5)]"
     >
       <h2
         id="lesson-console"
@@ -40,7 +43,7 @@ export function LessonConsole({
         came from; anything never captured is refused rather than invented.
       </p>
 
-      <div className="mt-[calc(var(--step)*0.75)] h-[28rem]">
+      <div className="mt-[calc(var(--step)*0.75)] min-h-[24rem] flex-1">
         <ConsoleMount
           lessonId={lessonId}
           {...(objectiveId === undefined ? {} : { objectiveId })}

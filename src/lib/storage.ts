@@ -40,6 +40,14 @@ export interface GuideState {
   }
   prefs: {
     motion?: 'system' | 'reduced'
+    /**
+     * Whether the lesson console is docked beside the prose on a wide screen.
+     *
+     * Optional and defaulted rather than versioned: an absent value is a valid state
+     * meaning "never chose", which is different from `false` meaning "closed it", and
+     * old stored data reads correctly without a migration.
+     */
+    consoleDock?: boolean
   }
 }
 
@@ -104,6 +112,8 @@ function parse(value: unknown): GuideState | null {
   if (!isRecord(prefs)) return null
   const motion = prefs['motion']
   if (motion !== undefined && motion !== 'system' && motion !== 'reduced') return null
+  const consoleDock = prefs['consoleDock']
+  if (consoleDock !== undefined && typeof consoleDock !== 'boolean') return null
 
   return {
     v: 2,
@@ -114,7 +124,12 @@ function parse(value: unknown): GuideState | null {
       completedAt: assessment['completedAt'],
     },
     progress: { completedLessons: completed, lastVisited: progress['lastVisited'] },
-    prefs: motion === undefined ? {} : { motion },
+    // Rebuilt key by key rather than spread, so an unknown key from a future version
+    // is dropped instead of being carried forward as unvalidated data.
+    prefs: {
+      ...(motion === undefined ? {} : { motion }),
+      ...(consoleDock === undefined ? {} : { consoleDock }),
+    },
   }
 }
 

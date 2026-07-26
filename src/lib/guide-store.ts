@@ -59,6 +59,11 @@ export function mutate(fn: (state: GuideState) => GuideState): void {
   emit()
 }
 
+/** Remembers whether the reader keeps the console docked beside the prose. */
+export function setConsoleDock(on: boolean): void {
+  mutate((state) => ({ ...state, prefs: { ...state.prefs, consoleDock: on } }))
+}
+
 /**
  * Records a lesson as mastered, and advances the streak on the same day.
  *

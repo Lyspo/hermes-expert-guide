@@ -331,19 +331,23 @@ const TONE: Record<Line['tone'], string> = {
 
 function Row({ line }: { line: Line }) {
   return (
-    <div className="term-row group flex items-baseline gap-3">
-      <pre className={`min-w-0 flex-1 whitespace-pre ${TONE[line.tone]}`}>
+    <div className="term-row group">
+      <pre className={`whitespace-pre ${TONE[line.tone]}`}>
         {line.text === '' ? ' ' : line.text}
       </pre>
+      {/* The citation sits on its own line beneath, not inline at the right.
+          Inline read well while the console was full width and collided the moment it
+          was docked into a 28rem column — terminal lines do not wrap, so a long one ran
+          straight under the chip. Its own line cannot collide at any width, and it keeps
+          the log a single horizontal scroller instead of making every line a scrollable
+          region needing its own tab stop.
+
+          `sticky left-0` so the citation stays visible while a wide frame is scrolled
+          sideways. Provenance is not decoration here: it is the claim. */}
       {line.source && (
-        <span
-          className="shrink-0 text-[0.6rem] tracking-[0.06em] text-ice-dim tabular-nums"
-          // Provenance is not decoration here: it is the claim. Every printed block says
-          // which capture licensed it, and "not captured" says so out loud.
-          title={`source: ${line.source}`}
-        >
+        <p className="sticky left-0 mb-1 text-[0.6rem] tracking-[0.06em] text-ice-dim tabular-nums">
           {line.source}
-        </span>
+        </p>
       )}
     </div>
   )

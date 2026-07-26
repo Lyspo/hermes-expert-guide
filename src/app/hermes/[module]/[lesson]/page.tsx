@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { MDXContent } from '@content-collections/mdx/react'
 import { getLesson, isWritten, lessons, neighbours, prerequisitesOf } from '@/lib/content'
 import { mdxComponents } from '@/components/mdx'
-import { Page } from '@/components/ui/page'
+import { LessonLayout } from '@/components/lesson/lesson-layout'
 import { LessonConsole } from '@/components/term/lesson-console'
 import { MasteryGate } from '@/components/personalization/mastery-gate'
 import { getModule } from '@/lib/content'
@@ -73,7 +73,14 @@ export default async function LessonPage({ params }: { params: Params }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={jsonLd(lessonSchema(lesson, parentModule))}
       />
-    <Page
+    <LessonLayout
+      defaultDocked={Boolean(lesson.objective)}
+      console={
+        <LessonConsole
+          lessonId={lesson.id}
+          {...(lesson.objective ? { objectiveId: lesson.objective } : {})}
+        />
+      }
       aside={
         /*
          * The margin, doing work.
@@ -223,17 +230,6 @@ export default async function LessonPage({ params }: { params: Params }) {
 
         <MDXContent code={lesson.mdx} components={mdxComponents} />
 
-        {/* The console sits after the prose rather than in the margin, and that is a
-            deliberate deferral rather than the final answer. The margin already carries
-            the section index, the lesson's position in the prerequisite graph and its
-            provenance — all of which a reader mid-lesson wants more often than a
-            terminal. Putting both in the second column at `xl` is a three-zone layout
-            that needs designing, not improvising during a merge. */}
-        <LessonConsole
-          lessonId={lesson.id}
-          {...(lesson.objective ? { objectiveId: lesson.objective } : {})}
-        />
-
         {lesson.check && <MasteryGate lessonId={lesson.id} check={lesson.check} />}
 
         <nav className="border-ice-faint mt-[calc(var(--step)*2.5)] flex justify-between gap-[calc(var(--step)*2)] border-t pt-[var(--step)] text-[0.9375rem]">
@@ -253,7 +249,7 @@ export default async function LessonPage({ params }: { params: Params }) {
           )}
         </nav>
       </article>
-    </Page>
+    </LessonLayout>
     </>
   )
 }
