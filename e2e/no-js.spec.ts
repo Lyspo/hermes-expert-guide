@@ -21,9 +21,9 @@ test('the landing page carries its whole argument', async ({ page }) => {
   await expect(page.locator('h1 ins')).toHaveText(/two capped files/)
 
   // The corrections are the product. All four, with their links. Addressed by a
-  // stable hook rather than by tag: the landing page's scroll narrative renders the
-  // same four claims through different markup, and this asserts the guarantee — four
-  // struck claims with four replacements, present with no script — not the shape of
+  // stable hook rather than by tag: this section has already been rebuilt twice —
+  // scroll narrative, then evidence ledger — and what is being guaranteed is four
+  // superseded claims with four replacements present with no script, not the shape of
   // the element that happens to hold them today.
   await expect(page.locator('[data-corrections] li del')).toHaveCount(4)
   await expect(page.locator('[data-corrections] li ins')).toHaveCount(4)
@@ -32,6 +32,18 @@ test('the landing page carries its whole argument', async ({ page }) => {
   // which is the point — four identical link labels were one of the repetitions that
   // made this page read as a template.
   await expect(page.locator('[data-corrections] li a')).toHaveCount(4)
+
+  // And each one's receipt, which is the half that makes the claim checkable. A
+  // correction whose evidence is painted on by a script is a correction a crawler,
+  // a text browser and a reader on a failed bundle have to take on trust — which is
+  // the one thing this guide asks nobody to do.
+  await expect(page.locator('[data-corrections] li figure')).toHaveCount(4)
+  await expect(page.locator('[data-corrections] figcaption')).toHaveCount(4)
+  // The strongest of the four, spelled out: the documentation's bar prints a cost
+  // field and not one captured bar has it.
+  const status = page.locator('[data-corrections] li').first()
+  await expect(status.locator('.transcript')).toContainText('$0.06')
+  await expect(status.locator('.transcript')).toContainText('21.1K/1M')
 
   // Real computed numbers, not placeholders.
   await expect(page.getByText(/core lessons/).first()).toBeVisible()

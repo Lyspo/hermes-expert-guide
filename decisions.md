@@ -230,3 +230,67 @@ fixed phrase that appears on every surface of the site, whichever layer it lives
 The four identical "the lesson that carries the source" links on the landing page went at
 the same time, for the same reason; each now names the lesson it goes to, resolved from
 the content collection so a rename cannot leave the page lying.
+
+---
+
+### 012 — The landing's corrections carry their receipts, and stop being a slideshow
+
+**2026-07-27.** Second surface of the design pass, after arrival. `06-direction-calibration.md`
+named it as what remained: *"the corrections scene further down that page is still the
+older GSAP treatment and has not been brought into this register."*
+
+**What it was.** A pinned scroll scene, 210vh of runway, four full-height panels scrubbed
+by `ScrollTrigger`. One claim visible at a time with the other three at `opacity: 0`, a
+`03 / 04` counter above them, and nothing else in the viewport. Four sentences delivered
+across four screens of black.
+
+Three things were wrong with it, and only the first is a matter of taste:
+
+1. **It is the least composed thing on the site**, on the section the page calls the
+   product. `06`'s diagnosis of "looks extremely basic / not designed" was *physics and
+   no composition* — and the fix for that is density and arrangement, not motion. This
+   was maximum motion and minimum arrangement.
+2. **`design.md` names `01 / 4` pagination in its refusals**, and the scene shipped it.
+3. **It asserted rather than showed.** A section whose entire claim is "we checked"
+   offered four sentences and no evidence, in a project that has the captures on disk.
+
+**What it is now.** All four present at once, each paired with the material that settles
+it, in the empty space to the right of the reading column. The receipts are four
+*different kinds* of proof, and that is the section's second argument: a captured status
+bar, a captured transcript, the source that implements the behaviour, and the release
+record. A guide that only ever cites one kind of source has only checked one way.
+
+Against the four rules arrival established:
+
+| | |
+|---|---|
+| Luminance out of the material | Superseded claim small and dim, checked claim large and lit, receipt on the nearer `--deep` plane. No paint. |
+| Made of something true | Every line verbatim from `research/`, asserted by `corrections.test.ts` with interior whitespace preserved |
+| Reading column never under the rendering | Prose keeps the page's left spine; evidence extends right |
+| One moment, and it ends | **None.** Arrival owns the page's moment. This section has no animation and no client JavaScript at all. |
+
+**Three consequences worth keeping.**
+
+- **The landing now ships +0.0 kB of first-party JavaScript**, down from +1.6 kB. GSAP
+  is gone from the page and the whole section is server-rendered HTML. It is also
+  shorter than what it replaced — 3,807 px against 4,770 — while carrying strictly more.
+- **`.widen-right` is the reusable form of the hero's move**, and it extends *right only*
+  so the reading column keeps the left edge every other section sits on. Its travel
+  lands the right edge exactly on the header's, at every viewport. The first version
+  overshot by 48 px everywhere because both measures are `max-width`, which includes
+  each container's own padding — the header carries `--step * 3` a side and `main`
+  carries `1.5rem`. **Measured in the browser; deriving it twice would have been wrong
+  twice.**
+- **The receipts are sized to their contents, not stretched to the column.** Stretched,
+  four of them are four equal rectangles down one side — a card grid, which the refusals
+  name, and which reads as chrome. Sized to fit they are four different pieces of
+  material, and the evidence is as big as the evidence is.
+
+**What this does not decide.** It is one section on one page, and the sections around it
+— the tracks, how it was written, the module list — are still the 52rem column in a void.
+Whether this register is *wanted* is the author's call and has had no reaction yet.
+
+**Reversible in one file.** `src/components/landing/corrections.tsx`, plus the
+`.widen-right` rule. `use-scene-capable.ts` is deliberately kept though nothing imports
+it now: `CLAUDE.md` prescribes it by name as the pattern any future scroll scene must
+use, and deleting it would make that instruction wrong.

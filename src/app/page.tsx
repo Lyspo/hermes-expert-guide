@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { CorrectionsScene } from '@/components/landing/corrections-scene'
+import { CORRECTIONS, Corrections } from '@/components/landing/corrections'
 import { EvidenceField } from '@/components/landing/evidence-field'
 import { coreCountFor, durationFor, guides, lessons, modules } from '@/lib/content'
 import { jsonLd, websiteSchema } from '@/lib/schema'
@@ -18,30 +18,6 @@ import { TRACKS, TRACK_LABELS, site } from '@/lib/site'
  * numbers computed from the content rather than written by hand, and every claim on
  * the page traceable to a lesson that carries its source.
  */
-
-/** Corrections the guide makes. Each one is drawn from the lesson that owns it. */
-const CORRECTIONS = [
-  {
-    was: 'The status bar shows a running cost estimate.',
-    now: 'There is no cost field. Across three hundred captured status bars it never appeared.',
-    where: '/hermes/03-running-a-session/01-the-status-bar-and-the-context-budget/',
-  },
-  {
-    was: 'Dangerous commands trigger an approval prompt.',
-    now: 'They trigger an assessment. On a default install, rm -rf on a host path ran with no prompt at all.',
-    where: '/hermes/04-tools-and-isolation/04-approvals-in-depth/',
-  },
-  {
-    was: 'The review fires about every ten agent turns.',
-    now: 'Every ten tool-calling iterations. One request can advance the counter by five.',
-    where: '/hermes/06-skills-and-the-loop/05-the-nudge-and-the-review-fork/',
-  },
-  {
-    was: 'Multi-agent orchestration shipped in v0.6.0.',
-    now: 'v0.6.0 was Profiles. Orchestration is v0.11.0 through v0.15.0.',
-    where: '/hermes/08-more-than-one-agent/01-two-orchestration-models/',
-  },
-]
 
 export default function HomePage() {
   const guide = guides[0]
@@ -145,28 +121,38 @@ export default function HomePage() {
         </p>
       </section>
 
-      {/* The corrections. This is the product, so it gets the most space. */}
-      <section className="mt-[calc(var(--step)*4)] border-t border-ice-faint pt-[calc(var(--step)*1.25)]">
-        <h2 className="font-display text-[1.6rem] leading-[1.15] tracking-[-0.015em]">
+      {/*
+        The corrections. This is the product, so it gets the most space — and, since
+        2026-07-27, the only section that leaves the reading measure.
+
+        It was a pinned scroll scene: four screens, one claim visible at a time, the
+        other three at zero opacity, and a `03 / 04` counter that `design.md` names in
+        its refusals. It now widens right to the header's edge so each correction can
+        carry the captured material that settles it, which is what the section was
+        always asserting and never showing.
+      */}
+      <section className="widen-right mt-[calc(var(--step)*4)] border-t border-ice-faint pt-[calc(var(--step)*1.25)]">
+        <h2 className="font-display max-w-[52rem] text-[1.6rem] leading-[1.15] tracking-[-0.015em]">
           Four more the documentation gets wrong
         </h2>
         <p className="mt-[calc(var(--step)*0.75)] max-w-[62ch] text-[0.95rem] leading-[1.75] text-ice-dim">
-          Each of these was checked against a v0.19.0 install rather than against another
-          article. Where a claim survives, the lesson says so; where it does not, the
-          superseded version stays on the page beside its replacement.
+          Each was checked against a v0.19.0 install rather than against another article,
+          and each carries what it was checked against: a captured status bar, a captured
+          transcript, the source that implements the behaviour, and the release record.
         </p>
 
-        <div className="mt-[calc(var(--step)*1.5)]">
+        <div className="mt-[calc(var(--step)*2)]">
           {/* Titles resolved from the content collection rather than written out
               here, so a renamed lesson cannot leave the landing page describing a
               page that no longer goes by that name. */}
-          <CorrectionsScene
-            corrections={CORRECTIONS.map((correction) => ({
-              ...correction,
-              label:
-                lessons.find((lesson) => lesson.url === correction.where)?.title ??
-                'the lesson that carries the source',
-            }))}
+          <Corrections
+            corrections={CORRECTIONS}
+            titles={Object.fromEntries(
+              CORRECTIONS.map((correction) => [
+                correction.where,
+                lessons.find((lesson) => lesson.url === correction.where)?.title ?? '',
+              ]).filter(([, title]) => title !== ''),
+            )}
           />
         </div>
       </section>

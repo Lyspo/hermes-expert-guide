@@ -22,7 +22,7 @@ Static export means: no middleware, no ISR, no server actions, no route handlers
 
 ## Architecture rules
 
-**Animation split — enforced by lint.** Components animate with Motion (`motion/react`, via `LazyMotion` + `m` on content routes). Scenes animate with GSAP (landing scroll narrative, scroll-scrubbed visualizations only), dynamically imported so content pages never ship it. Never animate one element with both.
+**Animation split — enforced by lint.** Components animate with Motion (`motion/react`, via `LazyMotion` + `m` on content routes). Scenes animate with GSAP (scroll-scrubbed visualizations only, since the landing's scroll narrative was removed on 2026-07-27), dynamically imported so content pages never ship it. Never animate one element with both.
 
 **Every animation has a defined static end-state.** `prefers-reduced-motion` and the user's motion preference must land on that state, not on a broken half-state. This is a review checklist item, not a nice-to-have.
 
@@ -158,9 +158,13 @@ real content rather than decorating:
   from the prerequisite graph rather than a counter ("comes after 8 lessons · built on by
   40 later lessons"). Sections open with a hairline and real scale, so a lesson has a
   visible shape. Below `lg` the load-bearing parts fall into the flow.
-- **The landing scroll narrative** (`landing/corrections-scene.tsx`). The four claims the
-  research contradicts are struck and corrected one at a time as the reader descends.
-  Desktop and motion only; otherwise it is the plain list it already was.
+- ~~**The landing scroll narrative**~~ (`landing/corrections-scene.tsx`). **Removed
+  2026-07-27** — see `decisions.md` 012. It pinned for four screens to deliver four
+  sentences with the other three at zero opacity, on the section the page calls the
+  product, and it shipped the `01 / 4` pagination `design.md` names in its refusals.
+  Replaced by `landing/corrections.tsx`, which shows all four at once beside the
+  captured material that settles each. **The landing now ships no GSAP and no
+  first-party JavaScript at all.**
 - **Plates ink themselves** via `DrawSVGPlugin` on the beat groups. Strokes only — a label
   that writes itself is unreadable exactly while someone is trying to read it.
 - **View Transitions** behind `experimental.viewTransition`, naming only the header,
@@ -436,9 +440,8 @@ for d in content/guides/hermes/*/; do n=$(ls $d*.mdx | wc -l); \
 grep -rho 'id="[a-z-]*"' content/guides/ --include=*.mdx | sort -u
 ```
 
-**The curriculum is done, the landing scroll narrative is done, the glossary and the
-cheatsheets are done, and five of the eight replays are done.** What is actually left, in
-rough order of value:
+**The curriculum is done, the glossary and the cheatsheets are done, and five of the
+eight replays are done.** What is actually left, in rough order of value:
 
 > **The non-design work is finished.** As of 2026-07-27 there is no outstanding
 > capability, content or verification task that is not blocked on a capture. Everything
@@ -470,10 +473,32 @@ It also sets four rules the remaining surfaces should follow, written up at the 
    and around prose, by adjacency and shared alignment.
 4. **One moment per surface, and it ends.** Resting state is the finished state.
 
+**Surface two is done: the corrections carry their receipts.** `decisions.md` 012 and
+the end of `06`. The pinned four-screen scroll scene is gone; all four corrections now
+sit beside the captured material that settles each — a status bar, a tool feed, the
+source that implements the behaviour, and the release ladder, four different *kinds* of
+proof. `corrections.test.ts` asserts every line against `research/` **preserving
+interior whitespace**, which is the fidelity lesson applied to a second surface.
+
+Two things from it that generalise:
+
+- **`.widen-right`** (in `globals.css`) is the reusable form of the hero's move. It
+  extends a section right only, so the reading column keeps the page's left spine, and
+  it lands the right edge exactly on the header's. The travel is
+  `3rem - (min(84rem, 100vw) - 52rem) / 2`; that `3rem` is the difference in the two
+  containers' own padding, and leaving it out overshoots by 48 px at every viewport.
+  **Measure it in the browser — this is the second time deriving a spread by hand has
+  been wrong here.**
+- **Evidence blocks are sized to their contents, never stretched to their column.**
+  Stretched, a stack of them is a card grid, which the refusals name.
+
 **Still to do on design:** page transitions, colour beyond the existing tokens, the
-component set, the module and index pages, and the landing below the hero — the
-corrections scene there is still the older GSAP treatment and has not been brought into
-this register.
+component set, the module and index pages, and the rest of the landing — the tracks
+section, "how it was written" and the module list are all still the 52rem column with
+half the viewport empty beside them. The module list is the weakest: `design.md` asks
+for sequence to be spatial and *"a view of the structure rather than a table of contents
+drawn to look like one"*, and it is currently exactly the latter, while `graph.ts`
+already computes the prerequisite depth that would make it the former.
 
 **The lesson masthead is parked, by the author's decision on 2026-07-27.** It is built,
 verified and shipping on `main` (`src/components/lesson/masthead-field.tsx`), and no

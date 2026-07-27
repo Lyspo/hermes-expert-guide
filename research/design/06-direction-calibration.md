@@ -312,3 +312,78 @@ Transitions between pages, colour beyond the existing tokens, the component set,
 module and index pages, and the second half of the landing below the hero. The corrections
 scene further down that page is still the older GSAP treatment and has not been brought
 into this register.
+
+---
+
+## Surface two: the corrections, given their evidence (2026-07-27)
+
+The section above ends by naming what was left, and puts the landing below the hero
+first. This is that.
+
+### What it was
+
+The corrections scene: 210vh of pinned runway, four full-height panels scrubbed by
+GSAP, one claim visible at a time and the other three at zero opacity, with a `03 / 04`
+counter above them. At 1440 a reader saw one sentence in an otherwise empty viewport,
+four times.
+
+It was the only section of the site still in the pre-calibration register, and it was
+the wrong one to leave there — the page calls this section the product.
+
+### What it is now
+
+Four corrections present at once, each holding up the material that settles it, in the
+space to the right of the reading column that the 52rem measure left empty.
+
+The receipts are deliberately four **different kinds** of proof, which is the section's
+second argument and one no competing guide can make:
+
+| Correction | Receipt | Kind |
+|---|---|---|
+| No cost field in the status bar | The documented bar above a hairline, three captured ones below | Observation, against the published claim |
+| `rm -rf` ran with no prompt | Three lines of tool feed with nothing between them | Observation |
+| Ten tool-calling iterations, not ten turns | The counter, from `agent/conversation_loop.py` | Implementation |
+| v0.6.0 was Profiles | Four rows of the release ladder | Record |
+
+The first is the strongest and is placed first: the documentation prints `$0.06`, and
+none of the three captured bars has a `$` field at all. The supersession happens
+*inside* the receipt, in the same grammar as the prose beside it — what was believed is
+further away — so the pair reads without a caption explaining which is which.
+
+### Why it has no motion, deliberately
+
+Rule 4 says one moment per surface and arrival owns the page's. But the stronger reason
+is that motion was never the missing thing. `06`'s own diagnosis of "looks extremely
+basic / not designed" was **physics and no composition**, and the scene it replaces was
+the purest possible expression of that: maximum motion, minimum arrangement. The fix for
+"not designed" is density and adjacency.
+
+The section ships **no client JavaScript**, which takes the landing to +0.0 kB of
+first-party code, and the page is 963 px *shorter* than before while carrying four
+captured artefacts it did not carry.
+
+### The two things that went wrong on the way
+
+- **The breakout overshot the header's right edge by 48 px at every viewport.** Both
+  measures are `max-width`, which includes each container's own inline padding, so the
+  two *content* edges are 3rem closer together than the two box edges. Arithmetic done
+  once in the CSS and once in my head agreed with each other and disagreed with the
+  browser. One `getBoundingClientRect` dump across four widths fixed it. This is the
+  same lesson the masthead build recorded and it was available to be re-learned.
+- **The receipts were stretched to the column and read as cards.** Four equal
+  rectangles down one side is a card grid, which `design.md` refuses by name. Sized to
+  their contents they became four different shapes, which is what they actually are.
+
+### What this leaves
+
+On this page: the tracks, "how it was written", and the module list are still the 52rem
+column with half the viewport empty beside them. The module list is the weaker of the
+three — `design.md` says sequence should be spatial and *"a view of the structure rather
+than a table of contents drawn to look like one"*, and it is currently exactly the
+latter, while `graph.ts` already computes the prerequisite depth that would make it the
+former.
+
+Beyond this page: transitions, colour, the component set, the module and index pages.
+
+**No reaction from the author on any of it yet.** Everything above is self-assessment,
+and the register itself is one section old.

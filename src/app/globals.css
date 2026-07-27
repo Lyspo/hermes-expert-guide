@@ -138,6 +138,37 @@
     }
   }
 
+  /* ---------------------------------------------------------------------------
+     Widening a section out of the reading measure, to the right only.
+
+     The landing sets its prose at 52rem and centres it, which at 1440 leaves about
+     three hundred pixels of nothing down each side — the register `06` records the
+     author rejecting. The arrival hero answers that by putting the evidence field in
+     the space on the right; this is the same move made reusable for the sections
+     below it.
+
+     Two properties of it are deliberate. It extends **right and not left**, so the
+     reading column keeps the left edge every other section on the page sits on — a
+     spine, rather than four sections each starting somewhere different. And it
+     travels exactly far enough to land its right edge on the *header's* right edge:
+     composition by shared alignment, which is the third of the four rules the arrival
+     surface set, rather than by a width that looked about right.
+
+     The `3rem` is not a fudge and is the reason a first version overshot by 48px at
+     every viewport. Both measures are `max-width`, which includes each container's
+     own inline padding — the header carries `--step * 3` a side at this breakpoint
+     and `main` carries `1.5rem`, so the two *content* edges are 3rem closer together
+     than the two box edges. Measured in the browser, not derived twice.
+
+     Below 64rem it does nothing: there is no spare width to extend into, the header's
+     padding is the narrow one, and the grid inside has already stacked.
+     --------------------------------------------------------------------------- */
+  @media (width >= 64rem) {
+    .widen-right {
+      margin-right: calc(3rem - (min(84rem, 100vw) - 52rem) / 2);
+    }
+  }
+
   /* A nearer, flatter surface for terminal output. Hairline edge, no shadow —
      depth is declared once, and here it is declared by luminance. */
   .transcript {
