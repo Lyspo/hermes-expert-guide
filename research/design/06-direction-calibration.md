@@ -387,3 +387,48 @@ Beyond this page: transitions, colour, the component set, the module and index p
 
 **No reaction from the author on any of it yet.** Everything above is self-assessment,
 and the register itself is one section old.
+
+---
+
+## Surface three: the module list becomes the shape of the course (2026-07-27)
+
+`design.md` already refused what the landing's module list was — *"a table of contents
+drawn to look like one"* — and it had stayed that way regardless: number, title, count,
+ten times, in the reading measure with half the viewport empty. It is also the last
+thing before the footer, which is where the page either gets someone in or does not.
+
+**It is now the curriculum seen from the side.** Every lesson is a mark at its
+prerequisite depth on one axis shared by all ten modules; each module's rule spans its
+own reach. The staircase from *First contact* at depth 0–1 to *Deployment and
+governance* at 5–11 is the shape of the course, and the two modules that break the
+staircase — 9 opening at depth 4, 8 not starting until 8 — are the useful part, because
+reading order and prerequisite order are not the same thing.
+
+Against the five named items from the first build, which asked what "designed" would
+mean here:
+
+| | Answered by |
+|---|---|
+| Typography inside the field | The axis labelled in its own units; `reach` and `lessons` naming their columns |
+| A composed frame | The section widens to the header's edge; the axis is the frame |
+| A structural overlay | The reach rules are a second system over the marks |
+| A moment | **None, deliberately.** Arrival owns the page's one moment |
+| Hierarchy beyond radius | Lit title, dim marks, hairline rules — three levels of luminance |
+
+**It is a chart, not a second graph**, and the distinction is the one this project paid
+for once already. `/hermes/` draws the lesson graph; this asks a different question at a
+different granularity, on a labelled numeric axis, in ten rows. No canvas, no nodes, no
+client JavaScript.
+
+### Where the landing stands now
+
+Hero (evidence wall, lit, wide) → tracks (quiet, reading measure) → corrections (dense,
+wide, four receipts) → how it was written (quiet, reading measure) → the arc (wide).
+
+Two dense evidence surfaces bracketing two prose passages, all on one left spine. The
+two narrow sections are being left narrow: they are prose with nothing true to put
+beside them, and widening a section that has nothing to fill it is exactly how the void
+appeared in the first place.
+
+**Still no reaction from the author on any of the three surfaces.** The register is one
+day old and entirely self-assessed.

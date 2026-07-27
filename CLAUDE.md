@@ -492,13 +492,29 @@ Two things from it that generalise:
 - **Evidence blocks are sized to their contents, never stretched to their column.**
   Stretched, a stack of them is a card grid, which the refusals name.
 
+**Surface three is done: the module list is a view of the structure.** `decisions.md`
+013. Every lesson marked at its prerequisite depth on one shared axis, each module's
+rule spanning its own reach — the third view of the same `graph.ts` numbers, after the
+curriculum map and the lesson masthead. It is a **chart, not a second graph**: a
+labelled numeric axis in ten rows, no canvas and no nodes, which is what keeps it on the
+right side of the rule about drawing the graph in exactly one place.
+`curriculum-arc.test.ts` asserts the section's own copy — that reading order and
+prerequisite order genuinely differ — because if they did not, the drawing would say
+nothing the numbering already does and nothing else in the build would notice.
+
+**The landing now reads:** hero (evidence wall, wide) → tracks (quiet) → corrections
+(dense, wide) → how it was written (quiet) → the arc (wide). Two evidence surfaces
+bracketing two prose passages, all on one left spine, **+0.0 kB of first-party
+JavaScript**.
+
 **Still to do on design:** page transitions, colour beyond the existing tokens, the
-component set, the module and index pages, and the rest of the landing — the tracks
-section, "how it was written" and the module list are all still the 52rem column with
-half the viewport empty beside them. The module list is the weakest: `design.md` asks
-for sequence to be spatial and *"a view of the structure rather than a table of contents
-drawn to look like one"*, and it is currently exactly the latter, while `graph.ts`
-already computes the prerequisite depth that would make it the former.
+component set, and the module and index pages. On the landing itself, "Three routes" and
+"How it was written" are still the reading measure and are being left that way on
+purpose — they are prose with nothing true to put beside them, and widening a section
+that has nothing to fill it is how the void got there in the first place.
+
+**No reaction from the author on any of the three surfaces.** The whole register is one
+day old and entirely self-assessed; treat it as a proposal, not as settled.
 
 **The lesson masthead is parked, by the author's decision on 2026-07-27.** It is built,
 verified and shipping on `main` (`src/components/lesson/masthead-field.tsx`), and no

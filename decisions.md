@@ -294,3 +294,66 @@ Whether this register is *wanted* is the author's call and has had no reaction y
 `.widen-right` rule. `use-scene-capable.ts` is deliberately kept though nothing imports
 it now: `CLAUDE.md` prescribes it by name as the pattern any future scroll scene must
 use, and deleting it would make that instruction wrong.
+
+---
+
+### 013 — The landing's module list becomes a view of the structure
+
+**2026-07-27.** Same design pass, third surface, and the one `design.md` had already
+indicted without anyone acting on it:
+
+> **Sequence is spatial.** Module and lesson order maps to depth and position in the
+> curriculum map, so it is a view of the structure rather than a table of contents
+> drawn to look like one.
+
+The landing's module list was a table of contents drawn to look like one — number,
+title, count, ten times, in a 52rem column with half the viewport empty beside it. It
+was also the last thing on the page before the footer, which is where a reader decides
+whether to go in.
+
+**What it is now.** Every lesson marked at its **prerequisite depth**, on one axis
+shared by all ten modules, with each module's rule spanning its own reach. Depth is the
+longest prerequisite chain ending at a lesson, computed by `graph.ts` from the lessons'
+own frontmatter — the same number `/hermes/` and the lesson masthead are drawn from, so
+this is a third view of one structure rather than a third structure.
+
+It answers something a list cannot: **where you can get in.** Module 9 opens at depth 4
+and module 8 does not start until depth 8. Reading order and prerequisite order are not
+the same thing, and the gap between them is the useful part.
+
+**Deliberately module-level, and deliberately not a graph.** `/hermes/` draws the lesson
+graph and lists every lesson with its prose; that is the browsing surface, and repeating
+it here would make the landing a worse copy of it. This project has already learned once
+what happens when two surfaces draw the same structure — the ambient canvas made the
+real curriculum map unfindable. Ten rows of ticks on a labelled numeric axis is a chart,
+not a field of nodes, and it is a different question at a different granularity.
+
+**Three things worth keeping.**
+
+- **The rule spans the module's reach, not the axis.** Drawn full width — which is what
+  a shared scale wants — every row looks like it covers 0 to 11 and the marks read as
+  ticks on a bar rather than as positions. Spanning min to max, the line *is* the reach,
+  and the staircase down the page is the curriculum getting deeper with nothing saying so.
+- **The marks are translucent so coincident lessons accumulate.** Three lessons at depth
+  5 is brighter than one. Luminance out of density, which is rule one, rather than a
+  value picked to look right.
+- **`curriculum-arc.test.ts` asserts the section's own copy.** It claims reading order
+  and prerequisite order differ; if the modules were a clean staircase with no overlap
+  the drawing would say nothing the numbering did not, and the sentence would be false.
+  Nothing else in the build would notice. It also asserts every module has lessons in
+  the graph, since a module missing from it renders as an empty row rather than an error.
+
+**Two mistakes on the way**, both from letting the grid place things:
+
+- Auto-flow put the full-width track on row two and pushed the lesson count onto a third
+  row of its own, orphaned under the left edge. A spanning cell makes everything after
+  it wrap. Every cell is placed explicitly now.
+- The depth range was `hidden` below `lg`. The marks that encode it are `aria-hidden`,
+  so on a phone that was not a graceful degradation — it deleted the fact.
+
+**What is left on this page, and why it is being left.** "Three routes" and "How it was
+written" are still the reading measure. They are prose with nothing true to put beside
+them, and widening a section that has nothing to fill it is how the void got there in
+the first place. Between two evidence surfaces they now read as the quiet passages
+rather than as the unfinished ones — but that is a claim about rhythm, and the author
+has not seen any of it yet.

@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import { CORRECTIONS, Corrections } from '@/components/landing/corrections'
+import { CurriculumArc } from '@/components/landing/curriculum-arc'
 import { EvidenceField } from '@/components/landing/evidence-field'
 import { coreCountFor, durationFor, guides, lessons, modules } from '@/lib/content'
+import { curriculumGraph } from '@/lib/curriculum-graph'
 import { jsonLd, websiteSchema } from '@/lib/schema'
 import { TRACKS, TRACK_LABELS, site } from '@/lib/site'
 
@@ -184,35 +186,26 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* The curriculum. A real table of contents, not a decorative one. */}
-      <section className="mt-[calc(var(--step)*4)] border-t border-ice-faint pt-[calc(var(--step)*1.25)]">
+      {/*
+        The curriculum, seen from the side rather than listed.
+
+        This was number, title, count, ten times — the table of contents drawn to look
+        like one that `design.md` refuses by name. It now places every lesson at its
+        real prerequisite depth on one shared axis, so the page ends on the shape of
+        the thing rather than on an inventory of it.
+      */}
+      <section className="widen-right mt-[calc(var(--step)*4)] border-t border-ice-faint pt-[calc(var(--step)*1.25)]">
         <h2 className="font-display text-[1.6rem] leading-[1.15] tracking-[-0.015em]">
           <Link href={guide?.url ?? '/hermes/'}>{guide?.title}</Link>
         </h2>
         <p className="mt-[calc(var(--step)*0.5)] font-mono text-[0.7rem] text-ice-dim">
-          {moduleCount} modules · {written} lessons · {guide?.subject} {guide?.verifiedAgainst}
+          {moduleCount} modules · {written} lessons · depth {curriculumGraph.maxDepth} at the
+          deepest · {guide?.subject} {guide?.verifiedAgainst}
         </p>
 
-        <ol data-modules className="mt-[calc(var(--step)*1.25)]">
-          {modules
-            .filter((entry) => entry.guideSlug === guide?.slug)
-            .map((entry) => (
-              <li
-                key={entry.url}
-                className="flex items-baseline gap-[calc(var(--step)*0.75)] border-t border-ice-faint py-[calc(var(--step)*0.6)]"
-              >
-                <span className="shrink-0 font-mono text-[0.7rem] text-ice-dim">
-                  {String(entry.number).padStart(2, '0')}
-                </span>
-                <Link href={entry.url} className="flex-1">
-                  {entry.title}
-                </Link>
-                <span className="shrink-0 font-mono text-[0.7rem] text-ice-dim">
-                  {entry.lessons.length}
-                </span>
-              </li>
-            ))}
-        </ol>
+        <div className="mt-[calc(var(--step)*1.5)]">
+          <CurriculumArc modules={modules.filter((entry) => entry.guideSlug === guide?.slug)} />
+        </div>
       </section>
     </main>
   )
