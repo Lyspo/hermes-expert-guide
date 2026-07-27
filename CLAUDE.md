@@ -452,6 +452,29 @@ all — worked out against the ten reference sites and the ranking in
 `decisions.md` 010. Start from `06`'s five named items, not from a blank and not from a
 fourteenth prototype.
 
+**Surface one is done: arrival.** The landing hero now carries a wall of captured Hermes
+output receding at an angle through the space that used to be empty — the near lines
+being the ones that carry a correction, so the argument arrives before the prose. Real
+text in CSS 3D rather than a canvas, **zero client JavaScript**, and every line asserted
+real by `evidence-field.test.ts` against `research/` and the console's cited table.
+
+It also sets four rules the remaining surfaces should follow, written up at the end of
+`06`:
+
+1. **Luminance comes out of the material, never out of a filter** — density, distance,
+   real lighting. No `box-shadow` glow, no gradient chrome.
+2. **Anything rendered has to be made of something true.** The curriculum field is the
+   real prerequisite graph; the arrival wall is real captured output. A surface that
+   would need invented content to look good is the wrong surface.
+3. **The reading column is never underneath the rendering.** Compose in the space beside
+   and around prose, by adjacency and shared alignment.
+4. **One moment per surface, and it ends.** Resting state is the finished state.
+
+**Still to do on design:** page transitions, colour beyond the existing tokens, the
+component set, the module and index pages, and the landing below the hero — the
+corrections scene there is still the older GSAP treatment and has not been brought into
+this register.
+
 **The lesson masthead is parked, by the author's decision on 2026-07-27.** It is built,
 verified and shipping on `main` (`src/components/lesson/masthead-field.tsx`), and no
 further work goes into it until the design pass judges it. The author's position: *"so

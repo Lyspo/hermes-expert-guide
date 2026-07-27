@@ -212,6 +212,78 @@
    for tens of seconds.
    --------------------------------------------------------------------------- */
 
+/* ---------------------------------------------------------------------------
+   The arrival field.
+
+   A wall of captured Hermes output, seen at an angle. Real text in real CSS 3D
+   rather than a canvas: it can be selected and checked, it costs no JavaScript,
+   and it keeps the rule against reintroducing an ambient background canvas
+   intact — this is one region of one page, made of cited strings.
+
+   Luminance here is density and distance, never a glow. The far edge of the
+   plane is dim because it is further away, and the lower rows are dim because
+   the wall continues past the fold. Nothing is painted on.
+   --------------------------------------------------------------------------- */
+
+.evidence-field {
+  perspective: 1200px;
+  perspective-origin: 0% 42%;
+  /* Its own stacking context, beneath the hero type, so no rotated descendant
+     can ever paint over the argument. */
+  isolation: isolate;
+  z-index: 0;
+}
+
+.evidence-plane {
+  transform: rotateY(-34deg) rotateX(5deg);
+  transform-origin: 0% 50%;
+  transform-style: preserve-3d;
+  /* The X rotation lifts the near edge above the container's own top, so the
+     first row — a status bar, the line most worth reading — was clipped in
+     half. This is the room it needs. */
+  padding-top: 1.75rem;
+}
+
+.evidence-line {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 2.05;
+  white-space: pre;
+  color: var(--color-ice-dim);
+  /* Distance down the wall, and the ramp is steep on purpose at the far end.
+     A shallower fade left the last row at 16% opacity exactly where the
+     container clips, so the wall ended on a hard horizontal edge and read as a
+     cropped box rather than as a surface continuing past the frame. It now
+     dissolves before it reaches the cut. */
+  opacity: max(0, calc(0.62 - var(--i) * 0.03));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .evidence-line {
+    animation: evidence-settle 620ms var(--ease-arrive) both;
+    /* Capped low: twenty-two rows times a larger step is a loading screen, and
+       this is meant to be over before the reader has finished arriving. */
+    animation-delay: calc(var(--i, 0) * 22ms);
+  }
+}
+
+:root[data-motion='reduced'] .evidence-line {
+  animation: none;
+}
+
+/* Transform-only, and that is not a stylistic choice.
+   `CLAUDE.md` records three separate bugs in this repo caused by animating opacity
+   from zero: a throttled clock leaves the element invisible, and with `both` fill
+   mode the staggered delay holds that invisible state for up to half a second even
+   when everything is working. The row is legible at every instant of this; only its
+   position moves. It settles *to* the resting state, which is the base rule above. */
+@keyframes evidence-settle {
+  from {
+    transform: translate3d(0, 0.55rem, -70px);
+  }
+}
+
 @keyframes masthead-draw {
   from {
     stroke-dashoffset: var(--len);

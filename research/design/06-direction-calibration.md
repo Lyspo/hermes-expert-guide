@@ -240,3 +240,75 @@ rather than another round of my own:
 The open question from the first build is now partly answered: the direction *does*
 survive next to prose, because it can be given a job and kept out of the reading column.
 Whether this particular execution is wanted is a separate question and is not settled.
+
+---
+
+## The design pass proper: surface one, arrival (2026-07-27)
+
+The author's instruction, after the non-design work was finished: *every page, how to go
+from one to another, colours, visual components, and the whole experience — mostly around
+entering the website and homepage — based on the references and ranking above.*
+
+That is a programme, not a task. It is being done one surface at a time, starting where
+the author pointed: **arrival**.
+
+### What arrival was
+
+A 52rem measure centred in the viewport. Eyebrow, a struck claim, its correction, a
+paragraph, two links, a rule. Roughly three hundred pixels of nothing down each side at
+1440. The writing is the best thing on the site and the *register* is by-kin.com, which
+this file records the author rejecting outright.
+
+### What it is now
+
+**The evidence, at reading distance.** A wall of captured Hermes output receding at an
+angle through the space that was empty, built out of the only material no competing
+guide has: this project's own corpus.
+
+The near lines are the ones that carry a correction — a status bar with no cost field
+where the documentation publishes one, and a numbered approval menu where the
+documentation publishes letter keys. Someone who has run Hermes recognises the first and
+is surprised by the second, so the page's argument arrives before any prose does.
+
+Traceable to the ranking rather than to taste:
+
+- **Active Theory (1=)** — monospace as literal procedural rendering, which
+  `01-reference-sites.md` had already approved in those words, rather than as a
+  technical-sounding costume. The difference is that these glyphs are real captured
+  strings, and `evidence-field.test.ts` asserts each one appears in `research/` or in the
+  console's cited table. Texture with provenance stops being texture.
+- **Igloo (1=)** — real form receding in real space. The plane is CSS 3D with a genuine
+  perspective, and its luminance is density and distance, never a painted glow.
+- **A moment, once** — the wall settles on arrival, transform-only, staggered 22ms a row
+  and over inside 1.1s. Basement and Lusion were both praised as "could be used once".
+
+### Three engineering decisions worth keeping
+
+- **Real text in CSS 3D, not a canvas.** You can select these lines and check them, which
+  a picture of text does not allow — and the honesty is the point of the whole surface.
+  It also keeps intact the rule against reintroducing an ambient background canvas.
+- **Zero client JavaScript.** The landing had 2.4 kB of first-party budget left. It still
+  does: the field is server-rendered HTML and CSS, and `pnpm budgets` is unchanged at
+  +1.6 kB.
+- **Transform-only settle.** The first version animated opacity from zero, which is the
+  trap `CLAUDE.md` records this repo shipping three times — and with `both` fill mode a
+  staggered delay holds the invisible state for up to half a second even when nothing is
+  wrong. Every row is legible at every instant now; only position moves.
+
+### The system this establishes, for the surfaces still to come
+
+1. **Luminance comes out of the material, never out of a filter.** Density, distance,
+   real lighting. No `box-shadow` glow, no gradient chrome.
+2. **Anything rendered has to be made of something true.** The curriculum field is the
+   real prerequisite graph; the arrival wall is real captured output. A surface that
+   would need invented content to look good is the wrong surface.
+3. **The reading column is never underneath the rendering.** Composition happens in the
+   space beside and around prose, by adjacency and shared alignment.
+4. **One moment per surface, and it ends.** Resting state is the finished state.
+
+### Not done, and next
+
+Transitions between pages, colour beyond the existing tokens, the component set, the
+module and index pages, and the second half of the landing below the hero. The corrections
+scene further down that page is still the older GSAP treatment and has not been brought
+into this register.

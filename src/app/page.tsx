@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { CorrectionsScene } from '@/components/landing/corrections-scene'
+import { EvidenceField } from '@/components/landing/evidence-field'
 import { coreCountFor, durationFor, guides, lessons, modules } from '@/lib/content'
 import { jsonLd, websiteSchema } from '@/lib/schema'
 import { TRACKS, TRACK_LABELS, site } from '@/lib/site'
@@ -48,8 +49,24 @@ export default function HomePage() {
   const moduleCount = modules.filter((entry) => entry.guideSlug === guide?.slug).length
 
   return (
-    <main className="mx-auto max-w-[52rem] px-6 py-[calc(var(--step)*4)]">
+    <main className="relative mx-auto max-w-[52rem] px-6 py-[calc(var(--step)*4)]">
       <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(websiteSchema())} />
+
+      {/*
+        Arrival is two columns from `xl` up, and one below it.
+
+        The page was a 52rem measure centred in a 1440px viewport, which left roughly
+        three hundred pixels of nothing down each side — the editorial register `06`
+        records the author rejecting. The hero now breaks out of that measure to put
+        the evidence field in the space that was empty, while every section beneath it
+        stays at the reading width it already had. The argument keeps the left column
+        at a comfortable measure and the field never sits under type.
+      */}
+      <div className="xl:absolute xl:top-[calc(var(--step)*4)] xl:left-1/2 xl:ml-[26rem] xl:w-[min(34rem,calc(50vw-27rem))] xl:overflow-hidden">
+        <div className="hidden xl:block">
+          <EvidenceField />
+        </div>
+      </div>
 
       <p className="font-mono text-[0.7rem] tracking-[0.09em] text-ice-dim uppercase">
         {site.name} · {guide?.subject} · verified against {guide?.verifiedAgainst}
