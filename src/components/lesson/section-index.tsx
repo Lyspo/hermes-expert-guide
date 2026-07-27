@@ -81,7 +81,11 @@ export function SectionIndex({
               <a
                 href={`#${slug}`}
                 aria-current={current ? 'true' : undefined}
-                className={`block py-[0.15rem] text-[0.8125rem] leading-snug no-underline transition-colors duration-300 ${
+                // Padded to clear WCAG 2.2's 24px minimum target. It was 0.15rem, which
+                // made a rail of links about seventeen pixels tall — fine with a mouse
+                // and genuinely awkward with a thumb, on a site whose own product notes
+                // call phone readers a meaningful minority.
+                className={`block py-[0.3rem] text-[0.8125rem] leading-snug no-underline transition-colors duration-300 ${
                   current ? 'text-ice' : 'text-ice-dim hover:text-ice'
                 }`}
               >

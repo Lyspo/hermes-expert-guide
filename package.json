@@ -22,7 +22,8 @@
     "search-index": "node scripts/build-search.mjs",
     "og": "pnpm content && node scripts/build-og.mjs",
     "budgets": "node scripts/check-budgets.mjs",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "lighthouse": "lhci autorun --config=lighthouserc.cjs"
   },
   "dependencies": {
     "@gsap/react": "2.1.2",
@@ -41,6 +42,7 @@
     "@content-collections/mdx": "0.2.2",
     "@content-collections/next": "^0.2.11",
     "@eslint/js": "^10.0.1",
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.62.0",
     "@resvg/resvg-js": "2.6.2",
     "@shikijs/rehype": "4.3.1",

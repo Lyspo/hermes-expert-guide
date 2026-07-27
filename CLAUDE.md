@@ -48,7 +48,10 @@ Playwright runs against the **exported `out/`**, not the dev server — includin
 
 **JavaScript budgets are measured as first-party code on top of the framework floor**, and `pnpm budgets` is a real gate. The old absolute target — 130 kB for a lesson — sat 59 kB *below* the floor and was unreachable by any amount of work, so it failed for reasons unrelated to whatever was being changed and had to be `continue-on-error` to stop blocking every PR. A gate nobody can pass is a gate nobody reads. The floor is now read on every run from `/about`, a page with no page-specific client code (**188.5 kB** of React 19, the Next 16 App Router runtime and site chrome), and each page is judged on what it adds: landing +1.6 kB, guide index +2.8 kB, a lesson +5.7 kB, against allowances of 4, 4 and 8. Lowering the floor is a stack decision, not a code decision.
 
-LCP and CLS are **not** enforced — there is no Lighthouse CI, so do not call them budgets.
+**LCP and CLS are enforced** by `pnpm lighthouse` — `lighthouserc.cjs`, three runs per URL
+against the exported `out/`, one URL per template, asserting LCP ≤ 2.5 s and CLS < 0.02.
+Category scores are warnings, not errors; the axe sweep is the real accessibility gate and
+Lighthouse's score is a second opinion on it.
 
 ## Tone and legal
 
@@ -256,7 +259,16 @@ event, and the pin releases the instant the reader scrolls back to re-read somet
 `e2e/replay.spec.ts` measures the figure *and a witness heading below it* across
 playback, because a stable figure with a moving page would pass a naive check.
 
-**Not built.** SIM-1, SIM-4 and SIM-8 as above. A colophon. Lighthouse CI.
+**The colophon is written**, at `/about/`. It replaced a placeholder that had been
+promising the same page in the future tense since the beginning, and it is written under
+one rule: every number on it can be checked against this repository, and the parts that
+went badly are named. It carries the corpus figures, the eight documented facts this
+guide contradicts, the multi-agent process and the gates built around it, the two bugs
+no gate caught, and the fact that the visual direction is unresolved. A colophon for a
+guide whose whole claim is "we cite our sources" cannot itself be marketing copy — keep
+it that way when it goes stale.
+
+**Not built.** SIM-1, SIM-4 and SIM-8 only, all for the reasons above.
 
 **Verification, and what it does and does not cover.** `pnpm verify` runs typecheck,
 lint, unit tests, OG image generation, the static export, the search index and a link
@@ -270,18 +282,38 @@ was being used as a text colour in 29 places, which `design.md` never sanctioned
 palette table gives that token as "hairlines, inactive nodes, disabled states". All 29
 are now `--ice-dim` (7.5:1). **`--ice-faint` is a hairline colour. Never set text in it.**
 
-**The JavaScript budget is measured and currently missed.** `pnpm budgets` reads what each
-page actually references in the export and gzips it. Landing is **186.6 kB** against its
-200 kB budget and passes. A lesson page is **190.5 kB** against a 130 kB budget and does
-not — and essentially all of it is the React 19 + Next 16 App Router client runtime rather
-than first-party code. Removing Zod from `src/lib/storage.ts` took 63 kB off every page
-and was the whole of the available win; what remains is the framework floor. Do not
-"fix" this by raising the number in `design.md` — either the stack changes or the budget
-is documented as unreachable. `pnpm budgets` is `continue-on-error` in CI for exactly
-that reason, and that is a temporary honesty measure, not an acceptance.
+**Every budget in `design.md` is now enforced, and this paragraph used to say the
+opposite.** Both halves closed on 2026-07-27.
 
-Still **no** Lighthouse CI, so LCP and CLS remain unmeasured. Do not describe them as
-enforced.
+*JavaScript* is measured as first-party code on top of a framework floor read each run
+from `/about`, which has no page-specific client code. See the Verification section
+above for the numbers. `pnpm budgets` is no longer `continue-on-error`.
+
+*LCP and CLS* are asserted by `pnpm lighthouse` (`lighthouserc.cjs`), three runs per URL
+against the exported `out/`, one URL per template. Measured on a desktop preset:
+**LCP 0.55–0.59 s** against a 2.5 s assertion and **CLS 0.0002** against 0.02 — four
+times and a hundred times inside their limits respectively, which is the margin that
+makes it safe to run on a CI box slower than a laptop. Category scores are warnings
+rather than errors on purpose: performance scoring folds in throttled network simulation
+that moves several points run to run on a machine we do not control, and a blocking gate
+on it would be measuring the runner.
+
+**Lighthouse found three real accessibility defects on its first run**, which is the
+second time an accessibility gate has earned its place here immediately. All three were
+invisible to the axe sweep for reasons worth knowing:
+
+- **A `<dl>` containing an `<h2>`.** The glossary put its letter headings inside the
+  definition list; a `<div>` in a `<dl>` may hold only `<dt>` and `<dd>`. Axe's
+  `definition-list` rule is not in the WCAG 2.1 AA tag set the sweep asks for. Now one
+  `<section>` per letter, each with its own `<dl>` — better heading navigation anyway.
+- **A label-in-name failure** on the replay speed button: visible `1×`, accessible name
+  "Speed: 1 times". That is WCAG 2.5.3, Level A, and axe ships
+  `label-content-name-mismatch` as *experimental and off by default*, so the sweep will
+  never report it. **An accessible name must contain the visible text**, or voice
+  control cannot address the control.
+- **Tap targets under 24 px** in the lesson section index and the glossary letter jumps.
+  WCAG 2.2, so outside the stated 2.1 AA target, but this project's own product notes
+  call phone readers a meaningful minority — fixed rather than waived.
 
 Two build steps reach the network on a cold run and are worth knowing about before a CI
 job fails mysteriously. `pnpm og` downloads two TTFs from Google Fonts and caches them
@@ -408,22 +440,33 @@ grep -rho 'id="[a-z-]*"' content/guides/ --include=*.mdx | sort -u
 cheatsheets are done, and five of the eight replays are done.** What is actually left, in
 rough order of value:
 
-1. **The composition pass on the lit field**, which is what the handoff at the top of
-   this file points at. The direction survived its first build; the execution has physics
-   and no composition. `06-direction-calibration.md` ends with five named, unbuilt things
-   — typography inside the field, a composed frame, a structural overlay, a moment, and
-   hierarchy beyond radius. **Start from that list, not from a blank, and not from a
-   fourteenth prototype.**
-2. **The unresolved question underneath it:** none of the direction has been tried next
-   to two thousand words of prose. The map is the easy case — a map is *meant* to be a
-   field. A lesson page is the real test and has not been attempted.
-3. **Lighthouse CI.** LCP and CLS are still unmeasured, so the performance half of the
-   old verification gap is still open. The accessibility half is closed — Playwright and
-   an axe sweep both run in CI.
-4. **A colophon.** Specified in the map, never started.
-5. **The three unbuilt replays**, none of which is simply outstanding work: SIM-4 is
-   blocked on a capture, SIM-1 and SIM-8 would duplicate their hosts. Revisit only if a
-   capture arrives or those lessons change shape.
+> **The non-design work is finished.** As of 2026-07-27 there is no outstanding
+> capability, content or verification task that is not blocked on a capture. Everything
+> below is design, and that is now the whole of the remaining work.
+
+**Design is the only thing left**, and the author's instruction for it is broad rather
+than incremental: every page, the transitions between them, colour, the visual
+components, and the whole arrival experience — the homepage and entering the site above
+all — worked out against the ten reference sites and the ranking in
+`research/design/06-direction-calibration.md`. **Read `06` first**, then `05`, then
+`decisions.md` 010. Start from `06`'s five named items, not from a blank and not from a
+fourteenth prototype.
+
+**The lesson masthead is parked, by the author's decision on 2026-07-27.** It is built,
+verified and shipping on `main` (`src/components/lesson/masthead-field.tsx`), and no
+further work goes into it until the design pass judges it. The author's position: *"so
+far good even though I'm skeptical about how useful the masthead / node graph will be."*
+That scepticism is well founded and the honest case against it is recorded in
+`06-direction-calibration.md` — the margin rail already answers "what should I know
+first" more usefully, because it lists prerequisites **by name as links**, where the
+masthead restates the same fact as an uncountable field you cannot click. It also pushes
+the h1 down about 250 px on every lesson. Treat it as a candidate, not as a fixture; it
+is one self-contained component with zero client JavaScript, so removing it is a
+one-file commit.
+
+**Blocked, not outstanding.** SIM-4 needs a captured SKILL.md diff. SIM-1 and SIM-8 would
+duplicate hosts that already carry their frames as static transcripts. Do not "finish"
+these to tidy the count.
 
 All six plates are built (VIZ-1 to VIZ-6). Ignore any line above claiming otherwise;
 regenerate rather than trust, with `grep -rl "<Viz" content/guides/`.

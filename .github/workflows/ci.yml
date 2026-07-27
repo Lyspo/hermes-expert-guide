@@ -63,6 +63,21 @@ jobs:
       - name: JavaScript budgets
         run: pnpm budgets
 
+      # Serves out/ itself on its own port, so it does not collide with the Playwright
+      # step above. LCP and CLS are hard assertions; category scores are warnings,
+      # because scoring folds in throttled network simulation that moves several points
+      # run to run on a machine we do not control.
+      - name: Lighthouse (LCP and CLS)
+        run: pnpm lighthouse
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse
+          path: .lighthouseci/
+          retention-days: 7
+
       - name: Upload export
         uses: actions/upload-artifact@v4
         with:

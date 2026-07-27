@@ -219,7 +219,12 @@ export function Player({ script }: { script: SimScript }) {
         <button
           type="button"
           onClick={() => setSpeed(SPEEDS[(SPEEDS.indexOf(speed as 1) + 1) % SPEEDS.length]!)}
-          aria-label={`Speed: ${speed} times. Click to change.`}
+          // The accessible name has to *contain* the visible text — WCAG 2.5.3, Label in
+          // Name, so that "click one times" works for someone driving by voice. It read
+          // "Speed: 1 times" against a visible "1×", which matches nothing a user can
+          // see. Caught by Lighthouse; the axe sweep misses it because axe ships
+          // `label-content-name-mismatch` as experimental and off by default.
+          aria-label={`${speed}× playback speed, click to change`}
           className="w-[3rem] shrink-0 cursor-pointer border border-ice-faint bg-transparent py-1 font-mono text-[0.65rem] text-ice-dim transition-colors duration-200 hover:border-ice hover:text-ice"
         >
           {speed}×

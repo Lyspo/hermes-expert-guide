@@ -96,9 +96,16 @@ export default tseslint.config(
   },
 
   // Build-time scripts run in Node and legitimately reach for the filesystem
-  // and console.
+  // and console. `.cjs` is here for lighthouserc, which LHCI loads with `require`
+  // and which therefore genuinely does have `module` in scope.
   {
-    files: ['scripts/**/*.{ts,tsx,mjs}', '*.config.{ts,mjs}', 'content-collections.ts'],
+    files: [
+      'scripts/**/*.{ts,tsx,mjs}',
+      '*.config.{ts,mjs}',
+      '*.cjs',
+      'content-collections.ts',
+    ],
+    languageOptions: { globals: { module: 'writable', require: 'readonly' } },
     rules: { 'no-console': 'off' },
   },
 )
