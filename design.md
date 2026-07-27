@@ -8,19 +8,21 @@ The nine candidate directions and how they were derived are recorded in [`resear
 
 ## The world
 
-**Substrate — depth as the medium, with type that rewrites itself.**
+**Substrate — depth as the medium, and supersession drawn as distance.**
 
 A dark, dimensional world in which the agent's interior is actually rendered: skills, memory, sessions and workers as points and edges at real depth. Moving through the curriculum means moving through the structure rather than scrolling past pictures of it.
 
 > **Amended 2026-07-26.** That rendering is a *component*, not the page ground. An ambient node canvas behind every page was built and removed: it carried no real data, and it made the one place a genuine graph appears — the curriculum map — impossible to distinguish from decoration. The graph is drawn where it means something. Pages sit on plain `--void`; depth is carried by the plane system and the transcript surface. `drift` is gone from the motion vocabulary with it.
 
-Its signature motion is borrowed deliberately from a second direction: **display type that strikes its own line out and re-enters it**, characters resolving in sequence. That gesture is the product's thesis performed rather than described — an agent that rewrites its own instructions — and it is the one motion the site owns.
+Its signature motion is **supersession drawn as distance**: a claim that has been checked stands near and lit, and the version everyone repeats sits behind it — smaller, dimmer, set back. That performs the product's thesis rather than describing it, and it is the same language the curriculum field and the arrival wall already speak, so the site has one spatial idea rather than one gesture.
+
+> **Amended 2026-07-27.** This used to read: *display type that strikes its own line out and re-enters it… the one motion the site owns.* The strike was removed by the author's decision. It was not wrong, it was overused — a 2px line in `--signal` firing in six places, including the largest type on the site, and the only place any colour appeared. A site with exactly one owned gesture is the "monotone and repetitive" criticism the author levelled at Stripe Press in `research/design/06-direction-calibration.md`. `<del>` and `<ins>` are kept: the semantics are real and only the paint changed.
 
 Two candidate worlds, fused: the graph is what the agent *is*, and the type is what it *does*.
 
 | The product's mechanism | How this world carries it |
 |---|---|
-| An agent that revises its own procedures | Display type struck through and re-entered in place |
+| An agent that revises its own procedures | The superseded claim set back in depth, the checked one near and lit |
 | A skill library, a memory index, a delegation tree | Genuine graphs, rendered in depth and navigable |
 | Layers that depend on layers | Depth planes: what sits behind is what you are standing on |
 | A curriculum with a real sequence | Descending goes *into* the structure, not down a list |
@@ -60,7 +62,7 @@ Every face openly licensed. The previous stack — a glyphic display serif with 
 
 | Role | Face | Why this one |
 |---|---|---|
-| Display | **Familjen Grotesk** (OFL) | A Swedish grotesque with genuine character in its `a`, `g` and `k` — tight, confident, and not one of the four faces every technical site currently reaches for. Carries the kinetic rewrite at scale without looking like a logotype |
+| Display | **Familjen Grotesk** (OFL) | A Swedish grotesque with genuine character in its `a`, `g` and `k` — tight, confident, and not one of the four faces every technical site currently reaches for. Carries display sizes without looking like a logotype |
 | Body and UI | **Archivo** (OFL, Omnibus-Type) | A workhorse grotesque built for documents and small sizes, with a real width axis. Legible at length on a dark ground, which is the whole job |
 | Code, data, measurement | **Geist Mono** (OFL) | Unambiguous `0`/`O` and `1`/`l`/`I`, which matters because a misread character in a lesson is a comprehension failure. Its home is the transcript plane |
 
@@ -74,11 +76,10 @@ The named vocabulary. Nothing outside this list ships without being added here. 
 
 | Name | What happens | Ease | Duration |
 |---|---|---|---|
-| `rewrite` | A line strikes itself through; the replacement resolves character by character above it | `cubic-bezier(.16, 1, .3, 1)` | 300ms strike, then ~1.2s resolve |
+| `supersede` | A repeated claim scales back and dims; the checked line comes forward into the space it leaves | `power2.inOut` | 320ms back, 340ms forward |
 | `parallax` | Pointer and scroll displace planes at different rates | damped follow, ~0.045 | continuous |
 | `resolve` | Content arrives from depth: scale and opacity only, never position | `cubic-bezier(.16, 1, .3, 1)` | 480ms |
 | `draw` | A plate's rules and arrows ink along their own length, in the direction of the claim. Strokes only — never text | `power2.out` | 700ms per beat |
-| `strike` | A 2px signal bar scales across a superseded line from its left edge. The drawn half of `rewrite`, for where `text-decoration` cannot animate | `power2.inOut` | 320ms |
 | `settle` | Micro-interaction feedback, with a small tactile press on `:active` | `cubic-bezier(.25, 1, .5, 1)` | 240ms |
 
 **Rules.** Transform and opacity only — never `top`, `left`, `width`, or `height`. No `window.addEventListener('scroll')`; scroll comes from `useScroll`, `ScrollTrigger`, `IntersectionObserver`, or a CSS scroll timeline. No `requestAnimationFrame` loop touches React state. Text resolves by line or word except for short display moments, where character-by-character is the point. The division of labour is lint-enforced: Motion animates components, GSAP animates scroll scenes and cannot be imported elsewhere.
@@ -103,4 +104,4 @@ And the whole-look conventions to stay clear of: warm cream with a serif display
 
 ## Accessibility as a design constraint
 
-A build gate, not an audit. Contrast verified against both `--void` and `--deep`. `prefers-reduced-motion` stops the rewrite and the scrubbed plates at their resting states, all of which are complete and legible. `prefers-contrast: more` is honoured. The curriculum map's canvas is decorative and carries `aria-hidden`, so nothing in it is load-bearing information — every lesson and prerequisite it depicts is also a real link in the index beneath it. Session replays ship as complete transcripts a screen reader can read straight through, with playback as the enhancement. Focus is always visible against a dark ground, which means a light ring, not a subtle one. Terminal content stays legible at 200% zoom.
+A build gate, not an audit. Contrast verified against both `--void` and `--deep`. `prefers-reduced-motion` stops the supersession and the scrubbed plates at their resting states, all of which are complete and legible. `prefers-contrast: more` is honoured. The curriculum map's canvas is decorative and carries `aria-hidden`, so nothing in it is load-bearing information — every lesson and prerequisite it depicts is also a real link in the index beneath it. Session replays ship as complete transcripts a screen reader can read straight through, with playback as the enhancement. Focus is always visible against a dark ground, which means a light ring, not a subtle one. Terminal content stays legible at 200% zoom.

@@ -135,7 +135,7 @@ export default function AboutPage() {
         <p>
           Each of those is presented in place as a correction with its source and date,
           rather than silently written the right way round. Watching a documented claim
-          get struck is the fastest way to learn that documentation is a source and not
+          get superseded is the fastest way to learn that documentation is a source and not
           an authority.
         </p>
       </Section>

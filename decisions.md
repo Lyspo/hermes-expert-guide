@@ -166,3 +166,41 @@ The reconciliation kept the better one in each case rather than the more recent 
 **One thing deliberately deferred.** The console now sits after the prose rather than
 beside it. Three zones at `xl` — margin, prose, console — is a layout that needs
 designing, and settling it during a merge would be deciding it by accident.
+
+### 011 — The strike is removed. Supersession is drawn as distance.
+
+**Decision.** The 2px line-through in `--signal` is gone from every surface. A superseded
+claim is now labelled, set at a smaller size, and placed behind a hairline; the checked
+claim stands in front of it, larger and lit. `<del>` and `<ins>` are kept unchanged.
+
+**Why.** The author asked whether the strikethrough was an expired early decision. It was
+not — it came from 007's laboratory-notebook world ("nothing erased, only struck through
+and re-entered"), survived into 009, and `design.md` called it "the one motion the site
+owns". It was load-bearing for meaning and it was not wrong.
+
+It was, however, **overused**, and the author's instinct was right. It fired in six
+places — the landing hero, the corrections list, the scroll scene, `Revised` in every
+lesson, the memory plate, and the about page's prose — including on the largest type on
+the site. It was also the only place any colour appeared. A site with exactly one owned
+gesture is precisely the *"quite monotone and repetitive"* criticism the author levelled
+at press.stripe.com in `research/design/06-direction-calibration.md`, applied to itself.
+
+**What replaces it, and why this one is better than a swap.** Distance already carries
+meaning everywhere else in this design — the curriculum field puts prerequisite depth on
+the view axis, and the arrival wall recedes. Supersession as recession makes those one
+idea instead of three treatments, which is what `06` meant by composition. It also costs
+no colour, so `--signal` is freed for the things the palette table actually reserves it
+for.
+
+**Cost, and one thing it exposed.** The gesture was genuinely good and some of its charge
+is lost: a line drawn through a sentence is more immediately legible as *wrong* than a
+size change is. The labels ("Widely repeated" / "Checked") carry that load now, in words
+rather than in paint, which is quieter and less distinctive.
+
+The first attempt dimmed the superseded claim to 62% opacity and the axe sweep failed it
+on contrast within the minute. That was the right failure: the superseded claim is the
+thing the reader is supposed to recognise as *what they already believed*, so it has to
+be genuinely readable. **Recession is size, label and position — never opacity.**
+
+**Supersedes.** 009's signature-motion clause and `design.md`'s `rewrite` and `strike`
+entries, both amended in place rather than left contradicting the build.

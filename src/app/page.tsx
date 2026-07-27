@@ -10,7 +10,7 @@ import { TRACKS, TRACK_LABELS, site } from '@/lib/site'
  *
  * Built last, deliberately, and arranged around the one thing that distinguishes this
  * guide from the documentation it is about: it checked. So the hero is the signature
- * gesture doing real work — a claim everyone repeats, struck, with what is actually
+ * gesture doing real work — a claim everyone repeats, set back, with what is actually
  * true resolving above it — and the section beneath it is four more of the same,
  * because the corrections *are* the product.
  *
@@ -72,16 +72,32 @@ export default function HomePage() {
         {site.name} · {guide?.subject} · verified against {guide?.verifiedAgainst}
       </p>
 
-      {/* The signature gesture, and deliberately without the character-resolve that
-          `Revised` performs inside lessons. This is the largest text on the site and
-          the LCP element; an animation that scrambles it is one throttled animation
-          clock away from rendering the argument as gibberish. The strike is the half
-          of the gesture that is pure CSS and cannot fail. */}
+      {/*
+        The argument, with the superseded claim set back rather than struck.
+
+        This was a line-through in the signal red until 2026-07-27. It was removed by
+        the author's decision and the replacement is the register the rest of the
+        design runs on: what is believed sits small, dim and behind a rule; what was
+        checked stands large and lit in front of it. Distance carries the meaning that
+        a drawn line used to, which frees the only colour on the site from being spent
+        on the same gesture six times.
+
+        Still no character-resolve on the largest type. It is the LCP element and the
+        argument, and one throttled clock away from rendering as gibberish is not a
+        trade worth making.
+      */}
       <h1 className="mt-[calc(var(--step)*2)]">
-        <del className="struck block text-[clamp(1.4rem,4vw,2.4rem)] leading-[1.15] tracking-[-0.02em]">
+        <span className="font-mono text-[0.65rem] tracking-[0.14em] text-ice-dim uppercase">
+          Widely repeated
+        </span>
+        <del className="superseded mt-[calc(var(--step)*0.3)] block text-[clamp(1.05rem,2.2vw,1.4rem)] leading-[1.35] tracking-[-0.01em]">
           Hermes has a three-layer memory system.
         </del>
-        <ins className="font-display mt-[calc(var(--step)*0.5)] block text-[clamp(1.8rem,5.4vw,3.3rem)] leading-[1.05] tracking-[-0.025em] no-underline">
+
+        <span className="mt-[calc(var(--step)*1)] block font-mono text-[0.65rem] tracking-[0.14em] text-ice-dim uppercase">
+          Checked against a running v0.19.0
+        </span>
+        <ins className="font-display mt-[calc(var(--step)*0.4)] block text-[clamp(1.8rem,5.4vw,3.3rem)] leading-[1.05] tracking-[-0.025em] no-underline">
           It has two capped files and an index.
         </ins>
       </h1>

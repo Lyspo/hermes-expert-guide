@@ -145,13 +145,48 @@
     border: 1px solid color-mix(in srgb, var(--color-ice) 9%, transparent);
   }
 
-  /* The signature gesture: a superseded line struck in the signal colour with
-     its replacement above it. The resting state is complete and legible. */
-  .struck {
+  /* ---------------------------------------------------------------------------
+     Supersession, drawn as distance rather than as a deletion.
+
+     This used to be a 2px line-through in the signal red, and `design.md` called it
+     "the one motion the site owns". It was removed on 2026-07-27 by the author's
+     decision, and the reasoning is worth keeping because the device was not wrong,
+     it was overused: a site with exactly one owned gesture is the "monotone and
+     repetitive" criticism the author levelled at Stripe Press, and the strike was
+     firing in six places including the largest type on the site. It was also the
+     only place any colour appeared.
+
+     What replaces it is the register the rest of the design now runs on: the
+     superseded claim is *further away* — smaller, dimmer, set back behind a rule —
+     and the verified one is near and lit. Truth is distance, which is the same
+     language the curriculum field and the arrival wall already speak, and it costs
+     no colour and no animation.
+
+     `<del>` and `<ins>` are kept because the semantics are real: a screen reader
+     announces the supersession, and a crawler reads which claim this page endorses.
+     Only the paint changes.
+     --------------------------------------------------------------------------- */
+  /* No opacity here, and that is a correctness point rather than a style one. The
+     first version dimmed this to 62%, which took `--ice-dim` under AA and the axe
+     sweep failed it immediately. It was also wrong on the merits: the superseded
+     claim is the thing the reader is supposed to recognise as what they already
+     believed, so it has to be genuinely readable. Recession is carried by size, by
+     the label above it, and by the rule beside it — never by making the text harder
+     to see. */
+  .superseded {
     color: var(--color-ice-dim);
-    text-decoration-line: line-through;
-    text-decoration-color: var(--color-signal);
-    text-decoration-thickness: 2px;
+    text-decoration: none;
+  }
+
+  /* The rule is the boundary between what was believed and what was checked. It is
+     a hairline because it is structure, not emphasis. */
+  .correction {
+    border-left: 1px solid var(--color-ice-faint);
+    padding-left: calc(var(--step) * 0.75);
+  }
+
+  .correction > ins {
+    text-decoration: none;
   }
 }
 

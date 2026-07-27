@@ -5,8 +5,8 @@ import { VizBox, VizEdge, VizMeter, VizNote, VizStage } from './stage'
  *
  * The one plate in the guide where the design world and the factual claim are the
  * same gesture: the widely repeated "three-layer memory system" is drawn as the
- * superseded state, struck through, with the correct arrangement standing beside it.
- * The signal colour appears exactly twice — on the strike, and on the one arrow that
+ * superseded state, set back and dimmed, with the correct arrangement beside it.
+ * The signal colour now appears exactly once — on the one arrow that
  * carries a correction — because that is what it means.
  *
  * The arrangement is the argument. Two bounded files sit on the same row because
@@ -22,23 +22,20 @@ export function MemoryPlate() {
       width={720}
       height={400}
     >
-      {/* The superseded claim, drawn and struck. */}
-      <g>
-        <text x={0} y={12} fill="var(--color-ice-faint)" fontSize={10}>
+      {/* The superseded claim, set back rather than struck.
+          The diagonal stroke that used to cross this stack was removed on 2026-07-27
+          with the rest of the strike gesture. The ghost tone and the label already
+          say "this is what is repeated"; a line drawn through it was the third thing
+          saying the same word, in the only colour on the site. */}
+      <g opacity={0.7}>
+        {/* --ice-faint is a hairline colour and fails AA as text — the repo's own
+            rule, and this was one of the places still breaking it. */}
+        <text x={0} y={12} fill="var(--color-ice-dim)" fontSize={10}>
           WHAT IS WIDELY REPEATED
         </text>
         <VizBox x={0} y={24} w={150} h={28} label="skill memory" tone="ghost" />
         <VizBox x={0} y={54} w={150} h={28} label="conversational" tone="ghost" />
         <VizBox x={0} y={84} w={150} h={28} label="user modelling" tone="ghost" />
-        {/* The strike: one stroke through the whole stack. */}
-        <line
-          x1={-8}
-          y1={110}
-          x2={158}
-          y2={22}
-          stroke="var(--color-signal)"
-          strokeWidth={2}
-        />
         <VizNote x={0} y={130} width={150}>
           Three layers implies a stack, and a stack implies precedence. There is no
           stack.

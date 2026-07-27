@@ -7,10 +7,15 @@ const GLYPHS = 'abcdefghijklmnopqrstuvwxyz-/_.0123456789'
 /**
  * Superseded text, kept visible with its replacement resolving above it.
  *
- * This is the site's signature gesture and the product's central meaning in one
- * component: the agent rewrites its own procedures and the history stays legible.
- * The replacement resolves character by character, which is the one motion this
- * design owns — the subject performed rather than described.
+ * The product's central meaning in one component: the agent rewrites its own
+ * procedures and the history stays legible.
+ *
+ * Supersession is drawn as **distance**, not as deletion. The repeated claim is
+ * labelled, set back and dimmed; the checked one stands in front of it and resolves
+ * character by character. A 2px line-through in `--signal` used to do this job and
+ * was removed on 2026-07-27 by the author's decision — it was the only gesture the
+ * site owned, it fired in six places including the largest type on the page, and it
+ * was the only place any colour appeared. See `design.md`'s amended motion table.
  *
  * It maps exactly onto `<del>` and `<ins>`, which is the tell that the device is
  * honest: screen readers announce the deletion and the insertion, `cite` records
@@ -28,7 +33,7 @@ const GLYPHS = 'abcdefghijklmnopqrstuvwxyz-/_.0123456789'
  * stall arrives with a large delta and lands directly on the finished text.
  */
 
-/** design.md's `rewrite`: ~1.2s to resolve, after the strike. */
+/** design.md's `supersede`: ~1.2s for the checked line to resolve. */
 const RESOLVE_MS = 1200
 export function Revised({
   was,
@@ -95,24 +100,33 @@ export function Revised({
   }, [now])
 
   return (
-    <div className="my-[calc(var(--step)*1.4)] border-l border-ice-faint pl-[calc(var(--step)*0.75)]">
-      <del className="struck block" {...(when ? { dateTime: when } : {})}>
+    <div className="correction my-[calc(var(--step)*1.4)]">
+      {/* Set back: smaller, dimmer, and labelled for what it is. The label does the
+          work the strike used to do — it says "superseded" in a word instead of
+          drawing a line through a sentence, which is both clearer and quieter. */}
+      <p className="font-mono text-[0.62rem] tracking-[0.12em] text-ice-dim uppercase">
+        Widely repeated
+      </p>
+      <del
+        className="superseded mt-[calc(var(--step)*0.2)] block text-[0.9375rem] leading-[1.6]"
+        {...(when ? { dateTime: when } : {})}
+      >
         {was}
       </del>
 
+      <p className="mt-[calc(var(--step)*0.6)] font-mono text-[0.62rem] tracking-[0.12em] text-ice-dim uppercase">
+        Checked
+      </p>
       <ins
         ref={node}
-        className="mt-[calc(var(--step)*0.35)] block no-underline"
+        className="mt-[calc(var(--step)*0.2)] block text-[1.0625rem] leading-[1.65] no-underline"
         {...(when ? { dateTime: when } : {})}
       >
         {shown}
       </ins>
 
       {why && (
-        <p className="mt-[calc(var(--step)*0.4)] font-mono text-[0.7rem] leading-relaxed text-ice-dim">
-          <span className="text-signal" aria-hidden="true">
-            &#8627;{' '}
-          </span>
+        <p className="mt-[calc(var(--step)*0.5)] font-mono text-[0.7rem] leading-relaxed text-ice-dim">
           {why}
           {when && ` · ${when}`}
         </p>
