@@ -87,17 +87,15 @@ export default function HomePage() {
         trade worth making.
       */}
       <h1 className="mt-[calc(var(--step)*2)]">
-        <span className="font-mono text-[0.65rem] tracking-[0.14em] text-ice-dim uppercase">
-          Widely repeated
-        </span>
-        <del className="superseded mt-[calc(var(--step)*0.3)] block text-[clamp(1.05rem,2.2vw,1.4rem)] leading-[1.35] tracking-[-0.01em]">
-          Hermes has a three-layer memory system.
+        {/* The attribution is in the sentence, which is where a writer would put it,
+            rather than in a label above it. "Almost everything written about it says"
+            does the work a "Widely repeated" chip was doing, without becoming a fixed
+            phrase repeated on every surface of the site. */}
+        <del className="superseded block text-[clamp(1.05rem,2.2vw,1.4rem)] leading-[1.4] tracking-[-0.01em]">
+          Almost everything written about Hermes says it has a three-layer memory
+          system.
         </del>
-
-        <span className="mt-[calc(var(--step)*1)] block font-mono text-[0.65rem] tracking-[0.14em] text-ice-dim uppercase">
-          Checked against a running v0.19.0
-        </span>
-        <ins className="font-display mt-[calc(var(--step)*0.4)] block text-[clamp(1.8rem,5.4vw,3.3rem)] leading-[1.05] tracking-[-0.025em] no-underline">
+        <ins className="font-display mt-[calc(var(--step)*0.6)] block text-[clamp(1.8rem,5.4vw,3.3rem)] leading-[1.05] tracking-[-0.025em] no-underline">
           It has two capped files and an index.
         </ins>
       </h1>
@@ -159,7 +157,17 @@ export default function HomePage() {
         </p>
 
         <div className="mt-[calc(var(--step)*1.5)]">
-          <CorrectionsScene corrections={CORRECTIONS} />
+          {/* Titles resolved from the content collection rather than written out
+              here, so a renamed lesson cannot leave the landing page describing a
+              page that no longer goes by that name. */}
+          <CorrectionsScene
+            corrections={CORRECTIONS.map((correction) => ({
+              ...correction,
+              label:
+                lessons.find((lesson) => lesson.url === correction.where)?.title ??
+                'the lesson that carries the source',
+            }))}
+          />
         </div>
       </section>
 

@@ -101,25 +101,28 @@ export function Revised({
 
   return (
     <div className="correction my-[calc(var(--step)*1.4)]">
-      {/* Set back: smaller, dimmer, and labelled for what it is. The label does the
-          work the strike used to do — it says "superseded" in a word instead of
-          drawing a line through a sentence, which is both clearer and quieter. */}
-      <p className="font-mono text-[0.62rem] tracking-[0.12em] text-ice-dim uppercase">
-        Widely repeated
-      </p>
+      {/*
+        No "Widely repeated" / "Checked" labels. They were added when the strike came
+        out and removed the same day: two fixed words, rendered twenty-five times
+        across the site, are a worse repetition than the line they replaced, because a
+        reader reads a word and only sees a rule. They were also scaffolding — the
+        component explaining its own device instead of letting the device work.
+
+        What tells the reader which line is which is size and order, and then the
+        specific provenance underneath. "Checked against the memory documentation and
+        a running v0.19.0 · 2026-07-25" says what a generic chip cannot: what it was
+        checked against, and when.
+      */}
       <del
-        className="superseded mt-[calc(var(--step)*0.2)] block text-[0.9375rem] leading-[1.6]"
+        className="superseded block text-[0.9375rem] leading-[1.6]"
         {...(when ? { dateTime: when } : {})}
       >
         {was}
       </del>
 
-      <p className="mt-[calc(var(--step)*0.6)] font-mono text-[0.62rem] tracking-[0.12em] text-ice-dim uppercase">
-        Checked
-      </p>
       <ins
         ref={node}
-        className="mt-[calc(var(--step)*0.2)] block text-[1.0625rem] leading-[1.65] no-underline"
+        className="mt-[calc(var(--step)*0.35)] block text-[1.0625rem] leading-[1.65] no-underline"
         {...(when ? { dateTime: when } : {})}
       >
         {shown}

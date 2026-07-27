@@ -204,3 +204,29 @@ be genuinely readable. **Recession is size, label and position — never opacity
 
 **Supersedes.** 009's signature-motion clause and `design.md`'s `rewrite` and `strike`
 entries, both amended in place rather than left contradicting the build.
+
+**Amended the same day.** The first version of this decision replaced the strike with a
+pair of labels — `Widely repeated` above the superseded claim, `Checked` above the
+verified one. The author asked what they meant, which was the right question: they meant
+nothing beyond what the component was already doing, and they rendered **twenty-five
+times** across the site — twenty `Revised` blocks in seventeen lessons, the landing hero,
+and four in the scroll scene.
+
+That is the same mistake as the strike, made worse. A repeated word is more intrusive
+than a repeated rule, because a reader reads it. It was also scaffolding: the component
+explaining its own device instead of letting the device work.
+
+The labels are gone. What distinguishes the two lines is size and order, and underneath
+them the provenance line that already existed — *"Checked against the memory
+documentation and a running v0.19.0 … · 2026-07-25"*. That is better than any chip could
+be, because it names **what** was checked and **when**, and it differs per correction.
+On the landing hero the attribution moved into the sentence, where a writer would put it:
+*"Almost everything written about Hermes says it has a three-layer memory system."*
+
+**The general rule this is worth extracting.** A device that needs a label to be
+understood is not yet working. Fix the device, not the caption — and be suspicious of any
+fixed phrase that appears on every surface of the site, whichever layer it lives in.
+
+The four identical "the lesson that carries the source" links on the landing page went at
+the same time, for the same reason; each now names the lesson it goes to, resolved from
+the content collection so a rename cannot leave the page lying.

@@ -32,6 +32,14 @@ export interface Correction {
   was: string
   now: string
   where: string
+  /**
+   * The title of the lesson that sources this correction.
+   *
+   * Replaces four identical "the lesson that carries the source" links. Naming the
+   * destination is both more useful — a reader deciding whether to follow a link wants
+   * to know where it goes — and one less phrase repeated verbatim down the page.
+   */
+  label: string
 }
 
 export function CorrectionsScene({ corrections }: { corrections: readonly Correction[] }) {
@@ -192,30 +200,23 @@ export function CorrectionsScene({ corrections }: { corrections: readonly Correc
                   treatment carries, and the scene must not cost a screen reader
                   that. Every claim stays in the accessibility tree while the scene
                   runs, stacked visually but read in order. */}
-              <p className="font-mono text-[0.62rem] tracking-[0.12em] text-ice-dim uppercase">
-                Widely repeated
-              </p>
               <del
                 data-was
                 className={
                   capable
-                    ? 'superseded mt-[calc(var(--step)*0.2)] block text-[clamp(1.1rem,2.1vw,1.6rem)] leading-[1.5]'
-                    : 'superseded mt-[calc(var(--step)*0.2)] block text-[0.95rem] leading-[1.7]'
+                    ? 'superseded block text-[clamp(1.1rem,2.1vw,1.6rem)] leading-[1.5]'
+                    : 'superseded block text-[0.95rem] leading-[1.7]'
                 }
               >
                 {correction.was}
               </del>
 
-              <p className="mt-[calc(var(--step)*0.6)] font-mono text-[0.62rem] tracking-[0.12em] text-ice-dim uppercase">
-                Checked
-              </p>
-
               <ins
                 data-now
                 className={
                   capable
-                    ? 'mt-[calc(var(--step)*0.2)] block font-display text-[clamp(1.6rem,3.4vw,2.6rem)] leading-[1.15] tracking-[-0.025em] text-ice no-underline'
-                    : 'mt-[calc(var(--step)*0.2)] block text-[1.0625rem] leading-[1.7] no-underline'
+                    ? 'mt-[calc(var(--step)*0.5)] block font-display text-[clamp(1.6rem,3.4vw,2.6rem)] leading-[1.15] tracking-[-0.025em] text-ice no-underline'
+                    : 'mt-[calc(var(--step)*0.35)] block text-[1.0625rem] leading-[1.7] no-underline'
                 }
               >
                 {correction.now}
@@ -227,7 +228,7 @@ export function CorrectionsScene({ corrections }: { corrections: readonly Correc
                   capable ? 'mt-[var(--step)]' : 'mt-[calc(var(--step)*0.4)]'
                 }`}
               >
-                the lesson that carries the source
+                {correction.label}
               </Link>
             </li>
           ))}

@@ -27,7 +27,11 @@ test('the landing page carries its whole argument', async ({ page }) => {
   // the element that happens to hold them today.
   await expect(page.locator('[data-corrections] li del')).toHaveCount(4)
   await expect(page.locator('[data-corrections] li ins')).toHaveCount(4)
-  await expect(page.getByRole('link', { name: /the lesson that carries the source/ })).toHaveCount(4)
+  // Four corrections, four links out to the lessons that source them. Addressed by
+  // the container rather than by link text: the text is now each lesson's real title,
+  // which is the point — four identical link labels were one of the repetitions that
+  // made this page read as a template.
+  await expect(page.locator('[data-corrections] li a')).toHaveCount(4)
 
   // Real computed numbers, not placeholders.
   await expect(page.getByText(/core lessons/).first()).toBeVisible()
